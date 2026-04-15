@@ -54,6 +54,18 @@ def format_history(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def format_history_export(payload: dict[str, Any]) -> str:
+    stats = payload.get("stats", {})
+    commands = payload.get("commands", [])
+    lines = [
+        "[HISTORY EXPORT]",
+        f"Exported at: {payload.get('exported_at', 'unknown')}",
+        f"Commands exported: {len(commands)}",
+        f"Memory path: {stats.get('path', 'unavailable')}",
+    ]
+    return "\n".join(lines)
+
+
 def format_command_result(payload: dict[str, Any]) -> str:
     action = payload.get("action", {})
     suggestions = payload.get("suggestions", [])

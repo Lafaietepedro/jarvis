@@ -1,6 +1,8 @@
 import unittest
+import tempfile
+from pathlib import Path
 
-from app.cli import chat_loop, handle_chat_action, parse_chat_line, watch_panel
+from app.cli import chat_loop, handle_chat_action, parse_chat_line, watch_panel, write_json_file
 
 
 class FakeClient:
@@ -24,6 +26,12 @@ class FakeClient:
             }
         if path == "/history":
             return {"commands": []}
+        if path == "/history/export":
+            return {
+                "exported_at": "2026-04-15T00:00:00+00:00",
+                "stats": {"path": "/tmp/memory.sqlite"},
+                "commands": [],
+            }
         if path == "/diagnostics":
             return {
                 "platform": {"system": "Linux", "release": "test", "python": "3.11"},
@@ -42,6 +50,8 @@ class FakeClient:
             }
         if path in {"/pause", "/resume", "/start", "/stop"}:
             return {"status": path.lstrip("/")}
+        if path == "/history/clear":
+            return {"status": "done", "deleted": 1 if payload and payload.get("confirm") else 0}
         raise AssertionError(f"Unexpected path: {path}")
 
 
@@ -65,11 +75,35 @@ class CliTest(unittest.TestCase):
         self.assertTrue(payload["private"])
         self.assertEqual(payload["text"], "qual o status")
 
+    def test_parse_chat_line_export_history(self):
+        action, payload = parse_chat_line("/export-history")
+
+        self.assertEqual(action, "export-history")
+        self.assertEqual(payload, {})
+
     def test_handle_chat_action_ask(self):
         output = handle_chat_action(FakeClient(), "ask", {"text": "qual o status"})
 
         self.assertIn("[COMMAND]", output)
         self.assertIn("Estou operacional.", output)
+
+    def test_handle_chat_action_export_history(self):
+        output = handle_chat_action(FakeClient(), "export-history", {})
+
+        self.assertIn("[HISTORY EXPORT]", output)
+
+    def test_handle_chat_action_clear_history(self):
+        output = handle_chat_action(FakeClient(), "clear-history", {})
+
+        self.assertIn('"status": "done"', output)
+
+    def test_write_json_file(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = Path(tempdir) / "history.json"
+
+            write_json_file(str(path), {"ok": True})
+
+            self.assertIn('"ok": true', path.read_text(encoding="utf-8"))
 
     def test_chat_loop_exits(self):
         inputs = iter(["/exit"])

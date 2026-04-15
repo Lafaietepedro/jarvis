@@ -63,9 +63,43 @@ class MemoryStore:
             for row in rows
         ]
 
-    def clear_history(self):
+    def export_history(self, limit: int | None = None) -> dict[str, Any]:
+        query = """
+            SELECT created_at, text, intent, action, response
+            FROM command_history
+            ORDER BY id ASC
+        """
+        params = ()
+        if limit is not None:
+            query += " LIMIT ?"
+            params = (limit,)
+
         with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, params).fetchall()
+
+        commands = [
+            {
+                "created_at": row["created_at"],
+                "text": row["text"],
+                "intent": json.loads(row["intent"]),
+                "action": json.loads(row["action"]),
+                "response": row["response"],
+            }
+            for row in rows
+        ]
+
+        return {
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "stats": self.stats(),
+            "commands": commands,
+        }
+
+    def clear_history(self) -> int:
+        with sqlite3.connect(self.db_path) as conn:
+            total = conn.execute("SELECT COUNT(*) FROM command_history").fetchone()[0]
             conn.execute("DELETE FROM command_history")
+        return total
 
     def stats(self) -> dict[str, Any]:
         with sqlite3.connect(self.db_path) as conn:

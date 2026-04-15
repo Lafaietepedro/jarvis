@@ -14,6 +14,8 @@ PROJECT_STATUS_TERMS = ("status do projeto", "analisar projeto", "analise o proj
 PREPARE_PROJECT_TERMS = ("preparar projeto", "prepara o projeto", "preparar ambiente", "prepara o ambiente")
 RUN_TESTS_TERMS = ("rodar testes", "executar testes", "rode testes", "run tests")
 HISTORY_TERMS = ("historico", "ultimos comandos", "comandos recentes")
+EXPORT_HISTORY_TERMS = ("exportar historico", "exportar histórico", "backup do historico", "backup do histórico")
+CLEAR_HISTORY_TERMS = ("limpar historico", "limpar histórico", "apagar historico", "apagar histórico", "esquecer historico", "esquecer histórico")
 PRIVACY_TERMS = ("privacidade", "painel de privacidade", "permissoes", "permissões", "o que voce sabe sobre mim")
 MEDIA_STATUS_TERMS = ("status da midia", "status de midia", "status do audio", "status do som", "volume atual")
 VOLUME_UP_TERMS = ("aumentar volume", "aumente o volume", "subir volume", "volume up")
@@ -111,6 +113,12 @@ def parse_intent(text: str):
 
     if _has_any(normalized, DIAGNOSTICS_TERMS):
         return {"intent": "diagnostics", "text": text}
+
+    if _has_any(normalized, EXPORT_HISTORY_TERMS):
+        return {"intent": "export_history", "text": text}
+
+    if _has_any(normalized, CLEAR_HISTORY_TERMS):
+        return {"intent": "clear_history", "text": text}
 
     if _has_any(normalized, HISTORY_TERMS):
         return {"intent": "command_history", "text": text}

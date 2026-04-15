@@ -73,6 +73,28 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["skill"], "memory")
         self.assertTrue(result["data"]["commands"])
 
+    def test_export_history_command(self):
+        self.core.execute("qual o status")
+        result = self.core.execute("exportar historico")
+
+        self.assertEqual(result["action"]["skill"], "memory")
+        self.assertEqual(result["action"]["name"], "export_history")
+        self.assertTrue(result["data"]["commands"])
+
+    def test_clear_history_requires_confirmation(self):
+        self.core.execute("qual o status")
+        result = self.core.execute("limpar historico")
+
+        self.assertEqual(result["action"]["status"], "needs_confirmation")
+        self.assertTrue(self.memory.recent_commands())
+
+    def test_clear_history_confirmed(self):
+        self.core.execute("qual o status")
+        result = self.core.execute("limpar historico", options={"confirm_actions": True})
+
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(self.memory.recent_commands(), [])
+
     def test_privacy_panel_reports_memory_and_permissions(self):
         result = self.core.execute("painel de privacidade")
 

@@ -39,6 +39,33 @@ class MemoryStoreTest(unittest.TestCase):
 
         self.assertEqual(self.memory.recent_commands(), [])
 
+    def test_export_history(self):
+        self.memory.record_command(
+            text="qual o status",
+            intent={"intent": "status"},
+            action={"skill": "system", "status": "done"},
+            response="ok",
+        )
+
+        exported = self.memory.export_history()
+
+        self.assertEqual(len(exported["commands"]), 1)
+        self.assertEqual(exported["commands"][0]["text"], "qual o status")
+        self.assertIn("stats", exported)
+
+    def test_clear_history_returns_deleted_count(self):
+        self.memory.record_command(
+            text="qual o status",
+            intent={"intent": "status"},
+            action={"skill": "system", "status": "done"},
+            response="ok",
+        )
+
+        deleted = self.memory.clear_history()
+
+        self.assertEqual(deleted, 1)
+        self.assertEqual(self.memory.recent_commands(), [])
+
 
 if __name__ == "__main__":
     unittest.main()

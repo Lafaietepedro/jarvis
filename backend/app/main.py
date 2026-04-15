@@ -145,6 +145,10 @@ class CommandRequest(BaseModel):
     private: bool = False
 
 
+class ClearHistoryRequest(BaseModel):
+    confirm: bool = False
+
+
 class CommandResponse(BaseModel):
     text: str
     intent: dict[str, Any]
@@ -222,6 +226,19 @@ async def context():
 @app.get('/history')
 async def history(limit: int = 10):
     return {"commands": jarvis.memory_store.recent_commands(limit=limit)}
+
+
+@app.get('/history/export')
+async def export_history(limit: int | None = None):
+    return jarvis.memory_store.export_history(limit=limit)
+
+
+@app.post('/history/clear')
+async def clear_history(payload: ClearHistoryRequest):
+    if not payload.confirm:
+        return {"status": "needs_confirmation", "reason": "confirmation_required"}
+    deleted = jarvis.memory_store.clear_history()
+    return {"status": "done", "deleted": deleted}
 
 
 @app.get('/privacy')

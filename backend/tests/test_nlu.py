@@ -80,6 +80,16 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "command_history")
 
+    def test_export_history(self):
+        intent = parse_intent("exportar historico")
+
+        self.assertEqual(intent["intent"], "export_history")
+
+    def test_clear_history(self):
+        intent = parse_intent("limpar historico")
+
+        self.assertEqual(intent["intent"], "clear_history")
+
     def test_privacy_panel(self):
         intent = parse_intent("painel de privacidade")
 

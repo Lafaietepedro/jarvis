@@ -23,6 +23,7 @@ O nucleo atual ja consegue:
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
 - conversar pelo terminal com `python -m app.cli chat` ou `make chat`;
+- exportar e limpar historico local por API, CLI ou comando natural confirmado;
 - retornar sugestoes de proximas acoes;
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
@@ -146,6 +147,22 @@ Entregas:
 - Prefixos de envio: `/private`, `/confirm` e `/speak`.
 - Testes para parsing de linhas, ações do chat e encerramento do loop.
 
+### Fase 3F - Gestao Auditavel Do Historico
+
+Status: concluida.
+
+Entregas:
+- `MemoryStore.export_history` para gerar exportacao JSON do historico local.
+- `MemoryStore.clear_history` retornando a quantidade de comandos removidos.
+- Endpoint `GET /history/export`.
+- Endpoint `POST /history/clear` com confirmacao obrigatoria.
+- `MemorySkill` com intents `export_history` e `clear_history`.
+- NLU expandido para `exportar historico` e `limpar historico`.
+- CLI `export-history`, com suporte a `--output`.
+- CLI `clear-history --confirm`.
+- Comandos de chat `/export-history` e `/clear-history`.
+- Testes para exportacao, limpeza, intents, core, formatadores e CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -167,7 +184,6 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/command` e `/context`.
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Criar skill de navegador.
-- Criar comandos para limpar/exportar historico local.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
 
@@ -280,7 +296,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-53 tests OK
+65 tests OK
 ```
 
 ```bash

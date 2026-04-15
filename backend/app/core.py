@@ -83,13 +83,15 @@ class JarvisCore:
             "session": self.session_state.snapshot(),
         }
 
-        self.memory_store.record_command(
-            text=text,
-            intent=intent,
-            action=result.action,
-            response=result.response,
-            private=options.get("private", False),
-        )
+        skip_memory_record = result.action.get("skill") == "memory" and result.action.get("name") == "clear_history" and result.action.get("status") == "done"
+        if not skip_memory_record:
+            self.memory_store.record_command(
+                text=text,
+                intent=intent,
+                action=result.action,
+                response=result.response,
+                private=options.get("private", False),
+            )
 
         if options.get("source") == "voice":
             self.session_state.set_listening()

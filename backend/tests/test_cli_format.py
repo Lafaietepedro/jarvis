@@ -2,6 +2,7 @@ import unittest
 
 from app.cli_format import (
     format_command_result,
+    format_history_export,
     format_diagnostics,
     format_history,
     format_panel,
@@ -70,6 +71,18 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[HISTORY]", output)
         self.assertIn("qual o status", output)
+
+    def test_format_history_export(self):
+        output = format_history_export(
+            {
+                "exported_at": "2026-04-15T00:00:00+00:00",
+                "stats": {"path": "/tmp/memory.sqlite"},
+                "commands": [{"text": "qual o status"}],
+            }
+        )
+
+        self.assertIn("[HISTORY EXPORT]", output)
+        self.assertIn("Commands exported: 1", output)
 
     def test_format_empty_history(self):
         output = format_history({"commands": []})

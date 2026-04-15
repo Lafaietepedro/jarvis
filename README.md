@@ -69,6 +69,9 @@ python -m app.cli presence
 python -m app.cli privacy
 python -m app.cli diagnostics
 python -m app.cli history
+python -m app.cli export-history
+python -m app.cli export-history --output history.json
+python -m app.cli clear-history --confirm
 python -m app.cli ask "qual o status"
 python -m app.cli ask "rode make test" --confirm
 python -m app.cli chat
@@ -93,6 +96,8 @@ Endpoints úteis
 - `POST /command` — executa um comando em texto e retorna intent/ação/resposta/sugestões/contexto
 - `GET /context` — mostra o contexto local usado pelo JARVIS
 - `GET /history` — lista comandos recentes registrados localmente
+- `GET /history/export` — exporta histórico local como JSON
+- `POST /history/clear` — limpa histórico local com confirmação
 - `GET /privacy` — mostra painel de privacidade, memória, sessão e permissões
 - `GET /diagnostics` — mostra dependências opcionais e saúde local
 - `POST /recognize_file` — faz upload de WAV e retorna transcrição
@@ -118,6 +123,8 @@ Comandos iniciais
 - `analisar projeto`
 - `rodar testes`
 - `ultimos comandos`
+- `exportar historico`
+- `limpar historico`
 - `painel de privacidade`
 - `diagnostico`
 - `status do audio`
@@ -137,6 +144,20 @@ curl -X POST http://localhost:8000/resume
 Histórico local
 - O histórico de comandos fica em SQLite, por padrão em `.jarvis/memory.sqlite` dentro do workspace.
 - `.jarvis/` é ignorado pelo Git.
+- Para exportar o histórico:
+
+```bash
+cd backend
+python -m app.cli export-history --output history.json
+```
+
+- Para limpar o histórico:
+
+```bash
+cd backend
+python -m app.cli clear-history --confirm
+```
+
 - Para desativar memória:
 
 ```bash
@@ -211,6 +232,8 @@ Dentro do chat:
 /privacy
 /diagnostics
 /history
+/export-history
+/clear-history
 /private qual o status
 /confirm rode make test
 /speak qual o status

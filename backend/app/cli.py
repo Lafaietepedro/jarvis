@@ -12,6 +12,7 @@ from .cli_format import (
     format_command_result,
     format_diagnostics,
     format_history,
+    format_history_export,
     format_panel,
     format_presence,
     format_privacy,
@@ -77,6 +78,13 @@ def build_parser() -> argparse.ArgumentParser:
     history = subparsers.add_parser("history", help="Show recent command history")
     history.add_argument("--limit", type=int, default=10)
 
+    export_history = subparsers.add_parser("export-history", help="Export local command history")
+    export_history.add_argument("--limit", type=int, default=None)
+    export_history.add_argument("--output", help="Write JSON export to a file")
+
+    clear_history = subparsers.add_parser("clear-history", help="Clear local command history")
+    clear_history.add_argument("--confirm", action="store_true", help="Confirm history deletion")
+
     ask = subparsers.add_parser("ask", help="Send a text command")
     ask.add_argument("text", nargs="+")
     ask.add_argument("--confirm", action="store_true", help="Confirm sensitive actions")
@@ -113,6 +121,15 @@ def run(args: argparse.Namespace) -> str:
         return format_diagnostics(client.get("/diagnostics"))
     if command == "history":
         return format_history(client.get("/history", {"limit": args.limit}))
+    if command == "export-history":
+        export = client.get("/history/export", {"limit": args.limit} if args.limit is not None else None)
+        if args.output:
+            write_json_file(args.output, export)
+            return f"History exported to {args.output}"
+        return json.dumps(export, indent=2, ensure_ascii=True)
+    if command == "clear-history":
+        result = client.post("/history/clear", {"confirm": args.confirm})
+        return json.dumps(result, indent=2, ensure_ascii=True)
     if command == "ask":
         payload = {
             "text": " ".join(args.text),
@@ -164,6 +181,8 @@ CHAT_HELP = """Commands:
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
 /history - show recent commands
+/export-history - summarize a local history export
+/clear-history - clear local command history
 /pause - pause JARVIS
 /resume - resume JARVIS
 /start - start voice loop
@@ -182,7 +201,19 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
         return "exit", {}
     if text == "/help":
         return "help", {}
-    if text in {"/panel", "/presence", "/privacy", "/diagnostics", "/history", "/pause", "/resume", "/start", "/stop"}:
+    if text in {
+        "/panel",
+        "/presence",
+        "/privacy",
+        "/diagnostics",
+        "/history",
+        "/export-history",
+        "/clear-history",
+        "/pause",
+        "/resume",
+        "/start",
+        "/stop",
+    }:
         return text.lstrip("/"), {}
 
     options = {"confirm_actions": False, "private": False, "speak_response": False}
@@ -210,6 +241,10 @@ def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str,
         return format_diagnostics(client.get("/diagnostics"))
     if action == "history":
         return format_history(client.get("/history", {"limit": 10}))
+    if action == "export-history":
+        return format_history_export(client.get("/history/export"))
+    if action == "clear-history":
+        return json.dumps(client.post("/history/clear", {"confirm": True}), indent=2, ensure_ascii=True)
     if action in {"pause", "resume", "start", "stop"}:
         return json.dumps(client.post(f"/{action}"), indent=2, ensure_ascii=True)
     if action == "ask":
@@ -236,6 +271,12 @@ def chat_loop(
         output = handle_chat_action(client, action, payload)
         if output:
             output_func(output)
+
+
+def write_json_file(path: str, payload: dict[str, Any]):
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(payload, file, indent=2, ensure_ascii=True)
+        file.write("\n")
 
 
 def main(argv: list[str] | None = None) -> int:
