@@ -13,6 +13,10 @@ panel:
 ask:
 	cd backend && python -m app.cli ask "$(TEXT)"
 
+.PHONY: chat
+chat:
+	cd backend && python -m app.cli chat
+
 .PHONY: test
 test:
 	cd backend && python -m unittest discover -s tests

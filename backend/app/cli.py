@@ -83,6 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     ask.add_argument("--private", action="store_true", help="Do not store this command in local history")
     ask.add_argument("--speak", action="store_true", help="Speak the response")
 
+    subparsers.add_parser("chat", help="Start an interactive text session")
     subparsers.add_parser("pause", help="Pause JARVIS session")
     subparsers.add_parser("resume", help="Resume JARVIS session")
     subparsers.add_parser("start", help="Start voice loop")
@@ -120,6 +121,8 @@ def run(args: argparse.Namespace) -> str:
             "speak_response": args.speak,
         }
         return format_command_result(client.post("/command", payload))
+    if command == "chat":
+        return chat_loop(client)
     if command in {"pause", "resume", "start", "stop"}:
         return json.dumps(client.post(f"/{command}"), indent=2, ensure_ascii=True)
 
@@ -151,6 +154,88 @@ def watch_panel(client: JarvisHttpClient, interval: float, iterations: int = 0) 
             time.sleep(interval)
     except KeyboardInterrupt:
         return "Stopped."
+
+
+CHAT_HELP = """Commands:
+/help - show this help
+/exit - leave chat
+/panel - show local panel
+/presence - show presence
+/privacy - show privacy panel
+/diagnostics - show local diagnostics
+/history - show recent commands
+/pause - pause JARVIS
+/resume - resume JARVIS
+/start - start voice loop
+/stop - stop voice loop
+/private <text> - send without storing history
+/confirm <text> - confirm sensitive action
+/speak <text> - speak the response
+"""
+
+
+def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
+    text = line.strip()
+    if not text:
+        return "empty", {}
+    if text in {"/exit", "/quit"}:
+        return "exit", {}
+    if text == "/help":
+        return "help", {}
+    if text in {"/panel", "/presence", "/privacy", "/diagnostics", "/history", "/pause", "/resume", "/start", "/stop"}:
+        return text.lstrip("/"), {}
+
+    options = {"confirm_actions": False, "private": False, "speak_response": False}
+    for prefix, key in (("/private ", "private"), ("/confirm ", "confirm_actions"), ("/speak ", "speak_response")):
+        if text.startswith(prefix):
+            options[key] = True
+            text = text[len(prefix):].strip()
+            break
+
+    return "ask", {"text": text, **options}
+
+
+def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str, Any]) -> str:
+    if action == "empty":
+        return ""
+    if action == "help":
+        return CHAT_HELP
+    if action == "panel":
+        return fetch_panel(client)
+    if action == "presence":
+        return format_presence(client.get("/presence"))
+    if action == "privacy":
+        return format_privacy(client.get("/privacy"))
+    if action == "diagnostics":
+        return format_diagnostics(client.get("/diagnostics"))
+    if action == "history":
+        return format_history(client.get("/history", {"limit": 10}))
+    if action in {"pause", "resume", "start", "stop"}:
+        return json.dumps(client.post(f"/{action}"), indent=2, ensure_ascii=True)
+    if action == "ask":
+        return format_command_result(client.post("/command", payload))
+    raise JarvisCliError(f"Unknown chat action: {action}")
+
+
+def chat_loop(
+    client: JarvisHttpClient,
+    input_func=input,
+    output_func=print,
+) -> str:
+    output_func("JARVIS chat active. Type /help for commands, /exit to leave.")
+    while True:
+        try:
+            line = input_func("jarvis> ")
+        except EOFError:
+            return "Chat closed."
+
+        action, payload = parse_chat_line(line)
+        if action == "exit":
+            return "Chat closed."
+
+        output = handle_chat_action(client, action, payload)
+        if output:
+            output_func(output)
 
 
 def main(argv: list[str] | None = None) -> int:

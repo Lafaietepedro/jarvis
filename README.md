@@ -14,6 +14,7 @@ Visão rápida
 - Painel de privacidade e permissões
 - CLI local para painel, histórico e comandos
 - Diagnóstico local de dependências opcionais
+- Chat interativo no terminal
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -70,6 +71,7 @@ python -m app.cli diagnostics
 python -m app.cli history
 python -m app.cli ask "qual o status"
 python -m app.cli ask "rode make test" --confirm
+python -m app.cli chat
 python -m app.cli pause
 python -m app.cli resume
 ```
@@ -195,6 +197,26 @@ cd backend
 python -m app.cli watch
 ```
 
+Chat interativo:
+
+```bash
+make chat
+```
+
+Dentro do chat:
+
+```text
+/help
+/panel
+/privacy
+/diagnostics
+/history
+/private qual o status
+/confirm rode make test
+/speak qual o status
+/exit
+```
+
 Diagnóstico local:
 
 ```bash
@@ -216,7 +238,7 @@ Notas
 Roadmap curto
 - Expandir skills locais: navegador, IDE e automações.
 - Evoluir memória local e painel de privacidade.
-- Evoluir a interface CLI para comandos interativos.
+- Evoluir a interface CLI para comandos interativos mais ricos.
 - Melhorar voz 24/7 com wake-word e VAD local.
 - Adicionar companion mobile para comandos, notificações e confirmação de ações.
 - Reintroduzir casa conectada via Home Assistant/MQTT como skill opcional.

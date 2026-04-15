@@ -22,6 +22,7 @@ O nucleo atual ja consegue:
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
+- conversar pelo terminal com `python -m app.cli chat` ou `make chat`;
 - retornar sugestoes de proximas acoes;
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
@@ -134,6 +135,17 @@ Entregas:
 - O painel CLI agora inclui diagnostico local.
 - Testes de NLU, core, formatadores e watch.
 
+### Fase 3E - Chat Interativo No CLI
+
+Status: concluida.
+
+Entregas:
+- CLI `chat` para conversar em loop pelo terminal.
+- Target `make chat`.
+- Comandos locais no chat: `/help`, `/panel`, `/presence`, `/privacy`, `/diagnostics`, `/history`, `/pause`, `/resume`, `/start`, `/stop` e `/exit`.
+- Prefixos de envio: `/private`, `/confirm` e `/speak`.
+- Testes para parsing de linhas, ações do chat e encerramento do loop.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -156,7 +168,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Criar skill de navegador.
 - Criar comandos para limpar/exportar historico local.
-- Criar modo interativo no CLI para conversar em loop.
+- Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
 
 ## Fases Futuras Planejadas
@@ -268,7 +280,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-49 tests OK
+53 tests OK
 ```
 
 ```bash
