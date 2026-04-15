@@ -116,6 +116,22 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["action"]["reason"], "media_actions_disabled")
 
+    def test_browser_search_is_blocked_by_default(self):
+        result = self.core.execute("pesquisar por fastapi")
+
+        self.assertEqual(result["action"]["skill"], "browser")
+        self.assertEqual(result["action"]["name"], "search")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["action"]["reason"], "browser_actions_disabled")
+
+    def test_browser_open_url_is_blocked_by_default(self):
+        result = self.core.execute("abrir site example.com")
+
+        self.assertEqual(result["action"]["skill"], "browser")
+        self.assertEqual(result["action"]["name"], "open_url")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["action"]["url"], "https://example.com")
+
 
 if __name__ == "__main__":
     unittest.main()

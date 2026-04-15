@@ -15,6 +15,7 @@ Visão rápida
 - CLI local para painel, histórico e comandos
 - Diagnóstico local de dependências opcionais
 - Chat interativo no terminal
+- Skill inicial de navegador/pesquisa
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -127,6 +128,8 @@ Comandos iniciais
 - `limpar historico`
 - `painel de privacidade`
 - `diagnostico`
+- `pesquisar por python fastapi`
+- `abrir site example.com`
 - `status do audio`
 - `aumentar volume`
 - `diminuir volume`
@@ -177,6 +180,12 @@ Permissões
 
 ```bash
 export JARVIS_ENABLE_DESKTOP_ACTIONS=1
+```
+
+- Ações de navegador ficam bloqueadas por padrão. Para permitir abertura de URL/pesquisa:
+
+```bash
+export JARVIS_ENABLE_BROWSER_ACTIONS=1
 ```
 
 - Comandos de shell exigem `confirm_actions=true` no request e ainda ficam bloqueados por padrão. Para permitir execução real:
@@ -259,7 +268,8 @@ Notas
 - Home Assistant fica como skill futura/opcional. O foco atual é o assistente local do computador.
 
 Roadmap curto
-- Expandir skills locais: navegador, IDE e automações.
+- Expandir skills locais: IDE e automações.
+- Evoluir a skill de navegador com leitura autorizada de abas/bookmarks no futuro.
 - Evoluir memória local e painel de privacidade.
 - Evoluir a interface CLI para comandos interativos mais ricos.
 - Melhorar voz 24/7 com wake-word e VAD local.

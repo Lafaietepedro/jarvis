@@ -26,6 +26,7 @@ def build_suggestions(intent: dict[str, Any], context: dict[str, Any], action: d
         suggestions.append("verificar testes do backend")
 
     suggestions.append("ver ultimos comandos")
+    suggestions.append("pesquisar documentacao do projeto")
     suggestions.append("explicar o que voce pode controlar neste computador")
     return _unique(suggestions)[:5]
 

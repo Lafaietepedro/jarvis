@@ -16,6 +16,7 @@ class PrivacySkill(BaseSkill):
         session = session_state.snapshot() if session_state else {}
         permissions = {
             "cloud_enabled": context["privacy"]["cloud_enabled"],
+            "browser_actions_enabled": context["privacy"].get("browser_actions_enabled", False),
             "desktop_actions_enabled": context["privacy"]["desktop_actions_enabled"],
             "shell_enabled": context["privacy"]["shell_enabled"],
             "media_actions_enabled": context["privacy"].get("media_actions_enabled", False),

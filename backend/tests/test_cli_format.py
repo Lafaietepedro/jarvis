@@ -25,6 +25,7 @@ class CliFormatTest(unittest.TestCase):
             "data": {
                 "permissions": {
                     "cloud_enabled": False,
+                    "browser_actions_enabled": False,
                     "desktop_actions_enabled": False,
                     "shell_enabled": False,
                     "media_actions_enabled": False,
@@ -65,6 +66,7 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[PRIVACY]", output)
         self.assertIn("Commands recorded: 2", output)
+        self.assertIn("Browser actions: False", output)
 
     def test_format_history(self):
         output = format_history(self.history)

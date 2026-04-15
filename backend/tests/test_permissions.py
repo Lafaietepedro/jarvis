@@ -56,6 +56,18 @@ class PermissionPolicyTest(unittest.TestCase):
 
         self.assertTrue(decision.allowed)
 
+    def test_browser_actions_are_disabled_by_default(self):
+        decision = self.policy.evaluate("browser", "search", {"query": "jarvis"}, {})
+
+        self.assertFalse(decision.allowed)
+        self.assertEqual(decision.reason, "browser_actions_disabled")
+
+    def test_browser_actions_can_be_enabled(self):
+        with patch.dict(os.environ, {"JARVIS_ENABLE_BROWSER_ACTIONS": "1"}):
+            decision = self.policy.evaluate("browser", "search", {"query": "jarvis"}, {})
+
+        self.assertTrue(decision.allowed)
+
 
 if __name__ == "__main__":
     unittest.main()

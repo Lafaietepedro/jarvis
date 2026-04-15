@@ -25,6 +25,8 @@ UNMUTE_TERMS = ("desmutar", "reativar audio", "ativar audio", "unmute")
 PLAY_PAUSE_TERMS = ("pausar musica", "pausar midia", "continuar musica", "tocar musica", "play pause")
 NEXT_TRACK_TERMS = ("proxima musica", "proxima faixa", "avancar faixa", "next track")
 PREVIOUS_TRACK_TERMS = ("musica anterior", "faixa anterior", "voltar faixa", "previous track")
+WEB_SEARCH_TERMS = ("pesquisar", "pesquise", "buscar", "busque", "procurar", "procure", "search")
+OPEN_URL_TERMS = ("abrir site", "abra o site", "abrir url", "abra a url", "abrir link", "abra o link")
 OPEN_APP_TERMS = ("abrir", "abra", "iniciar", "start", "open")
 RUN_COMMAND_TERMS = ("rodar", "rode", "executar", "execute", "run")
 FILLER_TERMS = (
@@ -100,6 +102,25 @@ def _extract_command(text: str) -> str | None:
     return command or None
 
 
+def _extract_web_query(text: str) -> str | None:
+    match = re.search(r"\b(?:pesquisar|pesquise|buscar|busque|procurar|procure|search)\b\s+(?:por|sobre|for)?\s*(.+)", text)
+    if not match:
+        return None
+    query = _strip_fillers(match.group(1))
+    return query or None
+
+
+def _extract_url(text: str) -> str | None:
+    match = re.search(r"\b(?:abrir site|abra o site|abrir url|abra a url|abrir link|abra o link)\b\s+(.+)", text)
+    if match:
+        return _strip_fillers(match.group(1))
+
+    url_match = re.search(r"\b((?:https?://)?[a-z0-9.-]+\.[a-z]{2,}(?:/[^\s]*)?)\b", text)
+    if url_match:
+        return url_match.group(1)
+    return None
+
+
 def parse_intent(text: str):
     if not text:
         return {"intent": "none", "text": text}
@@ -149,6 +170,12 @@ def parse_intent(text: str):
 
     if _has_any(normalized, PLAY_PAUSE_TERMS):
         return {"intent": "media_control", "media_action": "play_pause", "text": text}
+
+    if _has_any(normalized, OPEN_URL_TERMS):
+        return {"intent": "open_url", "url": _extract_url(normalized), "text": text}
+
+    if _has_any(normalized, WEB_SEARCH_TERMS):
+        return {"intent": "web_search", "query": _extract_web_query(normalized), "text": text}
 
     if _has_any(normalized, PROJECT_STATUS_TERMS):
         return {"intent": "project_status", "text": text}

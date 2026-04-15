@@ -26,6 +26,7 @@ def format_privacy(payload: dict[str, Any]) -> str:
     lines = [
         "[PRIVACY]",
         f"Cloud enabled: {permissions.get('cloud_enabled', False)}",
+        f"Browser actions: {permissions.get('browser_actions_enabled', False)}",
         f"Desktop actions: {permissions.get('desktop_actions_enabled', False)}",
         f"Shell actions: {permissions.get('shell_enabled', False)}",
         f"Media actions: {permissions.get('media_actions_enabled', False)}",

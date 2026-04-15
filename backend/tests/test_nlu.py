@@ -107,6 +107,18 @@ class ParseIntentTest(unittest.TestCase):
         self.assertEqual(intent["intent"], "media_control")
         self.assertEqual(intent["media_action"], "status")
 
+    def test_web_search(self):
+        intent = parse_intent("pesquisar por python fastapi")
+
+        self.assertEqual(intent["intent"], "web_search")
+        self.assertEqual(intent["query"], "python fastapi")
+
+    def test_open_url(self):
+        intent = parse_intent("abrir site example.com")
+
+        self.assertEqual(intent["intent"], "open_url")
+        self.assertEqual(intent["url"], "example.com")
+
     def test_unknown(self):
         intent = parse_intent("toque minha playlist")
 

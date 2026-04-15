@@ -19,6 +19,7 @@ O nucleo atual ja consegue:
 - coletar contexto local do projeto;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
+- preparar abertura de URL e pesquisa web com permissao explicita;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -163,6 +164,19 @@ Entregas:
 - Comandos de chat `/export-history` e `/clear-history`.
 - Testes para exportacao, limpeza, intents, core, formatadores e CLI.
 
+### Fase 3G - Navegador Seguro Inicial
+
+Status: concluida.
+
+Entregas:
+- `BrowserSkill` para abrir URL e preparar pesquisas web.
+- Normalizacao segura de URL com suporte apenas a HTTP/HTTPS.
+- Politica `JARVIS_ENABLE_BROWSER_ACTIONS` para bloquear abertura de navegador por padrao.
+- Flag `browser_actions_enabled` no contexto local e painel de privacidade.
+- NLU expandido para `pesquisar por ...` e `abrir site ...`.
+- Sugestoes contextuais incluindo pesquisa de documentacao.
+- Testes para permissoes, NLU, core e normalizacao de URL.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -174,7 +188,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar skills reais para navegador, IDE e automacoes.
+- Criar skills reais para IDE e automacoes.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
 - Melhorar sugestoes com base em historico recente.
@@ -183,7 +197,6 @@ Prioridades atuais:
 Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/command` e `/context`.
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
-- Criar skill de navegador.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
 
@@ -296,7 +309,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-65 tests OK
+74 tests OK
 ```
 
 ```bash

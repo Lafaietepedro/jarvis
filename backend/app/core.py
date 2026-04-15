@@ -8,6 +8,7 @@ from .permissions import PermissionPolicy
 from .session import SessionState
 from .skills import (
     ComputerSkill,
+    BrowserSkill,
     DevSkill,
     FileSkill,
     MediaSkill,
@@ -40,6 +41,7 @@ class JarvisCore:
             MemorySkill(),
             PrivacySkill(),
             MediaSkill(),
+            BrowserSkill(),
             ComputerSkill(),
             ShellSkill(),
         ]

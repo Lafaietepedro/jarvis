@@ -1,4 +1,5 @@
 from .base import BaseSkill, SkillResult
+from .browser import BrowserSkill
 from .computer import ComputerSkill
 from .dev import DevSkill
 from .files import FileSkill
@@ -10,6 +11,7 @@ from .system import SystemSkill
 
 __all__ = [
     "BaseSkill",
+    "BrowserSkill",
     "ComputerSkill",
     "DevSkill",
     "FileSkill",
