@@ -1,27 +1,191 @@
 import re
+import unicodedata
 
-# Regra simples de NLU baseada em palavras-chave
+
+LIGHT_TERMS = ("luz", "luzes", "lampada", "lampadas", "iluminacao", "light", "lights")
+TURN_ON_TERMS = ("ligar", "ligue", "liga", "acender", "acenda", "turn on")
+TURN_OFF_TERMS = ("desligar", "desliga", "apagar", "apague", "turn off")
+STATUS_TERMS = ("status", "estado", "esta", "operacional")
+LIST_FILES_TERMS = ("listar arquivos", "mostrar arquivos", "ver arquivos", "ls")
+WHERE_TERMS = ("onde estou", "onde estamos", "diretorio atual", "pasta atual", "pwd")
+CAPABILITY_TERMS = ("o que voce pode controlar", "o que voce faz", "capacidades", "comandos disponiveis")
+DIAGNOSTICS_TERMS = ("diagnostico", "diagnóstico", "saude do sistema", "saúde do sistema", "dependencias", "dependências")
+PROJECT_STATUS_TERMS = ("status do projeto", "analisar projeto", "analise o projeto", "como esta o projeto")
+PREPARE_PROJECT_TERMS = ("preparar projeto", "prepara o projeto", "preparar ambiente", "prepara o ambiente")
+RUN_TESTS_TERMS = ("rodar testes", "executar testes", "rode testes", "run tests")
+HISTORY_TERMS = ("historico", "ultimos comandos", "comandos recentes")
+PRIVACY_TERMS = ("privacidade", "painel de privacidade", "permissoes", "permissões", "o que voce sabe sobre mim")
+MEDIA_STATUS_TERMS = ("status da midia", "status de midia", "status do audio", "status do som", "volume atual")
+VOLUME_UP_TERMS = ("aumentar volume", "aumente o volume", "subir volume", "volume up")
+VOLUME_DOWN_TERMS = ("diminuir volume", "diminua o volume", "baixar volume", "volume down")
+MUTE_TERMS = ("mutar", "silenciar", "mute")
+UNMUTE_TERMS = ("desmutar", "reativar audio", "ativar audio", "unmute")
+PLAY_PAUSE_TERMS = ("pausar musica", "pausar midia", "continuar musica", "tocar musica", "play pause")
+NEXT_TRACK_TERMS = ("proxima musica", "proxima faixa", "avancar faixa", "next track")
+PREVIOUS_TRACK_TERMS = ("musica anterior", "faixa anterior", "voltar faixa", "previous track")
+OPEN_APP_TERMS = ("abrir", "abra", "iniciar", "start", "open")
+RUN_COMMAND_TERMS = ("rodar", "rode", "executar", "execute", "run")
+FILLER_TERMS = (
+    "jarvis",
+    "por favor",
+    "por gentileza",
+    "agora",
+    "pra mim",
+    "para mim",
+    "please",
+)
+
+
+def _normalize(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    return re.sub(r"\s+", " ", text.lower()).strip()
+
+
+def _strip_fillers(text: str) -> str:
+    cleaned = text
+    for filler in FILLER_TERMS:
+        cleaned = re.sub(rf"\b{re.escape(filler)}\b", " ", cleaned)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _has_any(text: str, terms: tuple[str, ...]) -> bool:
+    return any(re.search(rf"\b{re.escape(term)}\b", text) for term in terms)
+
+
+def _detect_light(text: str, action: str | None = None) -> bool:
+    if _has_any(text, LIGHT_TERMS):
+        return True
+    # Em portugues, "acender/apagar a sala" geralmente implica iluminacao.
+    return action in {"turn_on", "turn_off"} and _has_any(text, ("acender", "acenda", "apagar", "apague"))
+
+
+def _extract_area(text: str, has_light: bool) -> str | None:
+    if has_light:
+        pattern = r"\b(?:luz|luzes|lampada|lampadas|iluminacao|light|lights)\b\s*(?:da|do|de|das|dos|no|na|nos|nas)?\s*([a-z0-9 ]+)?"
+        match = re.search(pattern, text)
+        if match:
+            area = (match.group(1) or "").strip()
+            area = re.sub(r"\b(?:da|do|de|das|dos|no|na|nos|nas|a|o|as|os)\b", " ", area)
+            area = _strip_fillers(area)
+            if area and area not in LIGHT_TERMS:
+                return area
+
+    match = re.search(
+        r"\b(?:ligar|ligue|liga|acender|acenda|desligar|desliga|apagar|apague)\b\s*(?:a|o|as|os)?\s*([a-z0-9 ]+)",
+        text,
+    )
+    if match:
+        area = _strip_fillers(match.group(1))
+        if area and not _has_any(area, LIGHT_TERMS):
+            return area
+
+    return None
+
+
+def _extract_open_target(text: str) -> str | None:
+    match = re.search(r"\b(?:abrir|abra|iniciar|start|open)\b\s+(?:o|a|os|as)?\s*([a-z0-9_-]+)", text)
+    if not match:
+        return None
+    return _strip_fillers(match.group(1))
+
+
+def _extract_command(text: str) -> str | None:
+    match = re.search(r"\b(?:rodar|rode|executar|execute|run)\b\s+(.+)", text)
+    if not match:
+        return None
+    command = _strip_fillers(match.group(1))
+    return command or None
+
 
 def parse_intent(text: str):
     if not text:
         return {"intent": "none", "text": text}
-    t = text.lower()
-    # Ligar / acender
-    if any(w in t for w in ["ligar", "acender", "ligue", "liga", "turn on"]):
-        target = None
-        # detectar dispositivo simples
-        if "luz" in t or "luzes" in t:
-            target = "light"
-        m = re.search(r"luz(?:es)? (?:da|do|de|no|na)?\s*(\w+)", t)
-        return {"intent": "turn_on", "device": target, "text": text}
-    # Desligar
-    if any(w in t for w in ["desligar", "apagar", "desliga", "turn off"]):
-        target = None
-        if "luz" in t:
-            target = "light"
-        return {"intent": "turn_off", "device": target, "text": text}
-    # Status
-    if any(w in t for w in ["status", "estado", "está", "esta"]):
+
+    normalized = _strip_fillers(_normalize(text))
+    if not normalized:
+        return {"intent": "none", "text": text}
+
+    if _has_any(normalized, CAPABILITY_TERMS):
+        return {"intent": "capabilities", "text": text}
+
+    if _has_any(normalized, DIAGNOSTICS_TERMS):
+        return {"intent": "diagnostics", "text": text}
+
+    if _has_any(normalized, HISTORY_TERMS):
+        return {"intent": "command_history", "text": text}
+
+    if _has_any(normalized, PRIVACY_TERMS):
+        return {"intent": "privacy_panel", "text": text}
+
+    if _has_any(normalized, MEDIA_STATUS_TERMS):
+        return {"intent": "media_control", "media_action": "status", "text": text}
+
+    if _has_any(normalized, VOLUME_UP_TERMS):
+        return {"intent": "media_control", "media_action": "volume_up", "text": text}
+
+    if _has_any(normalized, VOLUME_DOWN_TERMS):
+        return {"intent": "media_control", "media_action": "volume_down", "text": text}
+
+    if _has_any(normalized, UNMUTE_TERMS):
+        return {"intent": "media_control", "media_action": "unmute", "text": text}
+
+    if _has_any(normalized, MUTE_TERMS):
+        return {"intent": "media_control", "media_action": "mute", "text": text}
+
+    if _has_any(normalized, NEXT_TRACK_TERMS):
+        return {"intent": "media_control", "media_action": "next", "text": text}
+
+    if _has_any(normalized, PREVIOUS_TRACK_TERMS):
+        return {"intent": "media_control", "media_action": "previous", "text": text}
+
+    if _has_any(normalized, PLAY_PAUSE_TERMS):
+        return {"intent": "media_control", "media_action": "play_pause", "text": text}
+
+    if _has_any(normalized, PROJECT_STATUS_TERMS):
+        return {"intent": "project_status", "text": text}
+
+    if _has_any(normalized, PREPARE_PROJECT_TERMS):
+        return {"intent": "prepare_project", "text": text}
+
+    if _has_any(normalized, RUN_TESTS_TERMS):
+        return {"intent": "run_tests", "text": text}
+
+    if _has_any(normalized, LIST_FILES_TERMS):
+        return {"intent": "list_files", "text": text}
+
+    if _has_any(normalized, WHERE_TERMS):
+        return {"intent": "where_am_i", "text": text}
+
+    if _has_any(normalized, RUN_COMMAND_TERMS):
+        return {"intent": "run_command", "command": _extract_command(normalized), "text": text}
+
+    if _has_any(normalized, OPEN_APP_TERMS):
+        return {"intent": "open_app", "target": _extract_open_target(normalized), "text": text}
+
+    if _has_any(normalized, TURN_ON_TERMS):
+        has_light = _detect_light(normalized, "turn_on")
+        area = _extract_area(normalized, has_light)
+        return {
+            "intent": "turn_on",
+            "domain": "light" if has_light else None,
+            "device": "light" if has_light else None,
+            "area": area,
+            "text": text,
+        }
+
+    if _has_any(normalized, TURN_OFF_TERMS):
+        has_light = _detect_light(normalized, "turn_off")
+        area = _extract_area(normalized, has_light)
+        return {
+            "intent": "turn_off",
+            "domain": "light" if has_light else None,
+            "device": "light" if has_light else None,
+            "area": area,
+            "text": text,
+        }
+
+    if _has_any(normalized, STATUS_TERMS):
         return {"intent": "status", "text": text}
-    # Default
+
     return {"intent": "unknown", "text": text}

@@ -2,14 +2,17 @@ import os
 import threading
 import tempfile
 import logging
+from typing import Any
+
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 
 from .asr import ASR
+from .core import JarvisCore
+from .diagnostics import collect_diagnostics
+from .presence import build_greeting, build_presence
 from .wakeword import WakewordSimulator
-from .nlu import parse_intent
 from .tts import speak
-from .homeassistant import HomeAssistantClient
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,38 +21,35 @@ app = FastAPI(title="JARVIS PoC")
 # Componentes
 asr = ASR(model_path=os.environ.get('VOSK_MODEL_PATH'))
 wake = WakewordSimulator()
-ha = HomeAssistantClient()
+jarvis = JarvisCore()
 
 voice_thread = None
 voice_running = False
 
 
+def _speak_async(text: str):
+    threading.Thread(target=speak, args=(text,), daemon=True).start()
+
+
+def execute_command(
+    text: str,
+    speak_response: bool = True,
+    confirm_actions: bool = False,
+    private: bool = False,
+    source: str = "text",
+):
+    result = jarvis.execute(
+        text,
+        options={"confirm_actions": confirm_actions, "private": private, "source": source},
+    )
+    if speak_response:
+        speak(result["response"])
+    return result
+
+
 def handle_command(text: str):
-    logging.info("Texto reconhecido: %s", text)
-    intent = parse_intent(text)
-    logging.info("Intent parsed: %s", intent)
-    # ação simples para exemplo
-    if intent.get('intent') == 'turn_on' and intent.get('device') == 'light':
-        # entity_id default (o usuário deve ajustar)
-        entity = os.environ.get('DEFAULT_LIGHT_ENTITY', 'light.example')
-        ha.turn_on(entity)
-        resp = f"Ligando {entity}"
-        speak(resp)
-        return resp
-    if intent.get('intent') == 'turn_off' and intent.get('device') == 'light':
-        entity = os.environ.get('DEFAULT_LIGHT_ENTITY', 'light.example')
-        ha.turn_off(entity)
-        resp = f"Desligando {entity}"
-        speak(resp)
-        return resp
-    if intent.get('intent') == 'status':
-        resp = "Estou operacional."
-        speak(resp)
-        return resp
-    # fallback
-    resp = "Desculpe, não entendi."
-    speak(resp)
-    return resp
+    result = execute_command(text, speak_response=True, source="voice")
+    return result["response"]
 
 
 def _record_and_process(duration=5):
@@ -78,6 +78,7 @@ def _record_and_process(duration=5):
 
 def _on_wake():
     logging.info('Wakeword acionado — escutando...')
+    jarvis.session_state.set_processing(current_task="voice_command")
     # grava 5s e processa
     _record_and_process(duration=5)
 
@@ -89,12 +90,16 @@ def _voice_loop():
 @app.post('/start')
 async def start_loop():
     global voice_thread, voice_running
+    context = jarvis.context_provider.get_context()
+    greeting = build_greeting(context, mode="voice")
     if voice_running:
-        return {"status": "already_running"}
+        return {"status": "already_running", "greeting": greeting, "voice_listening": True}
     voice_running = True
+    jarvis.session_state.set_listening()
     voice_thread = threading.Thread(target=_voice_loop, daemon=True)
     voice_thread.start()
-    return {"status": "started"}
+    _speak_async(greeting)
+    return {"status": "started", "greeting": greeting, "voice_listening": True}
 
 
 @app.post('/stop')
@@ -104,7 +109,24 @@ async def stop_loop():
         return {"status": "not_running"}
     wake.stop()
     voice_running = False
+    jarvis.session_state.set_active()
     return {"status": "stopped"}
+
+
+@app.post('/pause')
+async def pause():
+    global voice_running
+    if voice_running:
+        wake.stop()
+        voice_running = False
+    jarvis.session_state.set_paused()
+    return {"status": "paused"}
+
+
+@app.post('/resume')
+async def resume():
+    jarvis.session_state.set_active()
+    return {"status": "active"}
 
 
 @app.get('/health')
@@ -114,6 +136,56 @@ async def health():
 
 class UploadResponse(BaseModel):
     text: str
+
+
+class CommandRequest(BaseModel):
+    text: str
+    speak_response: bool = False
+    confirm_actions: bool = False
+    private: bool = False
+
+
+class CommandResponse(BaseModel):
+    text: str
+    intent: dict[str, Any]
+    response: str
+    action: dict[str, Any]
+    suggestions: list[str]
+    context: dict[str, Any]
+    data: dict[str, Any]
+    session: dict[str, Any]
+
+
+class ContextResponse(BaseModel):
+    project: dict[str, Any]
+    privacy: dict[str, Any]
+
+
+class PresenceResponse(BaseModel):
+    status: str
+    name: str
+    mode: str
+    greeting: str
+    voice_listening: bool
+    uptime_seconds: int
+    started_at: str
+    last_activity_at: str
+    current_task: str | None
+    privacy: dict[str, Any]
+    project: dict[str, Any]
+    suggestions: list[str]
+
+
+@app.get('/', response_model=PresenceResponse)
+async def root():
+    context = jarvis.context_provider.get_context()
+    return build_presence(context, session=jarvis.session_state.snapshot(), mode="text")
+
+
+@app.get('/presence', response_model=PresenceResponse)
+async def presence():
+    context = jarvis.context_provider.get_context()
+    return build_presence(context, session=jarvis.session_state.snapshot(), mode="text")
 
 
 @app.post('/recognize_file', response_model=UploadResponse)
@@ -130,6 +202,36 @@ async def recognize_file(file: UploadFile = File(...)):
     except Exception:
         pass
     return {"text": text}
+
+
+@app.post('/command', response_model=CommandResponse)
+async def command(payload: CommandRequest):
+    return execute_command(
+        payload.text,
+        speak_response=payload.speak_response,
+        confirm_actions=payload.confirm_actions,
+        private=payload.private,
+    )
+
+
+@app.get('/context', response_model=ContextResponse)
+async def context():
+    return jarvis.context_provider.get_context()
+
+
+@app.get('/history')
+async def history(limit: int = 10):
+    return {"commands": jarvis.memory_store.recent_commands(limit=limit)}
+
+
+@app.get('/privacy')
+async def privacy():
+    return jarvis.execute("painel de privacidade", options={"private": True})
+
+
+@app.get('/diagnostics')
+async def diagnostics():
+    return collect_diagnostics(jarvis.context_provider.get_context())
 
 
 if __name__ == '__main__':

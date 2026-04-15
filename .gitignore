@@ -6,3 +6,4 @@ models/
 *.pyc
 *.log
 .DS_Store
+.jarvis/

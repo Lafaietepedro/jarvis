@@ -1,0 +1,282 @@
+# J.A.R.V.I.S. Development Log
+
+Este documento acompanha o estado do desenvolvimento do J.A.R.V.I.S. Ele deve ser atualizado a cada avanço relevante para manter claro o que ja foi entregue, o que esta em desenvolvimento ativo e o que esta planejado.
+
+## Estado Atual
+
+O projeto esta na fase de fundacao do assistente local-first. O foco atual deixou de ser automacao residencial e passou a ser um assistente privado para controlar o computador por comandos de texto e, depois, voz.
+
+O nucleo atual ja consegue:
+- receber comandos por `POST /command`;
+- indicar presenca ativa por `GET /` e `GET /presence`;
+- saudar o usuario ao iniciar o modo voz por `POST /start`;
+- alternar estado de sessao por `POST /pause` e `POST /resume`;
+- registrar historico local em SQLite, com modo privado por comando;
+- interpretar intencoes simples com NLU rule-based;
+- rotear intencoes para skills locais;
+- consultar politica central de permissoes antes de acoes sensiveis;
+- exibir painel de privacidade por `GET /privacy` ou comando em linguagem natural;
+- coletar contexto local do projeto;
+- analisar capacidades de projeto com uma skill dev inicial;
+- consultar status de midia/audio e preparar controles de volume/reproducao;
+- exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
+- exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
+- atualizar painel vivo por `python -m app.cli watch`;
+- retornar sugestoes de proximas acoes;
+- expor `GET /context` para auditar o contexto usado;
+- expor `GET /history` para consultar comandos recentes;
+- manter acoes sensiveis bloqueadas por padrao;
+- executar testes automatizados do core e do NLU.
+
+## Fases Completadas
+
+### Fase 0 - PoC Inicial Offline-First
+
+Status: concluida.
+
+Entregas:
+- API FastAPI inicial.
+- Healthcheck em `GET /health`.
+- Fluxo basico de wake/listen com wake-word simulado.
+- ASR local via Vosk, dependente de `VOSK_MODEL_PATH`.
+- TTS via `pyttsx3` com fallback para `espeak`.
+- Endpoint `POST /recognize_file` para transcrever WAV.
+- Integracao inicial com Home Assistant como prova de conceito.
+
+Observacao:
+- Home Assistant foi rebaixado para integracao futura/opcional. O foco principal agora e controle local do computador.
+
+### Fase 1 - Comando Por Texto E NLU Melhorado
+
+Status: concluida.
+
+Entregas:
+- Endpoint `POST /command`.
+- Executor de comando reutilizavel pelo fluxo de voz.
+- NLU com normalizacao de acentos.
+- Deteccao de comandos como status, ligar/desligar luz e ambientes.
+- Testes unitarios iniciais do NLU.
+- Correcao para evitar confundir `desligar` com `ligar`.
+
+### Fase 2 - Nucleo Local-First E Skills
+
+Status: concluida.
+
+Entregas:
+- `JarvisCore` como orquestrador central.
+- Sistema inicial de skills em `backend/app/skills/`.
+- `SystemSkill` para status e capacidades.
+- `FileSkill` para listar arquivos e informar diretorio atual.
+- `ComputerSkill` para preparar abertura de apps conhecidos.
+- `ShellSkill` para preparar comandos de shell com confirmacao.
+- `LocalContextProvider` para detectar projeto, marcadores e flags de privacidade.
+- Motor simples de sugestoes contextuais.
+- Endpoint `GET /context`.
+- Resposta do `/command` expandida com `intent`, `action`, `suggestions`, `context` e `data`.
+- Politica conservadora: desktop actions e shell desativados por padrao.
+- Testes automatizados do core.
+
+### Fase 3A - Sessao, Permissoes E Memoria Local
+
+Status: concluida.
+
+Entregas:
+- `SessionState` central para estados `active`, `listening`, `processing` e `paused`.
+- Endpoints `POST /pause` e `POST /resume`.
+- `PermissionPolicy` centralizada para shell e acoes de desktop.
+- `MemoryStore` local em SQLite.
+- Historico local por `GET /history`.
+- Flag `private` no `POST /command` para nao registrar comandos sensiveis.
+- `.jarvis/` ignorado pelo Git para guardar estado local.
+- `MemorySkill` para consultar ultimos comandos por linguagem natural.
+- `DevSkill` para analisar projeto, preparar ambiente e sugerir testes.
+- NLU expandido para `analisar projeto`, `rodar testes`, `ultimos comandos` e comandos de preparacao.
+- Testes de memoria, permissoes, sessao e dev/core.
+
+### Fase 3B - Privacidade Auditavel E Midia Inicial
+
+Status: concluida.
+
+Entregas:
+- `PrivacySkill` com painel textual de privacidade, memoria, sessao e permissoes.
+- Endpoint `GET /privacy`.
+- Estatisticas de memoria local em `MemoryStore`.
+- Flag `media_actions_enabled` no contexto local.
+- `MediaSkill` para status de audio/player e acoes de volume/reproducao.
+- Politica `JARVIS_ENABLE_MEDIA_ACTIONS` para bloquear mudancas de midia por padrao.
+- NLU expandido para `painel de privacidade`, `status do audio`, `aumentar volume`, `diminuir volume`, `pausar musica` e comandos relacionados.
+- Testes para painel de privacidade, permissoes de midia e intents de midia.
+
+### Fase 3C - CLI Local De Operacao
+
+Status: concluida.
+
+Entregas:
+- Modulo `app.cli` para operar o J.A.R.V.I.S. via terminal.
+- Comandos CLI: `panel`, `presence`, `privacy`, `history`, `ask`, `pause`, `resume`, `start` e `stop`.
+- Formatadores testaveis em `app.cli_format`.
+- Target `make panel`.
+- Target `make ask TEXT="..."`.
+- Suporte a `JARVIS_URL` para apontar o CLI para outra instancia local.
+- Testes dos formatadores do painel.
+
+### Fase 3D - Painel Vivo E Diagnostico Local
+
+Status: concluida.
+
+Entregas:
+- Modulo `diagnostics` para mapear sistema, Python, Vosk e binarios opcionais.
+- Endpoint `GET /diagnostics`.
+- Intent `diagnostics` para comandos como `diagnostico` e `saude do sistema`.
+- `SystemSkill` respondendo diagnostico local.
+- CLI `diagnostics`.
+- CLI `watch` para atualizar o painel em tempo real.
+- O painel CLI agora inclui diagnostico local.
+- Testes de NLU, core, formatadores e watch.
+
+## Em Desenvolvimento Ativo
+
+### Fase 3 - Assistente Local Do Computador
+
+Status: em desenvolvimento ativo.
+
+Objetivo:
+- Tornar o J.A.R.V.I.S. util no computador antes de expandir para celular e casa.
+
+Prioridades atuais:
+- Expandir o NLU para mais comandos locais.
+- Criar skills reais para navegador, IDE e automacoes.
+- Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
+- Melhorar a politica de permissoes por risco e por tipo de alvo.
+- Melhorar sugestoes com base em historico recente.
+- Tornar a memoria local mais auditavel e editavel.
+
+Primeiras tarefas recomendadas:
+- Adicionar testes de contrato para `/command` e `/context`.
+- Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
+- Criar skill de navegador.
+- Criar comandos para limpar/exportar historico local.
+- Criar modo interativo no CLI para conversar em loop.
+- Criar comandos para instalar/validar dependencias opcionais.
+
+## Fases Futuras Planejadas
+
+### Fase 4 - Voz Local 24/7 Com Privacidade
+
+Status: planejada.
+
+Objetivo:
+- Ativar experiencia de voz continua sem comprometer privacidade.
+
+Planejado:
+- Wake-word local real.
+- VAD local para detectar fala.
+- Ring buffer em memoria, sem persistir audio por padrao.
+- Comandos de privacidade: `pare de ouvir`, `modo privado`, `esqueca isso`.
+- Indicador claro de estado: ouvindo, processando, pausado.
+- Testes de fluxo sem depender de microfone real.
+
+### Fase 5 - Proatividade E Memoria
+
+Status: planejada.
+
+Objetivo:
+- Transformar sugestoes simples em comportamento contextual mais inteligente.
+
+Planejado:
+- Memoria local de preferencias.
+- Historico recente de comandos e resultados.
+- Sugestoes baseadas em padroes do usuario.
+- Painel "o que o J.A.R.V.I.S. sabe sobre mim".
+- Modo privado sem gravar memoria.
+- Explicacao de por que uma sugestao foi feita.
+
+### Fase 6 - Interface Desktop
+
+Status: planejada.
+
+Objetivo:
+- Tirar o assistente do `curl` e criar uma experiencia de uso real.
+
+Planejado:
+- Overlay local tipo command palette.
+- Atalho global.
+- Tray indicator.
+- Indicador visual de presenca do J.A.R.V.I.S.
+- Historico de comandos.
+- Confirmacoes visuais para acoes sensiveis.
+- Painel de privacidade e permissoes.
+
+### Fase 7 - Companion Mobile
+
+Status: planejada.
+
+Objetivo:
+- Expandir o J.A.R.V.I.S. para celular sem duplicar o core.
+
+Planejado:
+- App companion Android primeiro.
+- Celular como microfone remoto.
+- Notificacoes e confirmacoes de acoes.
+- Comandos remotos para o core no computador.
+- Autenticacao local segura.
+- iOS via app/Shortcuts quando fizer sentido.
+
+### Fase 8 - Casa Conectada
+
+Status: planejada.
+
+Objetivo:
+- Reintroduzir automacao residencial como skill opcional.
+
+Planejado:
+- Skill Home Assistant.
+- Skill MQTT.
+- Rotinas de casa.
+- Permissoes por dispositivo/ambiente.
+- Suporte futuro a Matter/Zigbee/Z-Wave via hubs existentes.
+
+### Fase 9 - LLM Local E Agentes Especializados
+
+Status: planejada.
+
+Objetivo:
+- Evoluir de regras simples para raciocinio local/hibrido com controle de privacidade.
+
+Planejado:
+- Classificacao de intencao com modelo local.
+- Planejamento multi-step com confirmacoes.
+- Agentes especializados: dev, navegador, arquivos, agenda e automacao.
+- Modo hibrido opcional com nuvem apenas quando autorizado.
+
+## Decisoes De Produto
+
+- Privacidade e requisito central, nao opcional.
+- O core deve chamar skills; ele nao deve virar uma classe gigante que controla tudo.
+- Sugestoes podem ser proativas, mas execucoes sensiveis devem exigir confirmacao.
+- Acoes destrutivas devem ser bloqueadas ate existir politica de permissao robusta.
+- Celular e casa sao expansoes; o primeiro produto utilizavel deve ser o assistente local do computador.
+
+## Verificacao Atual
+
+Ultima verificacao registrada:
+
+```bash
+make test
+```
+
+Resultado esperado no estado atual:
+
+```text
+49 tests OK
+```
+
+```bash
+python -m compileall backend/app
+```
+
+Resultado esperado:
+
+```text
+sem erros de compilacao
+```
