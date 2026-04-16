@@ -15,6 +15,14 @@ class FakeClient:
                 "greeting": "JARVIS ativo.",
                 "project": {"name": "jarvis", "path": "/tmp/jarvis"},
                 "privacy": {"cloud_enabled": False, "memory_enabled": True},
+                "automation_checkpoints": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes do projeto",
+                        "plan": "project_checkup",
+                        "reason": "confirmation_required",
+                    }
+                ],
             }
         if path == "/privacy":
             return {
@@ -81,6 +89,12 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "export-history")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_checkpoints(self):
+        action, payload = parse_chat_line("/checkpoints")
+
+        self.assertEqual(action, "checkpoints")
+        self.assertEqual(payload, {})
+
     def test_handle_chat_action_ask(self):
         output = handle_chat_action(FakeClient(), "ask", {"text": "qual o status"})
 
@@ -91,6 +105,12 @@ class CliTest(unittest.TestCase):
         output = handle_chat_action(FakeClient(), "export-history", {})
 
         self.assertIn("[HISTORY EXPORT]", output)
+
+    def test_handle_chat_action_checkpoints(self):
+        output = handle_chat_action(FakeClient(), "checkpoints", {})
+
+        self.assertIn("[CHECKPOINTS]", output)
+        self.assertIn("Rodar testes do projeto", output)
 
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})

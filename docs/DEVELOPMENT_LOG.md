@@ -24,6 +24,7 @@ O nucleo atual ja consegue:
 - montar planos seguros de automacao com revisao manual obrigatoria;
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
+- listar checkpoints pendentes por comando natural, CLI, chat e painel local;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -235,6 +236,21 @@ Entregas:
 - Checkpoints bloqueados permanecem pendentes para nova tentativa depois de ajustar permissoes.
 - Testes cobrindo sessao, NLU, core e delegacao de checkpoint.
 
+### Fase 3L - Visibilidade De Checkpoints No CLI
+
+Status: concluida.
+
+Entregas:
+- `GET /presence` agora inclui `automation_checkpoints`.
+- Painel CLI mostra contagem de checkpoints pendentes.
+- Novo formatador `[CHECKPOINTS]` para listar checkpoint, plano, motivo e comando de confirmacao.
+- Novo comando `python -m app.cli checkpoints`.
+- Novo target `make checkpoints`.
+- Chat interativo ganhou `/checkpoints`.
+- NLU expandido para `checkpoints pendentes`, `listar checkpoints` e termos relacionados.
+- `AutomationSkill` responde `pending_checkpoints` com sugestoes de confirmacao.
+- Testes cobrindo presença, CLI, formatadores, NLU e core.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -246,7 +262,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar painel/CLI mais claro para listar e confirmar checkpoints pendentes.
+- Criar confirmacao de checkpoints mais ergonomica no chat/CLI.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
@@ -258,7 +274,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar comando CLI dedicado para listar checkpoints pendentes.
+- Criar comando CLI dedicado para confirmar checkpoint por id.
 
 ## Fases Futuras Planejadas
 
@@ -369,7 +385,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-98 tests OK
+104 tests OK
 ```
 
 ```bash

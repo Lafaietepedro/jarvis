@@ -126,6 +126,11 @@ class ParseIntentTest(unittest.TestCase):
         self.assertEqual(intent["intent"], "confirm_checkpoint")
         self.assertEqual(intent["checkpoint_id"], 2)
 
+    def test_pending_checkpoints(self):
+        intent = parse_intent("checkpoints pendentes")
+
+        self.assertEqual(intent["intent"], "pending_checkpoints")
+
     def test_privacy_panel(self):
         intent = parse_intent("painel de privacidade")
 

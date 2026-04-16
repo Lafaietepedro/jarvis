@@ -27,6 +27,14 @@ class PresenceTest(unittest.TestCase):
             "last_activity_at": "2026-04-15T00:00:00+00:00",
             "uptime_seconds": 10,
             "current_task": "voice",
+            "automation_checkpoints": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "reason": "confirmation_required",
+                }
+            ],
         }
 
     def test_text_greeting_mentions_active_state_and_project(self):
@@ -50,7 +58,9 @@ class PresenceTest(unittest.TestCase):
         self.assertEqual(presence["status"], "listening")
         self.assertTrue(presence["voice_listening"])
         self.assertTrue(presence["privacy"]["local_first"])
+        self.assertEqual(presence["automation_checkpoints"][0]["checkpoint_id"], 1)
         self.assertIn("qual o status", presence["suggestions"])
+        self.assertIn("checkpoints pendentes", presence["suggestions"])
 
     def test_paused_presence_has_paused_greeting(self):
         self.session["status"] = "paused"

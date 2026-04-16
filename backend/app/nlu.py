@@ -42,6 +42,15 @@ CONFIRM_CHECKPOINT_TERMS = (
     "executar checkpoint",
     "executar passo",
 )
+PENDING_CHECKPOINTS_TERMS = (
+    "checkpoints pendentes",
+    "listar checkpoints",
+    "mostrar checkpoints",
+    "ver checkpoints",
+    "passos pendentes",
+    "acoes pendentes",
+    "ações pendentes",
+)
 PRIVACY_TERMS = ("privacidade", "painel de privacidade", "permissoes", "permissões", "o que voce sabe sobre mim")
 MEDIA_STATUS_TERMS = ("status da midia", "status de midia", "status do audio", "status do som", "volume atual")
 VOLUME_UP_TERMS = ("aumentar volume", "aumente o volume", "subir volume", "volume up")
@@ -176,6 +185,9 @@ def parse_intent(text: str):
 
     if _has_any(normalized, CONFIRM_CHECKPOINT_TERMS):
         return {"intent": "confirm_checkpoint", "checkpoint_id": _extract_checkpoint_id(normalized), "text": text}
+
+    if _has_any(normalized, PENDING_CHECKPOINTS_TERMS):
+        return {"intent": "pending_checkpoints", "text": text}
 
     if _has_any(normalized, HISTORY_TERMS):
         return {"intent": "command_history", "text": text}

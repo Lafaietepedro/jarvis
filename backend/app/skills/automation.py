@@ -17,9 +17,13 @@ class AutomationSkill(BaseSkill):
             "execute_automation_plan",
             "execute_project_checkup",
             "confirm_checkpoint",
+            "pending_checkpoints",
         }
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
+        if intent.get("intent") == "pending_checkpoints":
+            return pending_checkpoints(options)
+
         if intent.get("intent") == "confirm_checkpoint":
             return confirm_checkpoint(intent, context, options)
 
@@ -215,6 +219,27 @@ def confirm_checkpoint(intent: dict[str, Any], context: dict[str, Any], options:
                 "data": result.data,
             },
         },
+    )
+
+
+def pending_checkpoints(options: dict[str, Any]) -> SkillResult:
+    session_state = options.get("session_state")
+    checkpoints = []
+    if session_state:
+        checkpoints = session_state.snapshot().get("automation_checkpoints", [])
+
+    if not checkpoints:
+        return SkillResult(
+            response="Nao ha checkpoints pendentes no momento.",
+            action={"skill": "automation", "name": "pending_checkpoints", "status": "empty"},
+            data={"checkpoints": []},
+        )
+
+    return SkillResult(
+        response=f"Ha {len(checkpoints)} checkpoint(s) pendente(s).",
+        action={"skill": "automation", "name": "pending_checkpoints", "status": "done"},
+        suggestions=[f"confirmar checkpoint {checkpoint['checkpoint_id']}" for checkpoint in checkpoints[:5]],
+        data={"checkpoints": checkpoints},
     )
 
 

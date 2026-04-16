@@ -9,6 +9,7 @@ import urllib.request
 from typing import Any
 
 from .cli_format import (
+    format_checkpoints,
     format_command_result,
     format_diagnostics,
     format_history,
@@ -72,6 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
     watch.add_argument("--iterations", type=int, default=0, help="0 means run until Ctrl+C")
 
     subparsers.add_parser("presence", help="Show presence state")
+    subparsers.add_parser("checkpoints", help="Show pending automation checkpoints")
     subparsers.add_parser("privacy", help="Show privacy panel")
     subparsers.add_parser("diagnostics", help="Show local diagnostics")
 
@@ -115,6 +117,8 @@ def run(args: argparse.Namespace) -> str:
         return watch_panel(client, interval=args.interval, iterations=args.iterations)
     if command == "presence":
         return format_presence(client.get("/presence"))
+    if command == "checkpoints":
+        return format_checkpoints(client.get("/presence"))
     if command == "privacy":
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":
@@ -178,6 +182,7 @@ CHAT_HELP = """Commands:
 /exit - leave chat
 /panel - show local panel
 /presence - show presence
+/checkpoints - show pending automation checkpoints
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
 /history - show recent commands
@@ -204,6 +209,7 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
     if text in {
         "/panel",
         "/presence",
+        "/checkpoints",
         "/privacy",
         "/diagnostics",
         "/history",
@@ -235,6 +241,8 @@ def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str,
         return fetch_panel(client)
     if action == "presence":
         return format_presence(client.get("/presence"))
+    if action == "checkpoints":
+        return format_checkpoints(client.get("/presence"))
     if action == "privacy":
         return format_privacy(client.get("/privacy"))
     if action == "diagnostics":

@@ -20,6 +20,7 @@ Visão rápida
 - Planos seguros de automação
 - Executor de automações com checkpoints
 - Confirmação de checkpoints pendentes
+- Painel CLI de checkpoints pendentes
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -69,6 +70,7 @@ Ou diretamente:
 ```bash
 cd backend
 python -m app.cli panel
+python -m app.cli checkpoints
 python -m app.cli watch
 python -m app.cli presence
 python -m app.cli privacy
@@ -132,6 +134,7 @@ Comandos iniciais
 - `limpar historico`
 - `painel de privacidade`
 - `diagnostico`
+- `checkpoints pendentes`
 - `pesquisar por python fastapi`
 - `abrir site example.com`
 - `comandos do projeto`
@@ -243,6 +246,12 @@ Ou pelo CLI:
 make panel
 ```
 
+Checkpoints pendentes:
+
+```bash
+make checkpoints
+```
+
 Painel vivo:
 
 ```bash
@@ -261,6 +270,7 @@ Dentro do chat:
 ```text
 /help
 /panel
+/checkpoints
 /privacy
 /diagnostics
 /history

@@ -4,18 +4,38 @@ from typing import Any
 def format_presence(payload: dict[str, Any]) -> str:
     project = payload.get("project", {})
     privacy = payload.get("privacy", {})
+    checkpoints = _extract_checkpoints(payload)
     lines = [
         "[JARVIS]",
         f"Status: {payload.get('status', 'unknown')}",
         f"Voice: {'listening' if payload.get('voice_listening') else 'idle'}",
         f"Project: {project.get('name', 'unknown')} ({project.get('path', 'unknown')})",
         f"Uptime: {payload.get('uptime_seconds', 0)}s",
+        f"Pending checkpoints: {len(checkpoints)}",
         f"Cloud: {'enabled' if privacy.get('cloud_enabled') else 'disabled'}",
         f"Memory: {'enabled' if privacy.get('memory_enabled') else 'disabled'}",
         "",
         payload.get("greeting", ""),
     ]
     return "\n".join(line for line in lines if line is not None)
+
+
+def format_checkpoints(payload: dict[str, Any]) -> str:
+    checkpoints = _extract_checkpoints(payload)
+    lines = ["[CHECKPOINTS]"]
+    if not checkpoints:
+        lines.append("No pending checkpoints.")
+        return "\n".join(lines)
+
+    for checkpoint in checkpoints:
+        checkpoint_id = checkpoint.get("checkpoint_id", "?")
+        plan = checkpoint.get("plan", "unknown")
+        label = checkpoint.get("label", "unknown")
+        reason = checkpoint.get("reason", "unknown")
+        lines.append(f"{checkpoint_id}. {label} [{plan}]")
+        lines.append(f"   Reason: {reason}")
+        lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")
+    return "\n".join(lines)
 
 
 def format_privacy(payload: dict[str, Any]) -> str:
@@ -112,9 +132,18 @@ def format_panel(
 ) -> str:
     sections = [
         format_presence(presence),
+        format_checkpoints(presence),
         format_privacy(privacy),
         format_history(history),
     ]
     if diagnostics is not None:
         sections.append(format_diagnostics(diagnostics))
     return "\n\n".join(sections)
+
+
+def _extract_checkpoints(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if "automation_checkpoints" in payload:
+        return payload.get("automation_checkpoints") or []
+
+    session = payload.get("session", {})
+    return session.get("automation_checkpoints") or []

@@ -27,11 +27,13 @@ def build_presence(
         "started_at": session["started_at"],
         "last_activity_at": session["last_activity_at"],
         "current_task": session["current_task"],
+        "automation_checkpoints": session.get("automation_checkpoints", []),
         "privacy": context["privacy"],
         "project": context["project"],
         "suggestions": [
             "qual o status",
             "listar arquivos",
+            "checkpoints pendentes",
             "o que voce pode controlar neste computador",
         ],
     }

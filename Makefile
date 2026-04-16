@@ -9,6 +9,10 @@ start:
 panel:
 	cd backend && python -m app.cli panel
 
+.PHONY: checkpoints
+checkpoints:
+	cd backend && python -m app.cli checkpoints
+
 .PHONY: ask
 ask:
 	cd backend && python -m app.cli ask "$(TEXT)"

@@ -1,6 +1,7 @@
 import unittest
 
 from app.cli_format import (
+    format_checkpoints,
     format_command_result,
     format_history_export,
     format_diagnostics,
@@ -20,6 +21,14 @@ class CliFormatTest(unittest.TestCase):
             "greeting": "JARVIS ativo.",
             "project": {"name": "jarvis", "path": "/tmp/jarvis"},
             "privacy": {"cloud_enabled": False, "memory_enabled": True},
+            "automation_checkpoints": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "reason": "confirmation_required",
+                }
+            ],
         }
         self.privacy = {
             "data": {
@@ -61,6 +70,19 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[JARVIS]", output)
         self.assertIn("Project: jarvis", output)
+        self.assertIn("Pending checkpoints: 1", output)
+
+    def test_format_checkpoints(self):
+        output = format_checkpoints(self.presence)
+
+        self.assertIn("[CHECKPOINTS]", output)
+        self.assertIn("Rodar testes do projeto", output)
+        self.assertIn("confirmar checkpoint 1", output)
+
+    def test_format_empty_checkpoints(self):
+        output = format_checkpoints({"automation_checkpoints": []})
+
+        self.assertIn("No pending checkpoints.", output)
 
     def test_format_privacy(self):
         output = format_privacy(self.privacy)
@@ -116,6 +138,7 @@ class CliFormatTest(unittest.TestCase):
         output = format_panel(self.presence, self.privacy, self.history, self.diagnostics)
 
         self.assertIn("[JARVIS]", output)
+        self.assertIn("[CHECKPOINTS]", output)
         self.assertIn("[PRIVACY]", output)
         self.assertIn("[HISTORY]", output)
         self.assertIn("[DIAGNOSTICS]", output)
