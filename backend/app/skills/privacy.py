@@ -18,6 +18,7 @@ class PrivacySkill(BaseSkill):
             "cloud_enabled": context["privacy"]["cloud_enabled"],
             "browser_actions_enabled": context["privacy"].get("browser_actions_enabled", False),
             "desktop_actions_enabled": context["privacy"]["desktop_actions_enabled"],
+            "ide_actions_enabled": context["privacy"].get("ide_actions_enabled", False),
             "shell_enabled": context["privacy"]["shell_enabled"],
             "media_actions_enabled": context["privacy"].get("media_actions_enabled", False),
         }

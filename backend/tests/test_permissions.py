@@ -68,6 +68,18 @@ class PermissionPolicyTest(unittest.TestCase):
 
         self.assertTrue(decision.allowed)
 
+    def test_ide_actions_are_disabled_by_default(self):
+        decision = self.policy.evaluate("ide", "open_project", {"path": "/tmp/jarvis"}, {})
+
+        self.assertFalse(decision.allowed)
+        self.assertEqual(decision.reason, "ide_actions_disabled")
+
+    def test_ide_actions_can_be_enabled(self):
+        with patch.dict(os.environ, {"JARVIS_ENABLE_IDE_ACTIONS": "1"}):
+            decision = self.policy.evaluate("ide", "open_project", {"path": "/tmp/jarvis"}, {})
+
+        self.assertTrue(decision.allowed)
+
 
 if __name__ == "__main__":
     unittest.main()

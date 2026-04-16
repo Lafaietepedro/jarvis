@@ -3,6 +3,7 @@ from .browser import BrowserSkill
 from .computer import ComputerSkill
 from .dev import DevSkill
 from .files import FileSkill
+from .ide import IDESkill
 from .media import MediaSkill
 from .memory import MemorySkill
 from .privacy import PrivacySkill
@@ -15,6 +16,7 @@ __all__ = [
     "ComputerSkill",
     "DevSkill",
     "FileSkill",
+    "IDESkill",
     "MediaSkill",
     "MemorySkill",
     "PrivacySkill",

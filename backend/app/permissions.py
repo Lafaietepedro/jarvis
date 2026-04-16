@@ -36,6 +36,9 @@ class PermissionPolicy:
         if skill == "browser" and action in {"open_url", "search"}:
             return self._evaluate_browser_action()
 
+        if skill == "ide" and action == "open_project":
+            return self._evaluate_ide_action()
+
         return PermissionDecision(allowed=True, status="allowed")
 
     def _evaluate_shell(self, command: str, options: dict) -> PermissionDecision:
@@ -70,5 +73,11 @@ class PermissionPolicy:
     def _evaluate_browser_action(self) -> PermissionDecision:
         if os.environ.get("JARVIS_ENABLE_BROWSER_ACTIONS") != "1":
             return PermissionDecision(allowed=False, status="blocked", reason="browser_actions_disabled")
+
+        return PermissionDecision(allowed=True, status="allowed")
+
+    def _evaluate_ide_action(self) -> PermissionDecision:
+        if os.environ.get("JARVIS_ENABLE_IDE_ACTIONS") != "1":
+            return PermissionDecision(allowed=False, status="blocked", reason="ide_actions_disabled")
 
         return PermissionDecision(allowed=True, status="allowed")

@@ -16,6 +16,7 @@ Visão rápida
 - Diagnóstico local de dependências opcionais
 - Chat interativo no terminal
 - Skill inicial de navegador/pesquisa
+- Skill inicial de IDE/projeto
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -130,6 +131,8 @@ Comandos iniciais
 - `diagnostico`
 - `pesquisar por python fastapi`
 - `abrir site example.com`
+- `comandos do projeto`
+- `abrir projeto`
 - `status do audio`
 - `aumentar volume`
 - `diminuir volume`
@@ -186,6 +189,12 @@ export JARVIS_ENABLE_DESKTOP_ACTIONS=1
 
 ```bash
 export JARVIS_ENABLE_BROWSER_ACTIONS=1
+```
+
+- Ações de IDE ficam bloqueadas por padrão. Para permitir abrir o projeto no VS Code:
+
+```bash
+export JARVIS_ENABLE_IDE_ACTIONS=1
 ```
 
 - Comandos de shell exigem `confirm_actions=true` no request e ainda ficam bloqueados por padrão. Para permitir execução real:
@@ -268,7 +277,8 @@ Notas
 - Home Assistant fica como skill futura/opcional. O foco atual é o assistente local do computador.
 
 Roadmap curto
-- Expandir skills locais: IDE e automações.
+- Expandir skills locais: automações e integrações de IDE mais profundas.
+- Evoluir a skill de IDE com leitura autorizada de estado do editor no futuro.
 - Evoluir a skill de navegador com leitura autorizada de abas/bookmarks no futuro.
 - Evoluir memória local e painel de privacidade.
 - Evoluir a interface CLI para comandos interativos mais ricos.

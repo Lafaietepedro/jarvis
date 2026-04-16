@@ -20,6 +20,7 @@ O nucleo atual ja consegue:
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
+- listar comandos de projeto e preparar abertura do workspace na IDE;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -177,6 +178,21 @@ Entregas:
 - Sugestoes contextuais incluindo pesquisa de documentacao.
 - Testes para permissoes, NLU, core e normalizacao de URL.
 
+### Fase 3H - IDE E Comandos De Projeto
+
+Status: concluida.
+
+Entregas:
+- `IDESkill` para listar comandos detectados no projeto.
+- Deteccao de targets do `Makefile`.
+- Deteccao de scripts do `package.json`.
+- Sugestao de `docker compose up` quando `docker-compose.yml` existe.
+- Preparacao para abrir workspace no VS Code.
+- Politica `JARVIS_ENABLE_IDE_ACTIONS` para bloquear abertura da IDE por padrao.
+- Flag `ide_actions_enabled` no contexto local e painel de privacidade.
+- NLU expandido para `comandos do projeto` e `abrir projeto`.
+- Testes para permissoes, NLU, core, formatadores e deteccao de comandos.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -188,7 +204,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar skills reais para IDE e automacoes.
+- Criar skills reais para automacoes e integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
 - Melhorar sugestoes com base em historico recente.
@@ -199,6 +215,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
+- Criar automacoes seguras para sequencias de comandos aprovadas.
 
 ## Fases Futuras Planejadas
 
@@ -309,7 +326,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-74 tests OK
+81 tests OK
 ```
 
 ```bash

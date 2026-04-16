@@ -18,6 +18,7 @@ def build_suggestions(intent: dict[str, Any], context: dict[str, Any], action: d
 
     if capabilities["has_makefile"]:
         suggestions.append("rodar make test")
+        suggestions.append("comandos do projeto")
 
     if capabilities["has_docker_compose"]:
         suggestions.append("subir ambiente com docker compose")

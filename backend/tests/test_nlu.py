@@ -75,6 +75,16 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "run_tests")
 
+    def test_open_project(self):
+        intent = parse_intent("abrir projeto no vscode")
+
+        self.assertEqual(intent["intent"], "open_project")
+
+    def test_project_commands(self):
+        intent = parse_intent("comandos do projeto")
+
+        self.assertEqual(intent["intent"], "project_commands")
+
     def test_history(self):
         intent = parse_intent("ultimos comandos")
 

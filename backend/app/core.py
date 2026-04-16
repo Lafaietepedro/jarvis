@@ -11,6 +11,7 @@ from .skills import (
     BrowserSkill,
     DevSkill,
     FileSkill,
+    IDESkill,
     MediaSkill,
     MemorySkill,
     PrivacySkill,
@@ -37,6 +38,7 @@ class JarvisCore:
         self.skills = [
             SystemSkill(),
             DevSkill(),
+            IDESkill(),
             FileSkill(),
             MemorySkill(),
             PrivacySkill(),

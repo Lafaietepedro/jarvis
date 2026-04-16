@@ -132,6 +132,21 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["action"]["url"], "https://example.com")
 
+    def test_project_commands_uses_ide_skill(self):
+        result = self.core.execute("comandos do projeto")
+
+        self.assertEqual(result["action"]["skill"], "ide")
+        self.assertEqual(result["action"]["name"], "project_commands")
+        self.assertIn("commands", result["data"])
+
+    def test_open_project_is_blocked_by_default(self):
+        result = self.core.execute("abrir projeto")
+
+        self.assertEqual(result["action"]["skill"], "ide")
+        self.assertEqual(result["action"]["name"], "open_project")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["action"]["reason"], "ide_actions_disabled")
+
 
 if __name__ == "__main__":
     unittest.main()

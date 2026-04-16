@@ -40,6 +40,7 @@ class LocalContextProvider:
                 "cloud_enabled": os.environ.get("JARVIS_ENABLE_CLOUD") == "1",
                 "desktop_actions_enabled": os.environ.get("JARVIS_ENABLE_DESKTOP_ACTIONS") == "1",
                 "browser_actions_enabled": os.environ.get("JARVIS_ENABLE_BROWSER_ACTIONS") == "1",
+                "ide_actions_enabled": os.environ.get("JARVIS_ENABLE_IDE_ACTIONS") == "1",
                 "shell_enabled": os.environ.get("JARVIS_ENABLE_SHELL") == "1",
                 "media_actions_enabled": os.environ.get("JARVIS_ENABLE_MEDIA_ACTIONS") == "1",
                 "memory_enabled": os.environ.get("JARVIS_DISABLE_MEMORY") != "1",
