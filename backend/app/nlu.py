@@ -12,6 +12,8 @@ CAPABILITY_TERMS = ("o que voce pode controlar", "o que voce faz", "capacidades"
 DIAGNOSTICS_TERMS = ("diagnostico", "diagnóstico", "saude do sistema", "saúde do sistema", "dependencias", "dependências")
 PROJECT_STATUS_TERMS = ("status do projeto", "analisar projeto", "analise o projeto", "como esta o projeto")
 PREPARE_PROJECT_TERMS = ("preparar projeto", "prepara o projeto", "preparar ambiente", "prepara o ambiente")
+AUTOMATION_PLAN_TERMS = ("rotina de desenvolvimento", "plano de automacao", "plano de automação", "automatizar rotina", "preparar rotina")
+PROJECT_CHECKUP_TERMS = ("checkup do projeto", "check-up do projeto", "verificar projeto", "revisar projeto")
 RUN_TESTS_TERMS = ("rodar testes", "executar testes", "rode testes", "run tests")
 OPEN_PROJECT_TERMS = ("abrir projeto", "abra o projeto", "abrir workspace", "abrir vscode", "abrir projeto no vscode")
 PROJECT_COMMANDS_TERMS = ("comandos do projeto", "scripts do projeto", "listar comandos do projeto", "quais comandos do projeto")
@@ -184,6 +186,12 @@ def parse_intent(text: str):
 
     if _has_any(normalized, PREPARE_PROJECT_TERMS):
         return {"intent": "prepare_project", "text": text}
+
+    if _has_any(normalized, PROJECT_CHECKUP_TERMS):
+        return {"intent": "project_checkup", "text": text}
+
+    if _has_any(normalized, AUTOMATION_PLAN_TERMS):
+        return {"intent": "automation_plan", "text": text}
 
     if _has_any(normalized, RUN_TESTS_TERMS):
         return {"intent": "run_tests", "text": text}

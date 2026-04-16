@@ -8,6 +8,7 @@ from .permissions import PermissionPolicy
 from .session import SessionState
 from .skills import (
     ComputerSkill,
+    AutomationSkill,
     BrowserSkill,
     DevSkill,
     FileSkill,
@@ -37,6 +38,7 @@ class JarvisCore:
         self.session_state = session_state or SessionState()
         self.skills = [
             SystemSkill(),
+            AutomationSkill(),
             DevSkill(),
             IDESkill(),
             FileSkill(),

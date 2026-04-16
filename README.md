@@ -17,6 +17,7 @@ Visão rápida
 - Chat interativo no terminal
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
+- Planos seguros de automação
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -133,6 +134,8 @@ Comandos iniciais
 - `abrir site example.com`
 - `comandos do projeto`
 - `abrir projeto`
+- `checkup do projeto`
+- `rotina de desenvolvimento`
 - `status do audio`
 - `aumentar volume`
 - `diminuir volume`
@@ -277,7 +280,7 @@ Notas
 - Home Assistant fica como skill futura/opcional. O foco atual é o assistente local do computador.
 
 Roadmap curto
-- Expandir skills locais: automações e integrações de IDE mais profundas.
+- Expandir skills locais: automações executáveis com confirmação e integrações de IDE mais profundas.
 - Evoluir a skill de IDE com leitura autorizada de estado do editor no futuro.
 - Evoluir a skill de navegador com leitura autorizada de abas/bookmarks no futuro.
 - Evoluir memória local e painel de privacidade.

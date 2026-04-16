@@ -21,6 +21,7 @@ O nucleo atual ja consegue:
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
 - listar comandos de projeto e preparar abertura do workspace na IDE;
+- montar planos seguros de automacao com revisao manual obrigatoria;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -193,6 +194,18 @@ Entregas:
 - NLU expandido para `comandos do projeto` e `abrir projeto`.
 - Testes para permissoes, NLU, core, formatadores e deteccao de comandos.
 
+### Fase 3I - Planos Seguros De Automacao
+
+Status: concluida.
+
+Entregas:
+- `AutomationSkill` para montar planos sem executar ações sensiveis.
+- Plano `project_checkup` com diagnostico, comandos do projeto, testes confirmaveis e privacidade.
+- Plano `development_routine` com abertura de IDE, comandos detectados e opções de desenvolvimento.
+- Campo `execution=manual_review_required` para deixar claro que a rotina não executa sozinha.
+- NLU expandido para `checkup do projeto` e `rotina de desenvolvimento`.
+- Testes para montagem de planos, NLU e roteamento pelo core.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -204,7 +217,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar skills reais para automacoes e integracoes de IDE mais profundas.
+- Criar automacoes executaveis com confirmacao e integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
 - Melhorar sugestoes com base em historico recente.
@@ -215,7 +228,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar automacoes seguras para sequencias de comandos aprovadas.
+- Criar executor de automacoes com checkpoints e confirmacao por etapa.
 
 ## Fases Futuras Planejadas
 
@@ -326,7 +339,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-81 tests OK
+87 tests OK
 ```
 
 ```bash

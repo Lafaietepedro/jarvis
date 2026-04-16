@@ -147,6 +147,20 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["action"]["reason"], "ide_actions_disabled")
 
+    def test_project_checkup_builds_automation_plan(self):
+        result = self.core.execute("checkup do projeto")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["status"], "planned")
+        self.assertEqual(result["data"]["execution"], "manual_review_required")
+
+    def test_development_routine_builds_automation_plan(self):
+        result = self.core.execute("rotina de desenvolvimento")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "automation_plan")
+        self.assertTrue(result["data"]["steps"])
+
 
 if __name__ == "__main__":
     unittest.main()

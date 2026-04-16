@@ -70,6 +70,16 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "project_status")
 
+    def test_project_checkup(self):
+        intent = parse_intent("checkup do projeto")
+
+        self.assertEqual(intent["intent"], "project_checkup")
+
+    def test_automation_plan(self):
+        intent = parse_intent("rotina de desenvolvimento")
+
+        self.assertEqual(intent["intent"], "automation_plan")
+
     def test_run_tests(self):
         intent = parse_intent("rodar testes")
 
