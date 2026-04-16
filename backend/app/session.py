@@ -12,6 +12,7 @@ class SessionState:
         self._status = "active"
         self._voice_listening = False
         self._current_task = None
+        self._automation_checkpoints: list[dict[str, Any]] = []
 
     def set_active(self):
         self._update(status="active", voice_listening=False, current_task=None)
@@ -35,7 +36,46 @@ class SessionState:
                 "last_activity_at": self._last_activity_at.isoformat(),
                 "uptime_seconds": int((now - self._started_at).total_seconds()),
                 "current_task": self._current_task,
+                "automation_checkpoints": [
+                    {
+                        "checkpoint_id": checkpoint["checkpoint_id"],
+                        "label": checkpoint["label"],
+                        "plan": checkpoint["plan"],
+                        "reason": checkpoint["reason"],
+                    }
+                    for checkpoint in self._automation_checkpoints
+                ],
             }
+
+    def set_automation_checkpoints(self, plan_name: str, checkpoints: list[dict[str, Any]]):
+        with self._lock:
+            self._automation_checkpoints = [
+                {
+                    **checkpoint,
+                    "checkpoint_id": index,
+                    "plan": plan_name,
+                }
+                for index, checkpoint in enumerate(checkpoints, start=1)
+            ]
+
+    def get_automation_checkpoint(self, checkpoint_id: int | None = None) -> dict[str, Any] | None:
+        with self._lock:
+            if not self._automation_checkpoints:
+                return None
+            if checkpoint_id is None:
+                return self._automation_checkpoints[0]
+            for checkpoint in self._automation_checkpoints:
+                if checkpoint["checkpoint_id"] == checkpoint_id:
+                    return checkpoint
+        return None
+
+    def remove_automation_checkpoint(self, checkpoint_id: int):
+        with self._lock:
+            self._automation_checkpoints = [
+                checkpoint
+                for checkpoint in self._automation_checkpoints
+                if checkpoint["checkpoint_id"] != checkpoint_id
+            ]
 
     def _update(
         self,

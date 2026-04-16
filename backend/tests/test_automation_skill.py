@@ -2,7 +2,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.skills.automation import build_development_routine_plan, build_project_checkup_plan, execute_plan
+from app.session import SessionState
+from app.skills.automation import (
+    AutomationSkill,
+    build_development_routine_plan,
+    build_project_checkup_plan,
+    execute_plan,
+)
 
 
 class AutomationSkillTest(unittest.TestCase):
@@ -72,6 +78,38 @@ class AutomationSkillTest(unittest.TestCase):
 
         self.assertEqual(report["status"], "blocked")
         self.assertEqual(report["checkpoints"][0]["reason"], "unsupported_safe_step")
+
+    def test_execute_project_checkup_registers_session_checkpoint(self):
+        session = SessionState()
+
+        result = AutomationSkill().handle(
+            {"intent": "execute_project_checkup", "text": "executar checkup do projeto"},
+            self.context,
+            {"session_state": session},
+        )
+
+        self.assertEqual(result.action["status"], "blocked")
+        self.assertEqual(session.snapshot()["automation_checkpoints"][0]["label"], "Rodar testes do projeto")
+        self.assertIn("confirmar checkpoint 1", result.suggestions)
+
+    def test_confirm_checkpoint_delegates_to_permissioned_skill(self):
+        session = SessionState()
+        AutomationSkill().handle(
+            {"intent": "execute_project_checkup", "text": "executar checkup do projeto"},
+            self.context,
+            {"session_state": session},
+        )
+
+        result = AutomationSkill().handle(
+            {"intent": "confirm_checkpoint", "checkpoint_id": 1, "text": "confirmar checkpoint 1"},
+            self.context,
+            {"session_state": session},
+        )
+
+        self.assertEqual(result.action["name"], "confirm_checkpoint")
+        self.assertEqual(result.action["status"], "blocked")
+        self.assertEqual(result.action["delegated_action"]["reason"], "shell_disabled")
+        self.assertEqual(session.snapshot()["automation_checkpoints"][0]["checkpoint_id"], 1)
 
 
 if __name__ == "__main__":

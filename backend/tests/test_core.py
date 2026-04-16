@@ -163,6 +163,7 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["data"]["execution"], "checkpointed")
         self.assertTrue(result["data"]["executed_steps"])
         self.assertTrue(result["data"]["checkpoints"])
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["checkpoint_id"], 1)
 
     def test_development_routine_builds_automation_plan(self):
         result = self.core.execute("rotina de desenvolvimento")
@@ -178,6 +179,17 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "execute_automation_plan")
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["data"]["checkpoints"][0]["step"]["intent"], "open_project")
+
+    def test_confirm_checkpoint_uses_pending_automation_checkpoint(self):
+        self.core.execute("executar checkup do projeto")
+
+        result = self.core.execute("confirmar checkpoint 1")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "confirm_checkpoint")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["action"]["delegated_action"]["reason"], "shell_disabled")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["checkpoint_id"], 1)
 
 
 if __name__ == "__main__":

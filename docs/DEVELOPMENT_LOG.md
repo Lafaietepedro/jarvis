@@ -23,6 +23,7 @@ O nucleo atual ja consegue:
 - listar comandos de projeto e preparar abertura do workspace na IDE;
 - montar planos seguros de automacao com revisao manual obrigatoria;
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
+- lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -220,6 +221,20 @@ Entregas:
 - Fechamento explicito das conexoes SQLite usadas pela memoria local.
 - Testes de NLU, core, executor de automacao e memoria por comportamento existente.
 
+### Fase 3K - Confirmacao De Checkpoints Pendentes
+
+Status: concluida.
+
+Entregas:
+- Sessao agora guarda checkpoints de automacao pendentes.
+- Snapshot de sessao expõe checkpoints com `checkpoint_id`, plano, label e motivo.
+- NLU expandido para comandos como `confirmar checkpoint 1`, `aprovar passo 2` e `executar checkpoint 1`.
+- `AutomationSkill` confirma checkpoints pendentes e delega para skills existentes.
+- Checkpoints de shell passam por `ShellSkill` com confirmacao explicita, mas continuam bloqueados se `JARVIS_ENABLE_SHELL` nao estiver ativo.
+- Checkpoints de IDE passam por `IDESkill` e respeitam `JARVIS_ENABLE_IDE_ACTIONS`.
+- Checkpoints bloqueados permanecem pendentes para nova tentativa depois de ajustar permissoes.
+- Testes cobrindo sessao, NLU, core e delegacao de checkpoint.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -231,7 +246,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar confirmacao por etapa para liberar checkpoints de automacao.
+- Criar painel/CLI mais claro para listar e confirmar checkpoints pendentes.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
@@ -243,7 +258,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar fluxo de confirmacao por checkpoint dentro das automacoes.
+- Criar comando CLI dedicado para listar checkpoints pendentes.
 
 ## Fases Futuras Planejadas
 
@@ -354,7 +369,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-93 tests OK
+98 tests OK
 ```
 
 ```bash

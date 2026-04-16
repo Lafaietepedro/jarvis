@@ -21,6 +21,30 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(paused["status"], "paused")
         self.assertFalse(paused["voice_listening"])
 
+    def test_automation_checkpoints_are_stored_and_removed(self):
+        session = SessionState()
+        session.set_automation_checkpoints(
+            "project_checkup",
+            [
+                {
+                    "index": 3,
+                    "label": "Rodar testes do projeto",
+                    "reason": "confirmation_required",
+                    "step": {"intent": "run_command", "command": "make test"},
+                }
+            ],
+        )
+
+        snapshot = session.snapshot()
+        self.assertEqual(snapshot["automation_checkpoints"][0]["checkpoint_id"], 1)
+        self.assertEqual(snapshot["automation_checkpoints"][0]["plan"], "project_checkup")
+
+        checkpoint = session.get_automation_checkpoint(1)
+        self.assertEqual(checkpoint["step"]["command"], "make test")
+
+        session.remove_automation_checkpoint(1)
+        self.assertEqual(session.snapshot()["automation_checkpoints"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

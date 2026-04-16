@@ -19,6 +19,7 @@ Visão rápida
 - Skill inicial de IDE/projeto
 - Planos seguros de automação
 - Executor de automações com checkpoints
+- Confirmação de checkpoints pendentes
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -139,6 +140,7 @@ Comandos iniciais
 - `rotina de desenvolvimento`
 - `executar checkup do projeto`
 - `executar rotina de desenvolvimento`
+- `confirmar checkpoint 1`
 - `status do audio`
 - `aumentar volume`
 - `diminuir volume`
@@ -188,6 +190,7 @@ Automações com checkpoints
 - `checkup do projeto` e `rotina de desenvolvimento` apenas montam planos revisáveis.
 - `executar checkup do projeto` e `executar rotina de desenvolvimento` executam somente passos seguros de leitura, como diagnóstico, comandos detectados e painel de privacidade.
 - Passos com risco médio, abertura de apps, comandos de shell ou permissões explícitas viram checkpoints e não são executados automaticamente.
+- Depois de revisar, use `confirmar checkpoint 1` para confirmar um checkpoint pendente. Mesmo confirmado, o passo ainda respeita as permissões do sistema, como `JARVIS_ENABLE_SHELL` e `JARVIS_ENABLE_IDE_ACTIONS`.
 
 Permissões
 - Ações de desktop ficam bloqueadas por padrão. Para permitir abertura real de apps:

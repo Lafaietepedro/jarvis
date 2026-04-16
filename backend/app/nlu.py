@@ -34,6 +34,14 @@ PROJECT_COMMANDS_TERMS = ("comandos do projeto", "scripts do projeto", "listar c
 HISTORY_TERMS = ("historico", "ultimos comandos", "comandos recentes")
 EXPORT_HISTORY_TERMS = ("exportar historico", "exportar histórico", "backup do historico", "backup do histórico")
 CLEAR_HISTORY_TERMS = ("limpar historico", "limpar histórico", "apagar historico", "apagar histórico", "esquecer historico", "esquecer histórico")
+CONFIRM_CHECKPOINT_TERMS = (
+    "confirmar checkpoint",
+    "confirmar passo",
+    "aprovar checkpoint",
+    "aprovar passo",
+    "executar checkpoint",
+    "executar passo",
+)
 PRIVACY_TERMS = ("privacidade", "painel de privacidade", "permissoes", "permissões", "o que voce sabe sobre mim")
 MEDIA_STATUS_TERMS = ("status da midia", "status de midia", "status do audio", "status do som", "volume atual")
 VOLUME_UP_TERMS = ("aumentar volume", "aumente o volume", "subir volume", "volume up")
@@ -120,6 +128,13 @@ def _extract_command(text: str) -> str | None:
     return command or None
 
 
+def _extract_checkpoint_id(text: str) -> int | None:
+    match = re.search(r"\b(?:checkpoint|passo)\s+(\d+)\b", text)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
 def _extract_web_query(text: str) -> str | None:
     match = re.search(r"\b(?:pesquisar|pesquise|buscar|busque|procurar|procure|search)\b\s+(?:por|sobre|for)?\s*(.+)", text)
     if not match:
@@ -158,6 +173,9 @@ def parse_intent(text: str):
 
     if _has_any(normalized, CLEAR_HISTORY_TERMS):
         return {"intent": "clear_history", "text": text}
+
+    if _has_any(normalized, CONFIRM_CHECKPOINT_TERMS):
+        return {"intent": "confirm_checkpoint", "checkpoint_id": _extract_checkpoint_id(normalized), "text": text}
 
     if _has_any(normalized, HISTORY_TERMS):
         return {"intent": "command_history", "text": text}
