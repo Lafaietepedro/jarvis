@@ -27,6 +27,15 @@ class FakeClient:
                         "reason": "confirmation_required",
                     }
                 ],
+                "automation_checkpoint_events": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes do projeto",
+                        "plan": "project_checkup",
+                        "status": "blocked",
+                        "reason": "shell_disabled",
+                    }
+                ],
             }
         if path == "/privacy":
             return {

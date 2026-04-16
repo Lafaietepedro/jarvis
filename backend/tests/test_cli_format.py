@@ -29,6 +29,15 @@ class CliFormatTest(unittest.TestCase):
                     "reason": "confirmation_required",
                 }
             ],
+            "automation_checkpoint_events": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "status": "blocked",
+                    "reason": "shell_disabled",
+                }
+            ],
         }
         self.privacy = {
             "data": {
@@ -71,6 +80,7 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[JARVIS]", output)
         self.assertIn("Project: jarvis", output)
         self.assertIn("Pending checkpoints: 1", output)
+        self.assertIn("Checkpoint events: 1", output)
 
     def test_format_checkpoints(self):
         output = format_checkpoints(self.presence)
@@ -78,6 +88,8 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[CHECKPOINTS]", output)
         self.assertIn("Rodar testes do projeto", output)
         self.assertIn("confirmar checkpoint 1", output)
+        self.assertIn("Recent checkpoint events:", output)
+        self.assertIn("shell_disabled", output)
 
     def test_format_empty_checkpoints(self):
         output = format_checkpoints({"automation_checkpoints": []})

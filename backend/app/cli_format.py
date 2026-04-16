@@ -5,6 +5,7 @@ def format_presence(payload: dict[str, Any]) -> str:
     project = payload.get("project", {})
     privacy = payload.get("privacy", {})
     checkpoints = _extract_checkpoints(payload)
+    checkpoint_events = _extract_checkpoint_events(payload)
     lines = [
         "[JARVIS]",
         f"Status: {payload.get('status', 'unknown')}",
@@ -12,6 +13,7 @@ def format_presence(payload: dict[str, Any]) -> str:
         f"Project: {project.get('name', 'unknown')} ({project.get('path', 'unknown')})",
         f"Uptime: {payload.get('uptime_seconds', 0)}s",
         f"Pending checkpoints: {len(checkpoints)}",
+        f"Checkpoint events: {len(checkpoint_events)}",
         f"Cloud: {'enabled' if privacy.get('cloud_enabled') else 'disabled'}",
         f"Memory: {'enabled' if privacy.get('memory_enabled') else 'disabled'}",
         "",
@@ -22,19 +24,30 @@ def format_presence(payload: dict[str, Any]) -> str:
 
 def format_checkpoints(payload: dict[str, Any]) -> str:
     checkpoints = _extract_checkpoints(payload)
+    checkpoint_events = _extract_checkpoint_events(payload)
     lines = ["[CHECKPOINTS]"]
-    if not checkpoints:
+    if checkpoints:
+        for checkpoint in checkpoints:
+            checkpoint_id = checkpoint.get("checkpoint_id", "?")
+            plan = checkpoint.get("plan", "unknown")
+            label = checkpoint.get("label", "unknown")
+            reason = checkpoint.get("reason", "unknown")
+            lines.append(f"{checkpoint_id}. {label} [{plan}]")
+            lines.append(f"   Reason: {reason}")
+            lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")
+    else:
         lines.append("No pending checkpoints.")
-        return "\n".join(lines)
 
-    for checkpoint in checkpoints:
-        checkpoint_id = checkpoint.get("checkpoint_id", "?")
-        plan = checkpoint.get("plan", "unknown")
-        label = checkpoint.get("label", "unknown")
-        reason = checkpoint.get("reason", "unknown")
-        lines.append(f"{checkpoint_id}. {label} [{plan}]")
-        lines.append(f"   Reason: {reason}")
-        lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")
+    if checkpoint_events:
+        lines.append("")
+        lines.append("Recent checkpoint events:")
+        for event in checkpoint_events[:5]:
+            checkpoint_id = event.get("checkpoint_id", "?")
+            label = event.get("label", "unknown")
+            status = event.get("status", "unknown")
+            reason = event.get("reason")
+            suffix = f" ({reason})" if reason else ""
+            lines.append(f"- checkpoint {checkpoint_id}: {label} -> {status}{suffix}")
     return "\n".join(lines)
 
 
@@ -147,3 +160,11 @@ def _extract_checkpoints(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
     session = payload.get("session", {})
     return session.get("automation_checkpoints") or []
+
+
+def _extract_checkpoint_events(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if "automation_checkpoint_events" in payload:
+        return payload.get("automation_checkpoint_events") or []
+
+    session = payload.get("session", {})
+    return session.get("automation_checkpoint_events") or []

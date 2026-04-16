@@ -198,6 +198,8 @@ def confirm_checkpoint(intent: dict[str, Any], context: dict[str, Any], options:
 
     result = _execute_confirmed_checkpoint(checkpoint, context, options)
     status = result.action.get("status", "done")
+    event = _checkpoint_event(checkpoint, result)
+    session_state.record_automation_checkpoint_event(event)
     if status not in {"blocked", "needs_confirmation"}:
         session_state.remove_automation_checkpoint(checkpoint["checkpoint_id"])
 
@@ -225,21 +227,24 @@ def confirm_checkpoint(intent: dict[str, Any], context: dict[str, Any], options:
 def pending_checkpoints(options: dict[str, Any]) -> SkillResult:
     session_state = options.get("session_state")
     checkpoints = []
+    events = []
     if session_state:
-        checkpoints = session_state.snapshot().get("automation_checkpoints", [])
+        snapshot = session_state.snapshot()
+        checkpoints = snapshot.get("automation_checkpoints", [])
+        events = snapshot.get("automation_checkpoint_events", [])
 
     if not checkpoints:
         return SkillResult(
             response="Nao ha checkpoints pendentes no momento.",
             action={"skill": "automation", "name": "pending_checkpoints", "status": "empty"},
-            data={"checkpoints": []},
+            data={"checkpoints": [], "events": events},
         )
 
     return SkillResult(
         response=f"Ha {len(checkpoints)} checkpoint(s) pendente(s).",
         action={"skill": "automation", "name": "pending_checkpoints", "status": "done"},
         suggestions=[f"confirmar checkpoint {checkpoint['checkpoint_id']}" for checkpoint in checkpoints[:5]],
-        data={"checkpoints": checkpoints},
+        data={"checkpoints": checkpoints, "events": events},
     )
 
 
@@ -281,6 +286,20 @@ def _execute_confirmed_checkpoint(
             "checkpoint_intent": step_intent,
         },
     )
+
+
+def _checkpoint_event(checkpoint: dict[str, Any], result: SkillResult) -> dict[str, Any]:
+    delegated_action = result.action
+    return {
+        "checkpoint_id": checkpoint["checkpoint_id"],
+        "label": checkpoint["label"],
+        "plan": checkpoint["plan"],
+        "status": delegated_action.get("status", "unknown"),
+        "reason": delegated_action.get("reason"),
+        "delegated_skill": delegated_action.get("skill"),
+        "delegated_action": delegated_action.get("name"),
+        "response": result.response,
+    }
 
 
 def _execute_safe_step(index: int, step: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> dict[str, Any]:

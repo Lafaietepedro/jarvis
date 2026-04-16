@@ -26,6 +26,7 @@ O nucleo atual ja consegue:
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
 - listar checkpoints pendentes por comando natural, CLI, chat e painel local;
 - confirmar checkpoints por id no CLI e no chat;
+- registrar eventos recentes de checkpoints confirmados na sessao;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -265,6 +266,20 @@ Entregas:
 - Confirmacao rapida preserva o caminho seguro de `AutomationSkill`, `ShellSkill`, `IDESkill` e permissoes existentes.
 - Testes cobrindo parser do chat, acao de chat e comando CLI.
 
+### Fase 3N - Feedback E Historico Curto De Checkpoints
+
+Status: concluida.
+
+Entregas:
+- `SessionState` agora registra eventos recentes de checkpoints confirmados.
+- Eventos guardam checkpoint, plano, label, status, motivo, skill delegada e resposta.
+- Historico de eventos fica limitado aos 10 registros mais recentes na sessao.
+- `GET /presence` agora inclui `automation_checkpoint_events`.
+- Painel CLI mostra a quantidade de eventos recentes.
+- Seção `[CHECKPOINTS]` mostra eventos recentes junto com pendencias atuais.
+- Comando natural `checkpoints pendentes` retorna pendencias e eventos recentes.
+- Testes cobrindo sessao, automacao, core, presença e formatadores CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -276,7 +291,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Melhorar feedback visual quando checkpoints sao confirmados, bloqueados ou removidos.
+- Melhorar historico de execucoes de checkpoints e relatorios de resultado.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
@@ -288,7 +303,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar historico curto de execucoes de checkpoints.
+- Criar endpoint dedicado para checkpoints e eventos, em vez de depender apenas de `/presence`.
 
 ## Fases Futuras Planejadas
 
@@ -399,7 +414,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-109 tests OK
+111 tests OK
 ```
 
 ```bash

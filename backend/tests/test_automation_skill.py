@@ -109,7 +109,32 @@ class AutomationSkillTest(unittest.TestCase):
         self.assertEqual(result.action["name"], "confirm_checkpoint")
         self.assertEqual(result.action["status"], "blocked")
         self.assertEqual(result.action["delegated_action"]["reason"], "shell_disabled")
-        self.assertEqual(session.snapshot()["automation_checkpoints"][0]["checkpoint_id"], 1)
+        snapshot = session.snapshot()
+        self.assertEqual(snapshot["automation_checkpoints"][0]["checkpoint_id"], 1)
+        self.assertEqual(snapshot["automation_checkpoint_events"][0]["status"], "blocked")
+        self.assertEqual(snapshot["automation_checkpoint_events"][0]["reason"], "shell_disabled")
+
+    def test_pending_checkpoints_includes_recent_events(self):
+        session = SessionState()
+        AutomationSkill().handle(
+            {"intent": "execute_project_checkup", "text": "executar checkup do projeto"},
+            self.context,
+            {"session_state": session},
+        )
+        AutomationSkill().handle(
+            {"intent": "confirm_checkpoint", "checkpoint_id": 1, "text": "confirmar checkpoint 1"},
+            self.context,
+            {"session_state": session},
+        )
+
+        result = AutomationSkill().handle(
+            {"intent": "pending_checkpoints", "text": "checkpoints pendentes"},
+            self.context,
+            {"session_state": session},
+        )
+
+        self.assertTrue(result.data["checkpoints"])
+        self.assertEqual(result.data["events"][0]["checkpoint_id"], 1)
 
 
 if __name__ == "__main__":

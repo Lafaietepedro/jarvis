@@ -28,6 +28,7 @@ def build_presence(
         "last_activity_at": session["last_activity_at"],
         "current_task": session["current_task"],
         "automation_checkpoints": session.get("automation_checkpoints", []),
+        "automation_checkpoint_events": session.get("automation_checkpoint_events", []),
         "privacy": context["privacy"],
         "project": context["project"],
         "suggestions": [

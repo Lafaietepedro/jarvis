@@ -45,6 +45,25 @@ class SessionStateTest(unittest.TestCase):
         session.remove_automation_checkpoint(1)
         self.assertEqual(session.snapshot()["automation_checkpoints"], [])
 
+    def test_automation_checkpoint_events_are_recorded_newest_first(self):
+        session = SessionState()
+
+        session.record_automation_checkpoint_event(
+            {
+                "checkpoint_id": 1,
+                "label": "Rodar testes",
+                "plan": "project_checkup",
+                "status": "blocked",
+                "reason": "shell_disabled",
+            }
+        )
+
+        event = session.snapshot()["automation_checkpoint_events"][0]
+        self.assertEqual(event["checkpoint_id"], 1)
+        self.assertEqual(event["status"], "blocked")
+        self.assertEqual(event["reason"], "shell_disabled")
+        self.assertIn("created_at", event)
+
 
 if __name__ == "__main__":
     unittest.main()

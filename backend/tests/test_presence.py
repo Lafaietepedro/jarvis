@@ -35,6 +35,15 @@ class PresenceTest(unittest.TestCase):
                     "reason": "confirmation_required",
                 }
             ],
+            "automation_checkpoint_events": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "status": "blocked",
+                    "reason": "shell_disabled",
+                }
+            ],
         }
 
     def test_text_greeting_mentions_active_state_and_project(self):
@@ -59,6 +68,7 @@ class PresenceTest(unittest.TestCase):
         self.assertTrue(presence["voice_listening"])
         self.assertTrue(presence["privacy"]["local_first"])
         self.assertEqual(presence["automation_checkpoints"][0]["checkpoint_id"], 1)
+        self.assertEqual(presence["automation_checkpoint_events"][0]["status"], "blocked")
         self.assertIn("qual o status", presence["suggestions"])
         self.assertIn("checkpoints pendentes", presence["suggestions"])
 

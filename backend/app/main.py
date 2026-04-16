@@ -176,6 +176,7 @@ class PresenceResponse(BaseModel):
     last_activity_at: str
     current_task: str | None
     automation_checkpoints: list[dict[str, Any]]
+    automation_checkpoint_events: list[dict[str, Any]]
     privacy: dict[str, Any]
     project: dict[str, Any]
     suggestions: list[str]

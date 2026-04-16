@@ -13,6 +13,7 @@ class SessionState:
         self._voice_listening = False
         self._current_task = None
         self._automation_checkpoints: list[dict[str, Any]] = []
+        self._automation_checkpoint_events: list[dict[str, Any]] = []
 
     def set_active(self):
         self._update(status="active", voice_listening=False, current_task=None)
@@ -45,6 +46,7 @@ class SessionState:
                     }
                     for checkpoint in self._automation_checkpoints
                 ],
+                "automation_checkpoint_events": list(self._automation_checkpoint_events),
             }
 
     def set_automation_checkpoints(self, plan_name: str, checkpoints: list[dict[str, Any]]):
@@ -76,6 +78,17 @@ class SessionState:
                 for checkpoint in self._automation_checkpoints
                 if checkpoint["checkpoint_id"] != checkpoint_id
             ]
+
+    def record_automation_checkpoint_event(self, event: dict[str, Any]):
+        with self._lock:
+            self._automation_checkpoint_events.insert(
+                0,
+                {
+                    **event,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            )
+            self._automation_checkpoint_events = self._automation_checkpoint_events[:10]
 
     def _update(
         self,

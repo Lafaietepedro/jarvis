@@ -22,6 +22,7 @@ Visão rápida
 - Confirmação de checkpoints pendentes
 - Painel CLI de checkpoints pendentes
 - Confirmação rápida de checkpoints pelo CLI/chat
+- Histórico curto de eventos de checkpoints na sessão
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -254,6 +255,8 @@ Checkpoints pendentes:
 make checkpoints
 make confirm-checkpoint ID=1
 ```
+
+O painel de checkpoints também mostra eventos recentes da sessão, como confirmações bloqueadas por permissão ou execuções concluídas.
 
 Painel vivo:
 

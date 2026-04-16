@@ -190,9 +190,11 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["action"]["delegated_action"]["reason"], "shell_disabled")
         self.assertEqual(result["session"]["automation_checkpoints"][0]["checkpoint_id"], 1)
+        self.assertEqual(result["session"]["automation_checkpoint_events"][0]["status"], "blocked")
 
     def test_pending_checkpoints_reports_session_state(self):
         self.core.execute("executar checkup do projeto")
+        self.core.execute("confirmar checkpoint 1")
 
         result = self.core.execute("checkpoints pendentes")
 
@@ -200,6 +202,7 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "pending_checkpoints")
         self.assertEqual(result["action"]["status"], "done")
         self.assertEqual(result["data"]["checkpoints"][0]["checkpoint_id"], 1)
+        self.assertEqual(result["data"]["events"][0]["reason"], "shell_disabled")
 
 
 if __name__ == "__main__":
