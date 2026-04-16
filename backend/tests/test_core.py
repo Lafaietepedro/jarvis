@@ -154,12 +154,30 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "planned")
         self.assertEqual(result["data"]["execution"], "manual_review_required")
 
+    def test_execute_project_checkup_runs_safe_steps_and_reports_checkpoint(self):
+        result = self.core.execute("executar checkup do projeto")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "execute_project_checkup")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["data"]["execution"], "checkpointed")
+        self.assertTrue(result["data"]["executed_steps"])
+        self.assertTrue(result["data"]["checkpoints"])
+
     def test_development_routine_builds_automation_plan(self):
         result = self.core.execute("rotina de desenvolvimento")
 
         self.assertEqual(result["action"]["skill"], "automation")
         self.assertEqual(result["action"]["name"], "automation_plan")
         self.assertTrue(result["data"]["steps"])
+
+    def test_execute_development_routine_reports_ide_checkpoint(self):
+        result = self.core.execute("executar rotina de desenvolvimento")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "execute_automation_plan")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["data"]["checkpoints"][0]["step"]["intent"], "open_project")
 
 
 if __name__ == "__main__":

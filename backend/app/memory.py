@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ class MemoryStore:
         if private or os.environ.get("JARVIS_DISABLE_MEMORY") == "1":
             return
 
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.execute(
                 """
                 INSERT INTO command_history
@@ -38,9 +39,10 @@ class MemoryStore:
                     response,
                 ),
             )
+            conn.commit()
 
     def recent_commands(self, limit: int = 10) -> list[dict[str, Any]]:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 """
@@ -74,7 +76,7 @@ class MemoryStore:
             query += " LIMIT ?"
             params = (limit,)
 
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(query, params).fetchall()
 
@@ -96,13 +98,14 @@ class MemoryStore:
         }
 
     def clear_history(self) -> int:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             total = conn.execute("SELECT COUNT(*) FROM command_history").fetchone()[0]
             conn.execute("DELETE FROM command_history")
+            conn.commit()
         return total
 
     def stats(self) -> dict[str, Any]:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             total = conn.execute("SELECT COUNT(*) FROM command_history").fetchone()[0]
             latest = conn.execute("SELECT created_at FROM command_history ORDER BY id DESC LIMIT 1").fetchone()
 
@@ -114,7 +117,7 @@ class MemoryStore:
         }
 
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS command_history (
@@ -127,6 +130,7 @@ class MemoryStore:
                 )
                 """
             )
+            conn.commit()
 
     def _default_db_path(self, project_path: str | None) -> str:
         explicit_path = os.environ.get("JARVIS_MEMORY_PATH")

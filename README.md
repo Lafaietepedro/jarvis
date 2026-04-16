@@ -18,6 +18,7 @@ Visão rápida
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
 - Planos seguros de automação
+- Executor de automações com checkpoints
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -136,6 +137,8 @@ Comandos iniciais
 - `abrir projeto`
 - `checkup do projeto`
 - `rotina de desenvolvimento`
+- `executar checkup do projeto`
+- `executar rotina de desenvolvimento`
 - `status do audio`
 - `aumentar volume`
 - `diminuir volume`
@@ -180,6 +183,11 @@ curl -X POST http://localhost:8000/command \
   -H "Content-Type: application/json" \
   -d '{"text":"qual o status","private":true}'
 ```
+
+Automações com checkpoints
+- `checkup do projeto` e `rotina de desenvolvimento` apenas montam planos revisáveis.
+- `executar checkup do projeto` e `executar rotina de desenvolvimento` executam somente passos seguros de leitura, como diagnóstico, comandos detectados e painel de privacidade.
+- Passos com risco médio, abertura de apps, comandos de shell ou permissões explícitas viram checkpoints e não são executados automaticamente.
 
 Permissões
 - Ações de desktop ficam bloqueadas por padrão. Para permitir abertura real de apps:

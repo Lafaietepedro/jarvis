@@ -22,6 +22,7 @@ O nucleo atual ja consegue:
 - preparar abertura de URL e pesquisa web com permissao explicita;
 - listar comandos de projeto e preparar abertura do workspace na IDE;
 - montar planos seguros de automacao com revisao manual obrigatoria;
+- executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -206,6 +207,19 @@ Entregas:
 - NLU expandido para `checkup do projeto` e `rotina de desenvolvimento`.
 - Testes para montagem de planos, NLU e roteamento pelo core.
 
+### Fase 3J - Executor De Automacoes Com Checkpoints
+
+Status: concluida.
+
+Entregas:
+- Execucao de planos por `executar checkup do projeto` e `executar rotina de desenvolvimento`.
+- Execucao automatica apenas de passos seguros e de leitura.
+- Checkpoints obrigatorios para comandos de shell, abertura de IDE, permissoes explicitas ou passos de risco medio.
+- Relatorio estruturado com `executed_steps`, `checkpoints` e `results`.
+- Resumo de privacidade executavel como passo seguro, sem sair do dispositivo.
+- Fechamento explicito das conexoes SQLite usadas pela memoria local.
+- Testes de NLU, core, executor de automacao e memoria por comportamento existente.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -217,7 +231,8 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar automacoes executaveis com confirmacao e integracoes de IDE mais profundas.
+- Criar confirmacao por etapa para liberar checkpoints de automacao.
+- Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
 - Melhorar sugestoes com base em historico recente.
@@ -228,7 +243,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar executor de automacoes com checkpoints e confirmacao por etapa.
+- Criar fluxo de confirmacao por checkpoint dentro das automacoes.
 
 ## Fases Futuras Planejadas
 
@@ -339,7 +354,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-87 tests OK
+93 tests OK
 ```
 
 ```bash

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 
+from ..diagnostics import collect_diagnostics
 from .base import BaseSkill, SkillResult
 from .ide import detect_project_commands
 
@@ -9,9 +10,34 @@ class AutomationSkill(BaseSkill):
     name = "automation"
 
     def can_handle(self, intent: dict[str, Any]) -> bool:
-        return intent.get("intent") in {"automation_plan", "project_checkup"}
+        return intent.get("intent") in {
+            "automation_plan",
+            "project_checkup",
+            "execute_automation_plan",
+            "execute_project_checkup",
+        }
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
+        if intent.get("intent") == "execute_project_checkup":
+            plan = build_project_checkup_plan(context)
+            report = execute_plan(plan, context, options)
+            return SkillResult(
+                response=_execution_response(report),
+                action={"skill": self.name, "name": "execute_project_checkup", "status": report["status"]},
+                suggestions=_checkpoint_suggestions(report),
+                data=report,
+            )
+
+        if intent.get("intent") == "execute_automation_plan":
+            plan = build_development_routine_plan(context)
+            report = execute_plan(plan, context, options)
+            return SkillResult(
+                response=_execution_response(report),
+                action={"skill": self.name, "name": "execute_automation_plan", "status": report["status"]},
+                suggestions=_checkpoint_suggestions(report),
+                data=report,
+            )
+
         if intent.get("intent") == "project_checkup":
             plan = build_project_checkup_plan(context)
             return SkillResult(
@@ -108,6 +134,109 @@ def build_development_routine_plan(context: dict[str, Any]) -> dict[str, Any]:
         "steps": steps,
         "execution": "manual_review_required",
     }
+
+
+def execute_plan(plan: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> dict[str, Any]:
+    results = []
+    for index, step in enumerate(plan["steps"], start=1):
+        if _requires_checkpoint(step):
+            results.append(
+                {
+                    "index": index,
+                    "label": step["label"],
+                    "status": "checkpoint",
+                    "reason": "confirmation_required" if step.get("requires_confirmation") else "risk_or_permission",
+                    "step": step,
+                }
+            )
+            continue
+
+        results.append(_execute_safe_step(index, step, context, options))
+
+    checkpoints = [result for result in results if result["status"] == "checkpoint"]
+    return {
+        "name": plan["name"],
+        "project": plan["project"],
+        "status": "blocked" if checkpoints else "done",
+        "execution": "checkpointed",
+        "executed_steps": [result for result in results if result["status"] == "done"],
+        "checkpoints": checkpoints,
+        "results": results,
+    }
+
+
+def _requires_checkpoint(step: dict[str, Any]) -> bool:
+    if step.get("requires_confirmation"):
+        return True
+    if step.get("risk") != "low":
+        return True
+    if step.get("permission"):
+        return True
+    return False
+
+
+def _execute_safe_step(index: int, step: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> dict[str, Any]:
+    intent = step.get("intent")
+    if intent == "diagnostics":
+        return {
+            "index": index,
+            "label": step["label"],
+            "status": "done",
+            "intent": intent,
+            "data": collect_diagnostics(context),
+        }
+
+    if intent == "project_commands":
+        commands = detect_project_commands(Path(context["project"]["path"]))
+        return {
+            "index": index,
+            "label": step["label"],
+            "status": "done",
+            "intent": intent,
+            "data": {"commands": commands},
+        }
+
+    if intent == "privacy_panel":
+        memory_store = options.get("memory_store")
+        session_state = options.get("session_state")
+        return {
+            "index": index,
+            "label": step["label"],
+            "status": "done",
+            "intent": intent,
+            "data": {
+                "privacy": context.get("privacy", {}),
+                "memory": memory_store.stats() if memory_store else {"enabled": False},
+                "session": session_state.snapshot() if session_state else {},
+            },
+        }
+
+    return {
+        "index": index,
+        "label": step["label"],
+        "status": "checkpoint",
+        "reason": "unsupported_safe_step",
+        "step": step,
+    }
+
+
+def _execution_response(report: dict[str, Any]) -> str:
+    executed = len(report["executed_steps"])
+    checkpoints = len(report["checkpoints"])
+    if checkpoints:
+        return f"Executei {executed} passos seguros e parei em {checkpoints} checkpoints."
+    return f"Executei {executed} passos seguros do plano."
+
+
+def _checkpoint_suggestions(report: dict[str, Any]) -> list[str]:
+    suggestions = []
+    for checkpoint in report["checkpoints"]:
+        step = checkpoint["step"]
+        if step.get("command"):
+            suggestions.append(f"confirmar {step['command']}")
+        else:
+            suggestions.append(step["label"])
+    return suggestions[:5]
 
 
 def _first_command(commands: list[dict[str, str]], preferred: tuple[str, ...]) -> str | None:
