@@ -305,6 +305,15 @@ Testes
 make test
 ```
 
+Para validar tambem os contratos reais da API quando a `.venv` estiver instalada:
+
+```bash
+cd backend
+.venv/bin/python -m unittest discover -s tests
+```
+
+Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente.
+
 Notas
 - Este PoC usa um simulador de wake-word por simplicidade. Substitua por Porcupine/Precise quando estiver pronto.
 - Baixe modelos Vosk apropriados e defina `VOSK_MODEL_PATH`.

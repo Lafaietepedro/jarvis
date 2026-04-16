@@ -293,6 +293,18 @@ Entregas:
 - Painel CLI recebe o payload dedicado de checkpoints quando disponivel.
 - Testes cobrindo estado dedicado, formatador, painel e uso do endpoint pelo CLI/chat.
 
+### Fase 3P - Testes De Contrato Da API
+
+Status: concluida.
+
+Entregas:
+- Testes de contrato para `GET /presence`.
+- Testes de contrato para `GET /checkpoints`.
+- Testes de contrato para `POST /command` criando checkpoints e eventos.
+- Isolamento do `JarvisCore` global durante os testes de contrato.
+- Testes de contrato pulam automaticamente quando dependencias web nao estao instaladas no Python em uso.
+- Validacao completa na `.venv` roda os contratos reais com FastAPI disponivel.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -312,11 +324,10 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Adicionar testes de contrato para `/command` e `/context`.
-- Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
+- Adicionar testes de contrato para `/context`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar testes de contrato para `/checkpoints`.
+- Criar smoke test HTTP com servidor local quando `httpx`/TestClient estiver disponivel.
 
 ## Fases Futuras Planejadas
 
@@ -427,8 +438,12 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-115 tests OK
+118 tests OK
 ```
+
+Observacao:
+- Em Python sem dependencias web instaladas, os 3 testes de contrato da API sao pulados.
+- Na `.venv` do projeto, os 118 testes rodam completos.
 
 ```bash
 python -m compileall backend/app
