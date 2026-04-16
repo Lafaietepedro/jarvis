@@ -25,6 +25,7 @@ O nucleo atual ja consegue:
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
 - listar checkpoints pendentes por comando natural, CLI, chat e painel local;
+- confirmar checkpoints por id no CLI e no chat;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -251,6 +252,19 @@ Entregas:
 - `AutomationSkill` responde `pending_checkpoints` com sugestoes de confirmacao.
 - Testes cobrindo presença, CLI, formatadores, NLU e core.
 
+### Fase 3M - Confirmacao Ergonomica De Checkpoints
+
+Status: concluida.
+
+Entregas:
+- Novo comando `python -m app.cli confirm-checkpoint <id>`.
+- Novo target `make confirm-checkpoint ID=<id>`.
+- Chat interativo ganhou `/confirm-checkpoint <id>`.
+- Parser do chat valida ids invalidos e orienta o formato correto.
+- Confirmacao rapida continua passando por `POST /command` com `confirmar checkpoint <id>`.
+- Confirmacao rapida preserva o caminho seguro de `AutomationSkill`, `ShellSkill`, `IDESkill` e permissoes existentes.
+- Testes cobrindo parser do chat, acao de chat e comando CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -262,7 +276,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Criar confirmacao de checkpoints mais ergonomica no chat/CLI.
+- Melhorar feedback visual quando checkpoints sao confirmados, bloqueados ou removidos.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
@@ -274,7 +288,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar comando CLI dedicado para confirmar checkpoint por id.
+- Criar historico curto de execucoes de checkpoints.
 
 ## Fases Futuras Planejadas
 
@@ -385,7 +399,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-104 tests OK
+109 tests OK
 ```
 
 ```bash

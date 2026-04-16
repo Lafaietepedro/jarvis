@@ -21,6 +21,7 @@ Visão rápida
 - Executor de automações com checkpoints
 - Confirmação de checkpoints pendentes
 - Painel CLI de checkpoints pendentes
+- Confirmação rápida de checkpoints pelo CLI/chat
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -71,6 +72,7 @@ Ou diretamente:
 cd backend
 python -m app.cli panel
 python -m app.cli checkpoints
+python -m app.cli confirm-checkpoint 1
 python -m app.cli watch
 python -m app.cli presence
 python -m app.cli privacy
@@ -250,6 +252,7 @@ Checkpoints pendentes:
 
 ```bash
 make checkpoints
+make confirm-checkpoint ID=1
 ```
 
 Painel vivo:
@@ -271,6 +274,7 @@ Dentro do chat:
 /help
 /panel
 /checkpoints
+/confirm-checkpoint 1
 /privacy
 /diagnostics
 /history

@@ -13,6 +13,10 @@ panel:
 checkpoints:
 	cd backend && python -m app.cli checkpoints
 
+.PHONY: confirm-checkpoint
+confirm-checkpoint:
+	cd backend && python -m app.cli confirm-checkpoint "$(ID)"
+
 .PHONY: ask
 ask:
 	cd backend && python -m app.cli ask "$(TEXT)"

@@ -1,11 +1,15 @@
+import argparse
 import unittest
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
-from app.cli import chat_loop, handle_chat_action, parse_chat_line, watch_panel, write_json_file
+from app.cli import chat_loop, handle_chat_action, parse_chat_line, run, watch_panel, write_json_file
 
 
 class FakeClient:
+    posted_payloads = []
+
     def get(self, path, params=None):
         if path == "/presence":
             return {
@@ -50,6 +54,15 @@ class FakeClient:
 
     def post(self, path, payload=None):
         if path == "/command":
+            self.posted_payloads.append(payload)
+            text = (payload or {}).get("text", "")
+            if text.startswith("confirmar checkpoint"):
+                return {
+                    "response": "Checkpoint 1 confirmado.",
+                    "intent": {"intent": "confirm_checkpoint"},
+                    "action": {"skill": "automation", "name": "confirm_checkpoint", "status": "blocked"},
+                    "suggestions": [],
+                }
             return {
                 "response": "Estou operacional.",
                 "intent": {"intent": "status"},
@@ -64,6 +77,9 @@ class FakeClient:
 
 
 class CliTest(unittest.TestCase):
+    def setUp(self):
+        FakeClient.posted_payloads = []
+
     def test_watch_panel_with_iterations_returns_frame(self):
         output = watch_panel(FakeClient(), interval=0, iterations=1)
 
@@ -95,6 +111,18 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "checkpoints")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_confirm_checkpoint(self):
+        action, payload = parse_chat_line("/confirm-checkpoint 1")
+
+        self.assertEqual(action, "confirm-checkpoint")
+        self.assertEqual(payload["checkpoint_id"], 1)
+
+    def test_parse_chat_line_invalid_confirm_checkpoint(self):
+        action, payload = parse_chat_line("/confirm-checkpoint um")
+
+        self.assertEqual(action, "invalid")
+        self.assertIn("Use /confirm-checkpoint", payload["message"])
+
     def test_handle_chat_action_ask(self):
         output = handle_chat_action(FakeClient(), "ask", {"text": "qual o status"})
 
@@ -111,6 +139,34 @@ class CliTest(unittest.TestCase):
 
         self.assertIn("[CHECKPOINTS]", output)
         self.assertIn("Rodar testes do projeto", output)
+
+    def test_handle_chat_action_confirm_checkpoint(self):
+        output = handle_chat_action(FakeClient(), "confirm-checkpoint", {"checkpoint_id": 1})
+
+        self.assertIn("[COMMAND]", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["text"], "confirmar checkpoint 1")
+        self.assertTrue(FakeClient.posted_payloads[0]["confirm_actions"])
+
+    def test_handle_chat_action_invalid(self):
+        output = handle_chat_action(FakeClient(), "invalid", {"message": "Use /confirm-checkpoint <id>."})
+
+        self.assertEqual(output, "Use /confirm-checkpoint <id>.")
+
+    def test_run_confirm_checkpoint(self):
+        args = argparse.Namespace(
+            url="http://test",
+            command="confirm-checkpoint",
+            checkpoint_id=1,
+            private=True,
+            speak=False,
+        )
+
+        with patch("app.cli.JarvisHttpClient", return_value=FakeClient()):
+            output = run(args)
+
+        self.assertIn("[COMMAND]", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["text"], "confirmar checkpoint 1")
+        self.assertTrue(FakeClient.posted_payloads[0]["private"])
 
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})

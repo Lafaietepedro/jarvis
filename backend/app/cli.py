@@ -87,6 +87,11 @@ def build_parser() -> argparse.ArgumentParser:
     clear_history = subparsers.add_parser("clear-history", help="Clear local command history")
     clear_history.add_argument("--confirm", action="store_true", help="Confirm history deletion")
 
+    confirm_checkpoint = subparsers.add_parser("confirm-checkpoint", help="Confirm a pending automation checkpoint")
+    confirm_checkpoint.add_argument("checkpoint_id", type=int, help="Checkpoint id shown by the checkpoints command")
+    confirm_checkpoint.add_argument("--private", action="store_true", help="Do not store this confirmation in local history")
+    confirm_checkpoint.add_argument("--speak", action="store_true", help="Speak the response")
+
     ask = subparsers.add_parser("ask", help="Send a text command")
     ask.add_argument("text", nargs="+")
     ask.add_argument("--confirm", action="store_true", help="Confirm sensitive actions")
@@ -134,6 +139,8 @@ def run(args: argparse.Namespace) -> str:
     if command == "clear-history":
         result = client.post("/history/clear", {"confirm": args.confirm})
         return json.dumps(result, indent=2, ensure_ascii=True)
+    if command == "confirm-checkpoint":
+        return confirm_checkpoint(client, args.checkpoint_id, private=args.private, speak=args.speak)
     if command == "ask":
         payload = {
             "text": " ".join(args.text),
@@ -183,6 +190,7 @@ CHAT_HELP = """Commands:
 /panel - show local panel
 /presence - show presence
 /checkpoints - show pending automation checkpoints
+/confirm-checkpoint <id> - confirm a pending checkpoint
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
 /history - show recent commands
@@ -222,6 +230,12 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
     }:
         return text.lstrip("/"), {}
 
+    if text.startswith("/confirm-checkpoint "):
+        checkpoint_id = _parse_checkpoint_id(text.removeprefix("/confirm-checkpoint "))
+        if checkpoint_id is None:
+            return "invalid", {"message": "Use /confirm-checkpoint <id>."}
+        return "confirm-checkpoint", {"checkpoint_id": checkpoint_id}
+
     options = {"confirm_actions": False, "private": False, "speak_response": False}
     for prefix, key in (("/private ", "private"), ("/confirm ", "confirm_actions"), ("/speak ", "speak_response")):
         if text.startswith(prefix):
@@ -243,6 +257,10 @@ def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str,
         return format_presence(client.get("/presence"))
     if action == "checkpoints":
         return format_checkpoints(client.get("/presence"))
+    if action == "confirm-checkpoint":
+        return confirm_checkpoint(client, payload["checkpoint_id"])
+    if action == "invalid":
+        return payload.get("message", "Invalid command.")
     if action == "privacy":
         return format_privacy(client.get("/privacy"))
     if action == "diagnostics":
@@ -258,6 +276,32 @@ def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str,
     if action == "ask":
         return format_command_result(client.post("/command", payload))
     raise JarvisCliError(f"Unknown chat action: {action}")
+
+
+def confirm_checkpoint(
+    client: JarvisHttpClient,
+    checkpoint_id: int,
+    private: bool = False,
+    speak: bool = False,
+) -> str:
+    return format_command_result(
+        client.post(
+            "/command",
+            {
+                "text": f"confirmar checkpoint {checkpoint_id}",
+                "confirm_actions": True,
+                "private": private,
+                "speak_response": speak,
+            },
+        )
+    )
+
+
+def _parse_checkpoint_id(value: str) -> int | None:
+    value = value.strip()
+    if not value.isdigit():
+        return None
+    return int(value)
 
 
 def chat_loop(
