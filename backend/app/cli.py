@@ -117,13 +117,14 @@ def run(args: argparse.Namespace) -> str:
             client.get("/privacy"),
             client.get("/history", {"limit": 5}),
             client.get("/diagnostics"),
+            client.get("/checkpoints"),
         )
     if command == "watch":
         return watch_panel(client, interval=args.interval, iterations=args.iterations)
     if command == "presence":
         return format_presence(client.get("/presence"))
     if command == "checkpoints":
-        return format_checkpoints(client.get("/presence"))
+        return format_checkpoints(client.get("/checkpoints"))
     if command == "privacy":
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":
@@ -163,6 +164,7 @@ def fetch_panel(client: JarvisHttpClient) -> str:
         client.get("/privacy"),
         client.get("/history", {"limit": 5}),
         client.get("/diagnostics"),
+        client.get("/checkpoints"),
     )
 
 
@@ -256,7 +258,7 @@ def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str,
     if action == "presence":
         return format_presence(client.get("/presence"))
     if action == "checkpoints":
-        return format_checkpoints(client.get("/presence"))
+        return format_checkpoints(client.get("/checkpoints"))
     if action == "confirm-checkpoint":
         return confirm_checkpoint(client, payload["checkpoint_id"])
     if action == "invalid":

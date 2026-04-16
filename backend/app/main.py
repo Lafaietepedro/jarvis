@@ -8,6 +8,7 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 
 from .asr import ASR
+from .checkpoints import build_checkpoint_state
 from .core import JarvisCore
 from .diagnostics import collect_diagnostics
 from .presence import build_greeting, build_presence
@@ -182,6 +183,14 @@ class PresenceResponse(BaseModel):
     suggestions: list[str]
 
 
+class CheckpointsResponse(BaseModel):
+    status: str
+    pending_count: int
+    event_count: int
+    checkpoints: list[dict[str, Any]]
+    events: list[dict[str, Any]]
+
+
 @app.get('/', response_model=PresenceResponse)
 async def root():
     context = jarvis.context_provider.get_context()
@@ -192,6 +201,11 @@ async def root():
 async def presence():
     context = jarvis.context_provider.get_context()
     return build_presence(context, session=jarvis.session_state.snapshot(), mode="text")
+
+
+@app.get('/checkpoints', response_model=CheckpointsResponse)
+async def checkpoints():
+    return build_checkpoint_state(jarvis.session_state.snapshot())
 
 
 @app.post('/recognize_file', response_model=UploadResponse)

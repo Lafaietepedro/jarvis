@@ -9,8 +9,10 @@ from app.cli import chat_loop, handle_chat_action, parse_chat_line, run, watch_p
 
 class FakeClient:
     posted_payloads = []
+    get_paths = []
 
     def get(self, path, params=None):
+        self.get_paths.append(path)
         if path == "/presence":
             return {
                 "status": "active",
@@ -28,6 +30,29 @@ class FakeClient:
                     }
                 ],
                 "automation_checkpoint_events": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes do projeto",
+                        "plan": "project_checkup",
+                        "status": "blocked",
+                        "reason": "shell_disabled",
+                    }
+                ],
+            }
+        if path == "/checkpoints":
+            return {
+                "status": "pending",
+                "pending_count": 1,
+                "event_count": 1,
+                "checkpoints": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes do projeto",
+                        "plan": "project_checkup",
+                        "reason": "confirmation_required",
+                    }
+                ],
+                "events": [
                     {
                         "checkpoint_id": 1,
                         "label": "Rodar testes do projeto",
@@ -88,6 +113,7 @@ class FakeClient:
 class CliTest(unittest.TestCase):
     def setUp(self):
         FakeClient.posted_payloads = []
+        FakeClient.get_paths = []
 
     def test_watch_panel_with_iterations_returns_frame(self):
         output = watch_panel(FakeClient(), interval=0, iterations=1)
@@ -144,10 +170,18 @@ class CliTest(unittest.TestCase):
         self.assertIn("[HISTORY EXPORT]", output)
 
     def test_handle_chat_action_checkpoints(self):
-        output = handle_chat_action(FakeClient(), "checkpoints", {})
+        client = FakeClient()
+        output = handle_chat_action(client, "checkpoints", {})
 
         self.assertIn("[CHECKPOINTS]", output)
         self.assertIn("Rodar testes do projeto", output)
+        self.assertIn("/checkpoints", FakeClient.get_paths)
+
+    def test_watch_panel_fetches_dedicated_checkpoints_endpoint(self):
+        output = watch_panel(FakeClient(), interval=0, iterations=1)
+
+        self.assertIn("[CHECKPOINTS]", output)
+        self.assertIn("/checkpoints", FakeClient.get_paths)
 
     def test_handle_chat_action_confirm_checkpoint(self):
         output = handle_chat_action(FakeClient(), "confirm-checkpoint", {"checkpoint_id": 1})

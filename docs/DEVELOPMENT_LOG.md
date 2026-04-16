@@ -27,6 +27,7 @@ O nucleo atual ja consegue:
 - listar checkpoints pendentes por comando natural, CLI, chat e painel local;
 - confirmar checkpoints por id no CLI e no chat;
 - registrar eventos recentes de checkpoints confirmados na sessao;
+- expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
@@ -280,6 +281,18 @@ Entregas:
 - Comando natural `checkpoints pendentes` retorna pendencias e eventos recentes.
 - Testes cobrindo sessao, automacao, core, presença e formatadores CLI.
 
+### Fase 3O - Endpoint Dedicado De Checkpoints
+
+Status: concluida.
+
+Entregas:
+- Novo modulo `checkpoints` para montar estado de checkpoints e eventos.
+- Endpoint `GET /checkpoints` com `status`, `pending_count`, `event_count`, `checkpoints` e `events`.
+- CLI `checkpoints`, painel e chat agora leem o endpoint dedicado.
+- `format_checkpoints` aceita tanto o payload dedicado quanto o payload legado de presença.
+- Painel CLI recebe o payload dedicado de checkpoints quando disponivel.
+- Testes cobrindo estado dedicado, formatador, painel e uso do endpoint pelo CLI/chat.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -291,7 +304,7 @@ Objetivo:
 
 Prioridades atuais:
 - Expandir o NLU para mais comandos locais.
-- Melhorar historico de execucoes de checkpoints e relatorios de resultado.
+- Melhorar relatorios de resultado dos checkpoints e preparar contrato para UI desktop.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
@@ -303,7 +316,7 @@ Primeiras tarefas recomendadas:
 - Adicionar testes de contrato para `/presence`, `/history`, `/pause` e `/resume`.
 - Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
-- Criar endpoint dedicado para checkpoints e eventos, em vez de depender apenas de `/presence`.
+- Criar testes de contrato para `/checkpoints`.
 
 ## Fases Futuras Planejadas
 
@@ -414,7 +427,7 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-111 tests OK
+115 tests OK
 ```
 
 ```bash

@@ -1,0 +1,44 @@
+import unittest
+
+from app.checkpoints import build_checkpoint_state
+
+
+class CheckpointsTest(unittest.TestCase):
+    def test_build_checkpoint_state(self):
+        state = build_checkpoint_state(
+            {
+                "automation_checkpoints": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes",
+                        "plan": "project_checkup",
+                        "reason": "confirmation_required",
+                    }
+                ],
+                "automation_checkpoint_events": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Rodar testes",
+                        "status": "blocked",
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(state["status"], "pending")
+        self.assertEqual(state["pending_count"], 1)
+        self.assertEqual(state["event_count"], 1)
+        self.assertEqual(state["checkpoints"][0]["checkpoint_id"], 1)
+
+    def test_empty_checkpoint_state(self):
+        state = build_checkpoint_state({})
+
+        self.assertEqual(state["status"], "empty")
+        self.assertEqual(state["pending_count"], 0)
+        self.assertEqual(state["event_count"], 0)
+        self.assertEqual(state["checkpoints"], [])
+        self.assertEqual(state["events"], [])
+
+
+if __name__ == "__main__":
+    unittest.main()

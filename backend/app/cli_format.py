@@ -142,10 +142,11 @@ def format_panel(
     privacy: dict[str, Any],
     history: dict[str, Any],
     diagnostics: dict[str, Any] | None = None,
+    checkpoints: dict[str, Any] | None = None,
 ) -> str:
     sections = [
         format_presence(presence),
-        format_checkpoints(presence),
+        format_checkpoints(checkpoints or presence),
         format_privacy(privacy),
         format_history(history),
     ]
@@ -155,6 +156,9 @@ def format_panel(
 
 
 def _extract_checkpoints(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if "checkpoints" in payload:
+        return payload.get("checkpoints") or []
+
     if "automation_checkpoints" in payload:
         return payload.get("automation_checkpoints") or []
 
@@ -163,6 +167,9 @@ def _extract_checkpoints(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _extract_checkpoint_events(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if "events" in payload:
+        return payload.get("events") or []
+
     if "automation_checkpoint_events" in payload:
         return payload.get("automation_checkpoint_events") or []
 

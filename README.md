@@ -23,6 +23,7 @@ Visão rápida
 - Painel CLI de checkpoints pendentes
 - Confirmação rápida de checkpoints pelo CLI/chat
 - Histórico curto de eventos de checkpoints na sessão
+- Endpoint dedicado para checkpoints e eventos
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -108,6 +109,7 @@ Endpoints úteis
 - `GET /history` — lista comandos recentes registrados localmente
 - `GET /history/export` — exporta histórico local como JSON
 - `POST /history/clear` — limpa histórico local com confirmação
+- `GET /checkpoints` — lista checkpoints pendentes e eventos recentes
 - `GET /privacy` — mostra painel de privacidade, memória, sessão e permissões
 - `GET /diagnostics` — mostra dependências opcionais e saúde local
 - `POST /recognize_file` — faz upload de WAV e retorna transcrição
@@ -252,6 +254,7 @@ make panel
 Checkpoints pendentes:
 
 ```bash
+curl http://localhost:8000/checkpoints
 make checkpoints
 make confirm-checkpoint ID=1
 ```

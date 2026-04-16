@@ -73,6 +73,28 @@ class CliFormatTest(unittest.TestCase):
                 "playerctl": {"available": True},
             },
         }
+        self.checkpoints = {
+            "status": "pending",
+            "pending_count": 1,
+            "event_count": 1,
+            "checkpoints": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "reason": "confirmation_required",
+                }
+            ],
+            "events": [
+                {
+                    "checkpoint_id": 1,
+                    "label": "Rodar testes do projeto",
+                    "plan": "project_checkup",
+                    "status": "blocked",
+                    "reason": "shell_disabled",
+                }
+            ],
+        }
 
     def test_format_presence(self):
         output = format_presence(self.presence)
@@ -95,6 +117,12 @@ class CliFormatTest(unittest.TestCase):
         output = format_checkpoints({"automation_checkpoints": []})
 
         self.assertIn("No pending checkpoints.", output)
+
+    def test_format_dedicated_checkpoints_payload(self):
+        output = format_checkpoints(self.checkpoints)
+
+        self.assertIn("Rodar testes do projeto", output)
+        self.assertIn("shell_disabled", output)
 
     def test_format_privacy(self):
         output = format_privacy(self.privacy)
@@ -147,7 +175,7 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("pactl", output)
 
     def test_format_panel(self):
-        output = format_panel(self.presence, self.privacy, self.history, self.diagnostics)
+        output = format_panel(self.presence, self.privacy, self.history, self.diagnostics, self.checkpoints)
 
         self.assertIn("[JARVIS]", output)
         self.assertIn("[CHECKPOINTS]", output)
