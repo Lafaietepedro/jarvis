@@ -105,6 +105,20 @@ class FakeClient:
                     "action": {"skill": "automation", "name": "confirm_checkpoint", "status": "blocked"},
                     "suggestions": [],
                 }
+            if text == "validar dependencias opcionais":
+                return {
+                    "response": "Dependências opcionais verificadas.",
+                    "intent": {"intent": "dependency_check"},
+                    "action": {"skill": "system", "name": "dependency_check", "status": "done"},
+                    "suggestions": ["instalar dependencias opcionais"],
+                }
+            if text == "instalar dependencias opcionais":
+                return {
+                    "response": "Preparei os comandos de instalacao das dependencias opcionais.",
+                    "intent": {"intent": "install_dependencies"},
+                    "action": {"skill": "system", "name": "install_dependencies", "status": "planned"},
+                    "suggestions": ["sudo apt install playerctl"],
+                }
             return {
                 "response": "Estou operacional.",
                 "intent": {"intent": "status"},
@@ -139,6 +153,12 @@ class CliTest(unittest.TestCase):
         action, payload = parse_chat_line("/p")
 
         self.assertEqual(action, "panel")
+        self.assertEqual(payload, {})
+
+    def test_parse_chat_line_dependencies_shortcut(self):
+        action, payload = parse_chat_line("/deps")
+
+        self.assertEqual(action, "dependencies")
         self.assertEqual(payload, {})
 
     def test_parse_chat_line_shortcut_confirm_checkpoint(self):
@@ -210,6 +230,22 @@ class CliTest(unittest.TestCase):
         self.assertIn("Rodar testes do projeto", output)
         self.assertIn("/checkpoints", FakeClient.get_paths)
 
+    def test_handle_chat_action_dependencies(self):
+        output = handle_chat_action(FakeClient(), "dependencies", {})
+
+        self.assertIn("[COMMAND]", output)
+        self.assertIn("Dependências opcionais verificadas.", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["text"], "validar dependencias opcionais")
+        self.assertTrue(FakeClient.posted_payloads[0]["private"])
+
+    def test_handle_chat_action_install_dependencies(self):
+        output = handle_chat_action(FakeClient(), "install-dependencies", {})
+
+        self.assertIn("[COMMAND]", output)
+        self.assertIn("sudo apt install playerctl", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["text"], "instalar dependencias opcionais")
+        self.assertTrue(FakeClient.posted_payloads[0]["private"])
+
     def test_watch_panel_fetches_dedicated_checkpoints_endpoint(self):
         output = watch_panel(FakeClient(), interval=0, iterations=1)
 
@@ -259,6 +295,15 @@ class CliTest(unittest.TestCase):
         self.assertIn("[COMMAND]", output)
         self.assertEqual(FakeClient.posted_payloads[0]["text"], "confirmar checkpoint 1")
         self.assertTrue(FakeClient.posted_payloads[0]["private"])
+
+    def test_run_dependencies(self):
+        args = argparse.Namespace(url="http://test", command="dependencies")
+
+        with patch("app.cli.JarvisHttpClient", return_value=FakeClient()):
+            output = run(args)
+
+        self.assertIn("[COMMAND]", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["text"], "validar dependencias opcionais")
 
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})

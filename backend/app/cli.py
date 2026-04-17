@@ -76,6 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("checkpoints", help="Show pending automation checkpoints")
     subparsers.add_parser("privacy", help="Show privacy panel")
     subparsers.add_parser("diagnostics", help="Show local diagnostics")
+    subparsers.add_parser("dependencies", help="Validate optional dependencies")
+    subparsers.add_parser("install-dependencies", help="Show optional dependency install commands")
 
     history = subparsers.add_parser("history", help="Show recent command history")
     history.add_argument("--limit", type=int, default=10)
@@ -129,6 +131,14 @@ def run(args: argparse.Namespace) -> str:
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":
         return format_diagnostics(client.get("/diagnostics"))
+    if command == "dependencies":
+        return format_command_result(
+            client.post("/command", {"text": "validar dependencias opcionais", "private": True})
+        )
+    if command == "install-dependencies":
+        return format_command_result(
+            client.post("/command", {"text": "instalar dependencias opcionais", "private": True})
+        )
     if command == "history":
         return format_history(client.get("/history", {"limit": args.limit}))
     if command == "export-history":
@@ -196,6 +206,8 @@ CHAT_HELP = """Commands:
 /confirm-checkpoint <id> - confirm a pending checkpoint
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
+/dependencies - validate optional dependencies
+/install-dependencies - show optional dependency install commands
 /history - show recent commands
 /session - show this chat session history
 /export-history - summarize a local history export
@@ -210,7 +222,7 @@ CHAT_HELP = """Commands:
 
 Shortcuts:
 /p panel, /chk checkpoints, /cc <id> confirm checkpoint
-/hist history, /s session, /priv privacy, /diag diagnostics
+/hist history, /s session, /priv privacy, /diag diagnostics, /deps dependencies
 /pv <text> private, /c <text> confirm, /say <text> speak
 """
 
@@ -224,6 +236,8 @@ CHAT_EXACT_ALIASES = {
     "/s": "/session",
     "/priv": "/privacy",
     "/diag": "/diagnostics",
+    "/deps": "/dependencies",
+    "/install-deps": "/install-dependencies",
     "/pa": "/pause",
     "/re": "/resume",
 }
@@ -253,6 +267,8 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
         "/checkpoints",
         "/privacy",
         "/diagnostics",
+        "/dependencies",
+        "/install-dependencies",
         "/history",
         "/export-history",
         "/clear-history",
@@ -305,6 +321,14 @@ def handle_chat_action(
         return format_privacy(client.get("/privacy"))
     if action == "diagnostics":
         return format_diagnostics(client.get("/diagnostics"))
+    if action == "dependencies":
+        return format_command_result(
+            client.post("/command", {"text": "validar dependencias opcionais", "private": True})
+        )
+    if action == "install-dependencies":
+        return format_command_result(
+            client.post("/command", {"text": "instalar dependencias opcionais", "private": True})
+        )
     if action == "history":
         return format_history(client.get("/history", {"limit": 10}))
     if action == "export-history":

@@ -30,6 +30,8 @@ O nucleo atual ja consegue:
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
+- validar dependencias opcionais por comando natural, CLI ou chat;
+- preparar comandos de instalacao de dependencias opcionais sem executar instalacao automaticamente;
 - atualizar painel vivo por `python -m app.cli watch`;
 - conversar pelo terminal com `python -m app.cli chat` ou `make chat`;
 - usar atalhos e historico curto de sessao no chat interativo;
@@ -330,6 +332,21 @@ Entregas:
 - Ajuda do chat atualizada com os atalhos disponiveis.
 - Testes cobrindo parsing dos atalhos, historico de sessao e loop interativo.
 
+### Fase 3S - Validacao De Dependencias Opcionais
+
+Status: concluida.
+
+Entregas:
+- Diagnostico agora inclui modulos Python opcionais usados por voz local, como `vosk`, `sounddevice`, `soundfile` e `pyttsx3`.
+- Novo relatorio estruturado de dependencias opcionais, com binarios ausentes, modulos Python ausentes, modelo Vosk e comandos sugeridos.
+- Novo comando natural `validar dependencias opcionais`.
+- Novo comando natural `instalar dependencias opcionais`, que prepara comandos e nao executa instalacao automaticamente.
+- Novos comandos CLI `dependencies` e `install-dependencies`.
+- Novos targets `make dependencies` e `make install-dependencies`.
+- Chat interativo ganhou `/dependencies`, `/deps`, `/install-dependencies` e `/install-deps`.
+- Diagnostico CLI agora mostra contagem e ausencias de modulos Python opcionais.
+- Testes cobrindo NLU, core, CLI e relatorio de dependencias opcionais.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -349,7 +366,6 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar comandos para instalar/validar dependencias opcionais.
 - Criar smoke test HTTP com servidor local quando `httpx`/TestClient estiver disponivel.
 
 ## Fases Futuras Planejadas
@@ -461,12 +477,12 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-128 tests OK
+138 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 6 testes de contrato da API sao pulados.
-- Na `.venv` do projeto, os 128 testes rodam completos.
+- Na `.venv` do projeto, os 138 testes rodam completos.
 
 ```bash
 python -m compileall backend/app

@@ -13,6 +13,14 @@ panel:
 checkpoints:
 	cd backend && python -m app.cli checkpoints
 
+.PHONY: dependencies
+dependencies:
+	cd backend && python -m app.cli dependencies
+
+.PHONY: install-dependencies
+install-dependencies:
+	cd backend && python -m app.cli install-dependencies
+
 .PHONY: confirm-checkpoint
 confirm-checkpoint:
 	cd backend && python -m app.cli confirm-checkpoint "$(ID)"

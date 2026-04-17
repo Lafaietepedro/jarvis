@@ -14,6 +14,7 @@ Visão rápida
 - Painel de privacidade e permissões
 - CLI local para painel, histórico e comandos
 - Diagnóstico local de dependências opcionais
+- Validação e plano de instalação de dependências opcionais
 - Chat interativo no terminal
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
@@ -79,6 +80,8 @@ python -m app.cli watch
 python -m app.cli presence
 python -m app.cli privacy
 python -m app.cli diagnostics
+python -m app.cli dependencies
+python -m app.cli install-dependencies
 python -m app.cli history
 python -m app.cli export-history
 python -m app.cli export-history --output history.json
@@ -139,6 +142,8 @@ Comandos iniciais
 - `limpar historico`
 - `painel de privacidade`
 - `diagnostico`
+- `validar dependencias opcionais`
+- `instalar dependencias opcionais`
 - `checkpoints pendentes`
 - `pesquisar por python fastapi`
 - `abrir site example.com`
@@ -289,6 +294,10 @@ Dentro do chat:
 /priv
 /diagnostics
 /diag
+/dependencies
+/deps
+/install-dependencies
+/install-deps
 /history
 /hist
 /session
@@ -310,6 +319,8 @@ Diagnóstico local:
 ```bash
 curl http://localhost:8000/diagnostics
 python -m app.cli diagnostics
+make dependencies
+make install-dependencies
 ```
 
 Testes

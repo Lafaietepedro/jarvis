@@ -123,17 +123,27 @@ def format_diagnostics(payload: dict[str, Any]) -> str:
     platform = payload.get("platform", {})
     audio = payload.get("audio", {})
     binaries = payload.get("binaries", {})
+    python_modules = payload.get("python_modules", {})
     missing = [name for name, item in binaries.items() if not item.get("available")]
     available_count = len(binaries) - len(missing)
+    missing_python_modules = [
+        name
+        for name, item in python_modules.items()
+        if not item.get("available")
+    ]
+    available_python_count = len(python_modules) - len(missing_python_modules)
     lines = [
         "[DIAGNOSTICS]",
         f"System: {platform.get('system', 'unknown')} {platform.get('release', '')}".strip(),
         f"Python: {platform.get('python', 'unknown')}",
         f"Vosk model: {'available' if audio.get('vosk_model_available') else 'missing'}",
         f"Optional binaries: {available_count}/{len(binaries)} available",
+        f"Python modules: {available_python_count}/{len(python_modules)} available",
     ]
     if missing:
-        lines.append(f"Missing: {', '.join(missing)}")
+        lines.append(f"Missing binaries: {', '.join(missing)}")
+    if missing_python_modules:
+        lines.append(f"Missing Python modules: {', '.join(missing_python_modules)}")
     return "\n".join(lines)
 
 

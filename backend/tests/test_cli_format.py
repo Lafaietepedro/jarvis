@@ -72,6 +72,10 @@ class CliFormatTest(unittest.TestCase):
                 "pactl": {"available": False},
                 "playerctl": {"available": True},
             },
+            "python_modules": {
+                "vosk": {"available": False},
+                "soundfile": {"available": True},
+            },
         }
         self.checkpoints = {
             "status": "pending",
@@ -173,6 +177,8 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[DIAGNOSTICS]", output)
         self.assertIn("pactl", output)
+        self.assertIn("Python modules: 1/2 available", output)
+        self.assertIn("vosk", output)
 
     def test_format_panel(self):
         output = format_panel(self.presence, self.privacy, self.history, self.diagnostics, self.checkpoints)

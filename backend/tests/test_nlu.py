@@ -65,6 +65,16 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "diagnostics")
 
+    def test_dependency_check(self):
+        intent = parse_intent("validar dependencias opcionais")
+
+        self.assertEqual(intent["intent"], "dependency_check")
+
+    def test_install_dependencies(self):
+        intent = parse_intent("instalar dependencias opcionais")
+
+        self.assertEqual(intent["intent"], "install_dependencies")
+
     def test_project_status(self):
         intent = parse_intent("analisar projeto")
 

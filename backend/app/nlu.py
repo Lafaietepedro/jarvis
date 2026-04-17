@@ -10,6 +10,24 @@ LIST_FILES_TERMS = ("listar arquivos", "mostrar arquivos", "ver arquivos", "ls")
 WHERE_TERMS = ("onde estou", "onde estamos", "diretorio atual", "pasta atual", "pwd")
 CAPABILITY_TERMS = ("o que voce pode controlar", "o que voce faz", "capacidades", "comandos disponiveis")
 DIAGNOSTICS_TERMS = ("diagnostico", "diagnóstico", "saude do sistema", "saúde do sistema", "dependencias", "dependências")
+DEPENDENCY_CHECK_TERMS = (
+    "validar dependencias opcionais",
+    "validar dependências opcionais",
+    "checar dependencias opcionais",
+    "checar dependências opcionais",
+    "verificar dependencias opcionais",
+    "verificar dependências opcionais",
+    "dependencias opcionais",
+    "dependências opcionais",
+)
+INSTALL_DEPENDENCIES_TERMS = (
+    "instalar dependencias opcionais",
+    "instalar dependências opcionais",
+    "preparar dependencias opcionais",
+    "preparar dependências opcionais",
+    "como instalar dependencias opcionais",
+    "como instalar dependências opcionais",
+)
 PROJECT_STATUS_TERMS = ("status do projeto", "analisar projeto", "analise o projeto", "como esta o projeto")
 PREPARE_PROJECT_TERMS = ("preparar projeto", "prepara o projeto", "preparar ambiente", "prepara o ambiente")
 AUTOMATION_PLAN_TERMS = ("rotina de desenvolvimento", "plano de automacao", "plano de automação", "automatizar rotina", "preparar rotina")
@@ -173,6 +191,12 @@ def parse_intent(text: str):
 
     if _has_any(normalized, CAPABILITY_TERMS):
         return {"intent": "capabilities", "text": text}
+
+    if _has_any(normalized, INSTALL_DEPENDENCIES_TERMS):
+        return {"intent": "install_dependencies", "text": text}
+
+    if _has_any(normalized, DEPENDENCY_CHECK_TERMS):
+        return {"intent": "dependency_check", "text": text}
 
     if _has_any(normalized, DIAGNOSTICS_TERMS):
         return {"intent": "diagnostics", "text": text}

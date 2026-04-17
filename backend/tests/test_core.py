@@ -109,6 +109,21 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "diagnostics")
         self.assertIn("binaries", result["data"])
 
+    def test_dependency_check_uses_system_skill(self):
+        result = self.core.execute("validar dependencias opcionais")
+
+        self.assertEqual(result["action"]["skill"], "system")
+        self.assertEqual(result["action"]["name"], "dependency_check")
+        self.assertIn("dependencies", result["data"])
+
+    def test_install_dependencies_is_planned_not_executed(self):
+        result = self.core.execute("instalar dependencias opcionais")
+
+        self.assertEqual(result["action"]["skill"], "system")
+        self.assertEqual(result["action"]["name"], "install_dependencies")
+        self.assertEqual(result["action"]["status"], "planned")
+        self.assertIn("dependencies", result["data"])
+
     def test_media_actions_are_blocked_by_default(self):
         result = self.core.execute("aumentar volume")
 
