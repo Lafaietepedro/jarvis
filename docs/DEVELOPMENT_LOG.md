@@ -32,10 +32,12 @@ O nucleo atual ja consegue:
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - atualizar painel vivo por `python -m app.cli watch`;
 - conversar pelo terminal com `python -m app.cli chat` ou `make chat`;
+- usar atalhos e historico curto de sessao no chat interativo;
 - exportar e limpar historico local por API, CLI ou comando natural confirmado;
 - retornar sugestoes de proximas acoes;
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
+- cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - manter acoes sensiveis bloqueadas por padrao;
 - executar testes automatizados do core e do NLU.
 
@@ -305,6 +307,29 @@ Entregas:
 - Testes de contrato pulam automaticamente quando dependencias web nao estao instaladas no Python em uso.
 - Validacao completa na `.venv` roda os contratos reais com FastAPI disponivel.
 
+### Fase 3Q - Contratos De Contexto, Historico E Sessao
+
+Status: concluida.
+
+Entregas:
+- Teste de contrato para `GET /context` validando projeto, marcadores, capacidades e flags de privacidade.
+- Teste de contrato para `GET /history` validando o formato dos comandos recentes registrados localmente.
+- Teste de contrato para `POST /pause` validando transicao para sessao pausada e voz desligada.
+- Teste de contrato para `POST /resume` validando retorno para sessao ativa.
+- Isolamento do estado global de voz nos testes de contrato.
+
+### Fase 3R - Chat Com Atalhos E Historico De Sessao
+
+Status: concluida.
+
+Entregas:
+- Atalhos no chat para comandos frequentes, como `/p`, `/chk`, `/cc <id>`, `/hist`, `/priv` e `/diag`.
+- Atalhos para envio com opcoes, como `/pv <texto>`, `/c <texto>` e `/say <texto>`.
+- Novo comando `/session` com alias `/s` para mostrar o historico curto da sessao atual do chat.
+- Historico de sessao mantido apenas em memoria pelo `chat_loop`, separado do historico persistente em SQLite.
+- Ajuda do chat atualizada com os atalhos disponiveis.
+- Testes cobrindo parsing dos atalhos, historico de sessao e loop interativo.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -324,8 +349,6 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Adicionar testes de contrato para `/context`, `/history`, `/pause` e `/resume`.
-- Melhorar o chat com histórico de sessão e comandos abreviados.
 - Criar comandos para instalar/validar dependencias opcionais.
 - Criar smoke test HTTP com servidor local quando `httpx`/TestClient estiver disponivel.
 
@@ -438,12 +461,12 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-118 tests OK
+128 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 3 testes de contrato da API sao pulados.
-- Na `.venv` do projeto, os 118 testes rodam completos.
+- Em Python sem dependencias web instaladas, os 6 testes de contrato da API sao pulados.
+- Na `.venv` do projeto, os 128 testes rodam completos.
 
 ```bash
 python -m compileall backend/app

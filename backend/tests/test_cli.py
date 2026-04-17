@@ -4,7 +4,15 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from app.cli import chat_loop, handle_chat_action, parse_chat_line, run, watch_panel, write_json_file
+from app.cli import (
+    chat_loop,
+    format_chat_session_history,
+    handle_chat_action,
+    parse_chat_line,
+    run,
+    watch_panel,
+    write_json_file,
+)
 
 
 class FakeClient:
@@ -127,6 +135,31 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "privacy")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_shortcut_command(self):
+        action, payload = parse_chat_line("/p")
+
+        self.assertEqual(action, "panel")
+        self.assertEqual(payload, {})
+
+    def test_parse_chat_line_shortcut_confirm_checkpoint(self):
+        action, payload = parse_chat_line("/cc 2")
+
+        self.assertEqual(action, "confirm-checkpoint")
+        self.assertEqual(payload["checkpoint_id"], 2)
+
+    def test_parse_chat_line_shortcut_confirm(self):
+        action, payload = parse_chat_line("/c rode make test")
+
+        self.assertEqual(action, "ask")
+        self.assertTrue(payload["confirm_actions"])
+        self.assertEqual(payload["text"], "rode make test")
+
+    def test_parse_chat_line_session_history(self):
+        action, payload = parse_chat_line("/s")
+
+        self.assertEqual(action, "session-history")
+        self.assertEqual(payload, {})
+
     def test_parse_chat_line_private(self):
         action, payload = parse_chat_line("/private qual o status")
 
@@ -195,6 +228,22 @@ class CliTest(unittest.TestCase):
 
         self.assertEqual(output, "Use /confirm-checkpoint <id>.")
 
+    def test_handle_chat_action_session_history(self):
+        output = handle_chat_action(
+            FakeClient(),
+            "session-history",
+            {},
+            session_history=[{"input": "qual o status", "action": "ask"}],
+        )
+
+        self.assertIn("[CHAT SESSION]", output)
+        self.assertIn("qual o status -> ask", output)
+
+    def test_format_empty_chat_session_history(self):
+        output = format_chat_session_history([])
+
+        self.assertIn("No messages in this session yet.", output)
+
     def test_run_confirm_checkpoint(self):
         args = argparse.Namespace(
             url="http://test",
@@ -232,6 +281,16 @@ class CliTest(unittest.TestCase):
 
         self.assertEqual(result, "Chat closed.")
         self.assertTrue(outputs[0].startswith("JARVIS chat active"))
+
+    def test_chat_loop_tracks_session_history(self):
+        inputs = iter(["qual o status", "/s", "/exit"])
+        outputs = []
+
+        result = chat_loop(FakeClient(), input_func=lambda _: next(inputs), output_func=outputs.append)
+
+        self.assertEqual(result, "Chat closed.")
+        self.assertTrue(any("[CHAT SESSION]" in output for output in outputs))
+        self.assertTrue(any("qual o status -> ask" in output for output in outputs))
 
 
 if __name__ == "__main__":

@@ -278,18 +278,31 @@ Dentro do chat:
 
 ```text
 /help
+/?
 /panel
+/p
 /checkpoints
+/chk
 /confirm-checkpoint 1
+/cc 1
 /privacy
+/priv
 /diagnostics
+/diag
 /history
+/hist
+/session
+/s
 /export-history
 /clear-history
 /private qual o status
+/pv qual o status
 /confirm rode make test
+/c rode make test
 /speak qual o status
+/say qual o status
 /exit
+/q
 ```
 
 Diagnóstico local:

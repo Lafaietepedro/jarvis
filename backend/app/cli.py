@@ -188,6 +188,7 @@ def watch_panel(client: JarvisHttpClient, interval: float, iterations: int = 0) 
 
 CHAT_HELP = """Commands:
 /help - show this help
+/?, /q - shortcuts for help and exit
 /exit - leave chat
 /panel - show local panel
 /presence - show presence
@@ -196,6 +197,7 @@ CHAT_HELP = """Commands:
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
 /history - show recent commands
+/session - show this chat session history
 /export-history - summarize a local history export
 /clear-history - clear local command history
 /pause - pause JARVIS
@@ -205,17 +207,46 @@ CHAT_HELP = """Commands:
 /private <text> - send without storing history
 /confirm <text> - confirm sensitive action
 /speak <text> - speak the response
+
+Shortcuts:
+/p panel, /chk checkpoints, /cc <id> confirm checkpoint
+/hist history, /s session, /priv privacy, /diag diagnostics
+/pv <text> private, /c <text> confirm, /say <text> speak
 """
 
 
+CHAT_EXACT_ALIASES = {
+    "/?": "/help",
+    "/q": "/exit",
+    "/p": "/panel",
+    "/chk": "/checkpoints",
+    "/hist": "/history",
+    "/s": "/session",
+    "/priv": "/privacy",
+    "/diag": "/diagnostics",
+    "/pa": "/pause",
+    "/re": "/resume",
+}
+
+
+CHAT_PREFIX_ALIASES = {
+    "/cc ": "/confirm-checkpoint ",
+    "/pv ": "/private ",
+    "/c ": "/confirm ",
+    "/say ": "/speak ",
+}
+
+
 def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
-    text = line.strip()
+    text = _expand_chat_alias(line.strip())
     if not text:
         return "empty", {}
     if text in {"/exit", "/quit"}:
         return "exit", {}
     if text == "/help":
         return "help", {}
+    if text == "/session":
+        return "session-history", {}
     if text in {
         "/panel",
         "/presence",
@@ -248,11 +279,18 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
     return "ask", {"text": text, **options}
 
 
-def handle_chat_action(client: JarvisHttpClient, action: str, payload: dict[str, Any]) -> str:
+def handle_chat_action(
+    client: JarvisHttpClient,
+    action: str,
+    payload: dict[str, Any],
+    session_history: list[dict[str, str]] | None = None,
+) -> str:
     if action == "empty":
         return ""
     if action == "help":
         return CHAT_HELP
+    if action == "session-history":
+        return format_chat_session_history(session_history or [])
     if action == "panel":
         return fetch_panel(client)
     if action == "presence":
@@ -299,11 +337,34 @@ def confirm_checkpoint(
     )
 
 
+def format_chat_session_history(history: list[dict[str, str]]) -> str:
+    lines = ["[CHAT SESSION]"]
+    if not history:
+        lines.append("No messages in this session yet.")
+        return "\n".join(lines)
+
+    start = max(len(history) - 10, 0)
+    for index, entry in enumerate(history[start:], start=start + 1):
+        lines.append(f"{index}. {entry.get('input', '')} -> {entry.get('action', 'unknown')}")
+    return "\n".join(lines)
+
+
 def _parse_checkpoint_id(value: str) -> int | None:
     value = value.strip()
     if not value.isdigit():
         return None
     return int(value)
+
+
+def _expand_chat_alias(text: str) -> str:
+    if text in CHAT_EXACT_ALIASES:
+        return CHAT_EXACT_ALIASES[text]
+
+    for alias, command in CHAT_PREFIX_ALIASES.items():
+        if text.startswith(alias):
+            return f"{command}{text[len(alias):].strip()}"
+
+    return text
 
 
 def chat_loop(
@@ -312,6 +373,7 @@ def chat_loop(
     output_func=print,
 ) -> str:
     output_func("JARVIS chat active. Type /help for commands, /exit to leave.")
+    session_history: list[dict[str, str]] = []
     while True:
         try:
             line = input_func("jarvis> ")
@@ -322,7 +384,9 @@ def chat_loop(
         if action == "exit":
             return "Chat closed."
 
-        output = handle_chat_action(client, action, payload)
+        output = handle_chat_action(client, action, payload, session_history=session_history)
+        if action not in {"empty", "session-history"}:
+            session_history.append({"input": line.strip(), "action": action})
         if output:
             output_func(output)
 

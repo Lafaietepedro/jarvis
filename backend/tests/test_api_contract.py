@@ -23,14 +23,17 @@ class ApiContractTest(unittest.TestCase):
         (self.project_path / "README.md").write_text("# API Contract Test\n", encoding="utf-8")
         (self.project_path / "Makefile").write_text("test:\n\tpython -m unittest\n", encoding="utf-8")
         self.previous_jarvis = main.jarvis
+        self.previous_voice_running = main.voice_running
         self.memory = MemoryStore(db_path=str(self.project_path / "memory.sqlite"))
         main.jarvis = JarvisCore(
             LocalContextProvider(workspace=str(self.project_path)),
             memory_store=self.memory,
         )
+        main.voice_running = False
 
     def tearDown(self):
         main.jarvis = self.previous_jarvis
+        main.voice_running = self.previous_voice_running
         self.tempdir.cleanup()
 
     def test_presence_contract(self):
@@ -42,6 +45,50 @@ class ApiContractTest(unittest.TestCase):
         self.assertIn("project", payload)
         self.assertIn("automation_checkpoints", payload)
         self.assertIn("automation_checkpoint_events", payload)
+
+    def test_context_contract(self):
+        payload = asyncio.run(main.context())
+
+        self.assertEqual(payload["project"]["path"], str(self.project_path))
+        self.assertEqual(payload["project"]["name"], self.project_path.name)
+        self.assertIn("README.md", payload["project"]["markers"])
+        self.assertIn("Makefile", payload["project"]["markers"])
+        self.assertTrue(payload["project"]["capabilities"]["has_makefile"])
+        self.assertFalse(payload["project"]["capabilities"]["has_node"])
+        self.assertTrue(payload["privacy"]["local_first"])
+        self.assertFalse(payload["privacy"]["cloud_enabled"])
+        self.assertFalse(payload["privacy"]["shell_enabled"])
+        self.assertTrue(payload["privacy"]["memory_enabled"])
+
+    def test_history_contract(self):
+        command = main.CommandRequest(text="qual o status")
+        asyncio.run(main.command(command))
+
+        payload = asyncio.run(main.history(limit=5))
+
+        self.assertIn("commands", payload)
+        self.assertEqual(len(payload["commands"]), 1)
+        history_entry = payload["commands"][0]
+        self.assertIn("created_at", history_entry)
+        self.assertEqual(history_entry["text"], "qual o status")
+        self.assertEqual(history_entry["intent"]["intent"], "status")
+        self.assertEqual(history_entry["action"]["status"], "done")
+        self.assertIn("response", history_entry)
+
+    def test_pause_and_resume_contract(self):
+        paused = asyncio.run(main.pause())
+
+        self.assertEqual(paused["status"], "paused")
+        presence = asyncio.run(main.presence())
+        self.assertEqual(presence["status"], "paused")
+        self.assertFalse(presence["voice_listening"])
+
+        resumed = asyncio.run(main.resume())
+
+        self.assertEqual(resumed["status"], "active")
+        presence = asyncio.run(main.presence())
+        self.assertEqual(presence["status"], "active")
+        self.assertFalse(presence["voice_listening"])
 
     def test_checkpoints_contract_empty(self):
         payload = asyncio.run(main.checkpoints())
