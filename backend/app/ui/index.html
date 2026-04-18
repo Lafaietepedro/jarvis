@@ -54,6 +54,8 @@
         <article>
           <h2>Checkpoints</h2>
           <div id="checkpoint-list" class="stack"></div>
+          <h3>Eventos recentes</h3>
+          <div id="checkpoint-events" class="stack"></div>
         </article>
 
         <article>
@@ -68,7 +70,17 @@
       </section>
 
       <section class="action-band" aria-labelledby="actions-title">
-        <h2 id="actions-title">Proximas acoes</h2>
+        <div class="action-header">
+          <h2 id="actions-title">Proximas acoes</h2>
+          <label for="refresh-interval">Atualizacao
+            <select id="refresh-interval">
+              <option value="0">manual</option>
+              <option value="5000">5s</option>
+              <option value="15000">15s</option>
+              <option value="30000">30s</option>
+            </select>
+          </label>
+        </div>
         <div id="next-actions" class="chips"></div>
       </section>
     </main>

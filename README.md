@@ -287,7 +287,7 @@ Interface local:
 http://localhost:8000/ui
 ```
 
-A interface usa apenas assets locais servidos pelo backend.
+A interface usa apenas assets locais servidos pelo backend, mostra eventos recentes de checkpoints e permite configurar o refresh automatico.
 
 Painel vivo:
 

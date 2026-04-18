@@ -1,5 +1,6 @@
 const state = {
   loading: false,
+  refreshTimer: null,
 };
 
 const nodes = {
@@ -9,8 +10,10 @@ const nodes = {
   presenceList: document.querySelector("#presence-list"),
   privacyList: document.querySelector("#privacy-list"),
   checkpointList: document.querySelector("#checkpoint-list"),
+  checkpointEvents: document.querySelector("#checkpoint-events"),
   historyList: document.querySelector("#history-list"),
   nextActions: document.querySelector("#next-actions"),
+  refreshInterval: document.querySelector("#refresh-interval"),
   form: document.querySelector("#command-form"),
   input: document.querySelector("#command-input"),
   confirm: document.querySelector("#confirm-actions"),
@@ -80,6 +83,7 @@ function renderState(payload) {
   ]);
 
   renderCheckpoints(checkpoints.checkpoints || []);
+  renderCheckpointEvents(checkpoints.events || []);
   renderHistory((payload.history || {}).commands || []);
   renderNextActions(payload.next_actions || []);
 }
@@ -107,14 +111,36 @@ function renderCheckpoints(checkpoints) {
     item.className = "checkpoint";
     const title = document.createElement("strong");
     title.textContent = `${checkpoint.checkpoint_id}. ${checkpoint.label || "Checkpoint"}`;
+    const risk = document.createElement("span");
+    risk.className = `risk ${riskClass(checkpoint.reason)}`;
+    risk.textContent = riskLabel(checkpoint.reason);
     const detail = document.createElement("p");
     detail.textContent = `${checkpoint.plan || "plano"} - ${checkpoint.reason || "revisao"}`;
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
     button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
-    item.append(title, detail, button);
+    item.append(title, risk, detail, button);
     nodes.checkpointList.append(item);
+  }
+}
+
+function renderCheckpointEvents(events) {
+  nodes.checkpointEvents.replaceChildren();
+  if (!events.length) {
+    nodes.checkpointEvents.append(emptyText("Nenhum evento recente."));
+    return;
+  }
+
+  for (const event of events.slice(0, 5)) {
+    const item = document.createElement("div");
+    item.className = "event";
+    const title = document.createElement("strong");
+    title.textContent = `${event.label || "Checkpoint"} -> ${event.status || "unknown"}`;
+    const detail = document.createElement("p");
+    detail.textContent = `${event.reason || "sem motivo"} - ${event.created_at || "agora"}`;
+    item.append(title, detail);
+    nodes.checkpointEvents.append(item);
   }
 }
 
@@ -205,6 +231,39 @@ function setBusy(isBusy) {
   }
 }
 
+function riskLabel(reason) {
+  if (reason === "shell_disabled") return "shell bloqueado";
+  if (reason === "confirmation_required") return "confirmacao";
+  if (reason === "permission_required") return "permissao";
+  return reason || "revisao";
+}
+
+function riskClass(reason) {
+  if (reason === "shell_disabled") return "blocked";
+  if (reason === "confirmation_required") return "review";
+  return "neutral";
+}
+
+function configureRefresh() {
+  const saved = window.localStorage.getItem("jarvis.refreshInterval");
+  if (saved) {
+    nodes.refreshInterval.value = saved;
+  }
+  scheduleRefresh();
+}
+
+function scheduleRefresh() {
+  if (state.refreshTimer) {
+    window.clearInterval(state.refreshTimer);
+    state.refreshTimer = null;
+  }
+  const interval = Number(nodes.refreshInterval.value || 0);
+  window.localStorage.setItem("jarvis.refreshInterval", String(interval));
+  if (interval > 0) {
+    state.refreshTimer = window.setInterval(loadState, interval);
+  }
+}
+
 nodes.form.addEventListener("submit", (event) => {
   event.preventDefault();
   sendCommand(nodes.input.value);
@@ -213,6 +272,7 @@ nodes.form.addEventListener("submit", (event) => {
 nodes.pauseButton.addEventListener("click", () => postSessionAction("/pause"));
 nodes.resumeButton.addEventListener("click", () => postSessionAction("/resume"));
 nodes.refreshButton.addEventListener("click", loadState);
+nodes.refreshInterval.addEventListener("change", scheduleRefresh);
 
 loadState();
-window.setInterval(loadState, 5000);
+configureRefresh();

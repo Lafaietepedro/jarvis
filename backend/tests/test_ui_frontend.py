@@ -9,6 +9,8 @@ class UIFrontendTest(unittest.TestCase):
 
         self.assertIn("<title>JARVIS</title>", html)
         self.assertIn('id="command-form"', html)
+        self.assertIn('id="checkpoint-events"', html)
+        self.assertIn('id="refresh-interval"', html)
         self.assertIn('/ui/assets/app.js', html)
 
     def test_read_ui_assets_are_whitelisted(self):
@@ -20,6 +22,8 @@ class UIFrontendTest(unittest.TestCase):
         self.assertIsNotNone(styles)
         self.assertEqual(script[1], "text/javascript")
         self.assertEqual(styles[1], "text/css")
+        self.assertIn("renderCheckpointEvents", script[0])
+        self.assertIn("jarvis.refreshInterval", script[0])
         self.assertIsNone(missing)
 
 

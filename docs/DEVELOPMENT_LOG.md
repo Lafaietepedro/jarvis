@@ -416,6 +416,17 @@ Entregas:
 - Assets locais, sem CDN, fontes externas ou chamadas remotas.
 - Testes cobrindo leitura dos assets, contrato dos endpoints da interface e smoke HTTP real para `/ui`.
 
+### Fase 3Y - Interface Com Eventos E Refresh Configuravel
+
+Status: concluida.
+
+Entregas:
+- Interface web agora mostra eventos recentes de checkpoints.
+- Checkpoints exibem indicador simples de risco, como `confirmacao` ou `shell bloqueado`.
+- Refresh automatico pode ser configurado na propria interface: manual, 5s, 15s ou 30s.
+- Preferencia de refresh fica apenas no `localStorage` do navegador.
+- Testes dos assets cobrem os novos elementos de eventos e refresh.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -435,7 +446,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar a interface web local com feedback de eventos recentes, indicadores de risco e refresh configuravel.
+- Validar a interface web em navegador real e preparar instalacao local como atalho/aplicativo desktop.
 
 ## Fases Futuras Planejadas
 
