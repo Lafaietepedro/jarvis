@@ -386,7 +386,14 @@ cd backend
 
 Esse smoke cobre healthcheck, presenca, pausa/retomada, comando, historico e eventos de checkpoints via servidor local real.
 
-Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente. Em ambientes que bloqueiam sockets localhost, o smoke HTTP tambem e pulado.
+Para validar a interface em Chromium headless, quando disponivel:
+
+```bash
+cd backend
+.venv/bin/python -m unittest tests/test_ui_browser_smoke.py -v
+```
+
+Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente. Em ambientes que bloqueiam sockets localhost, os smokes HTTP e visual tambem sao pulados.
 
 Notas
 - Este PoC usa um simulador de wake-word por simplicidade. Substitua por Porcupine/Precise quando estiver pronto.

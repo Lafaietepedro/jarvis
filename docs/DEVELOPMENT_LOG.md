@@ -455,6 +455,17 @@ Entregas:
 - Suporte a `--output` para testes e instalacoes customizadas.
 - Testes cobrindo modo planejado sem escrita e instalacao confirmada em caminho temporario.
 
+### Fase 3AB - Smoke Visual Headless Da Interface
+
+Status: concluida.
+
+Entregas:
+- Novo smoke opcional da interface web em Chromium headless.
+- O teste sobe a API local, abre `GET /ui` em navegador real e captura screenshot temporario.
+- Validacao confirma que o screenshot foi gerado e nao esta vazio.
+- O teste pula automaticamente quando `uvicorn`, Chromium ou sockets localhost nao estao disponiveis.
+- Cobertura prepara o caminho para verificacoes visuais mais ricas da interface.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -474,7 +485,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Validar a interface web em navegador real e adicionar verificacao visual automatizada quando houver navegador headless disponivel.
+- Ampliar a verificacao visual para conferir conteudo renderizado e estados mobile/desktop.
 
 ## Fases Futuras Planejadas
 
@@ -585,13 +596,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-159 tests OK
+160 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smoke HTTP sao pulados.
+- Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 159 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, a suite tem 160 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app
