@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
 from .asr import ASR
@@ -14,6 +15,7 @@ from .diagnostics import collect_diagnostics
 from .presence import build_greeting, build_presence
 from .wakeword import WakewordSimulator
 from .tts import speak
+from .ui_frontend import read_ui_asset, read_ui_index
 from .ui_state import build_ui_state
 
 logging.basicConfig(level=logging.INFO)
@@ -227,6 +229,20 @@ async def ui_state(history_limit: int = 5):
         memory_store=jarvis.memory_store,
         history_limit=history_limit,
     )
+
+
+@app.get('/ui', response_class=HTMLResponse)
+async def ui():
+    return HTMLResponse(read_ui_index())
+
+
+@app.get('/ui/assets/{asset_name}')
+async def ui_asset(asset_name: str):
+    asset = read_ui_asset(asset_name)
+    if asset is None:
+        return Response("Not found", status_code=404)
+    content, media_type = asset
+    return Response(content, media_type=media_type)
 
 
 @app.post('/recognize_file', response_model=UploadResponse)

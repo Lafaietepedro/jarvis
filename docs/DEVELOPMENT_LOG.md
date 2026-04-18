@@ -30,6 +30,8 @@ O nucleo atual ja consegue:
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - expor estado agregado para UI desktop por `GET /ui/state`;
 - visualizar o contrato de UI desktop por CLI e chat;
+- servir uma interface web local por `GET /ui`;
+- controlar comandos, pausa/retomada e checkpoints pela interface web local;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - validar dependencias opcionais por comando natural, CLI ou chat;
@@ -399,6 +401,21 @@ Entregas:
 - Preview mostra schema, presenca, checkpoints, privacidade, historico curto e proximas acoes.
 - Testes cobrindo formatador, comando CLI, acao do chat e atalho.
 
+### Fase 3X - Interface Web Local Inicial
+
+Status: concluida.
+
+Entregas:
+- Novo modulo `ui_frontend` para servir arquivos locais da interface.
+- Novo endpoint `GET /ui` com a primeira interface visual local do J.A.R.V.I.S.
+- Novo endpoint `GET /ui/assets/{asset_name}` com whitelist para `app.js` e `styles.css`.
+- Interface consome `GET /ui/state` e atualiza estado periodicamente.
+- Formulario de comando por texto com opcoes de confirmacao sensivel e modo privado.
+- Controles de pausa, retomada, atualizacao manual e confirmacao de checkpoints.
+- Proximas acoes aparecem como botoes executaveis pelo usuario.
+- Assets locais, sem CDN, fontes externas ou chamadas remotas.
+- Testes cobrindo leitura dos assets, contrato dos endpoints da interface e smoke HTTP real para `/ui`.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -418,7 +435,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Iniciar a base da interface desktop local ou ampliar o contrato de UI com acoes permitidas por permissao.
+- Melhorar a interface web local com feedback de eventos recentes, indicadores de risco e refresh configuravel.
 
 ## Fases Futuras Planejadas
 
@@ -529,13 +546,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-147 tests OK
+150 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 7 testes de contrato da API e os smoke HTTP sao pulados.
+- Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 147 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 150 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

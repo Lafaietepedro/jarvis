@@ -133,6 +133,16 @@ class ApiContractTest(unittest.TestCase):
         self.assertFalse(payload["privacy"]["permissions"]["cloud_enabled"])
         self.assertIn("next_actions", payload)
 
+    def test_ui_frontend_contract(self):
+        page = asyncio.run(main.ui())
+        script = asyncio.run(main.ui_asset("app.js"))
+        missing = asyncio.run(main.ui_asset("../main.py"))
+
+        self.assertIn(b"id=\"command-form\"", page.body)
+        self.assertIn(b"/ui/state", script.body)
+        self.assertEqual(script.media_type, "text/javascript")
+        self.assertEqual(missing.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

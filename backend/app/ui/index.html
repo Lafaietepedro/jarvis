@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JARVIS</title>
+    <link rel="stylesheet" href="/ui/assets/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="status-band" aria-labelledby="status-title">
+        <div class="identity-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div>
+          <p class="eyebrow">JARVIS</p>
+          <h1 id="status-title">Aguardando estado local</h1>
+          <p id="greeting">Sincronizando com o nucleo local.</p>
+        </div>
+        <div class="state-pill" id="state-pill">offline</div>
+      </section>
+
+      <section class="command-surface" aria-labelledby="command-title">
+        <div>
+          <h2 id="command-title">Comando</h2>
+          <p id="last-response">Digite uma instrucao para o computador.</p>
+        </div>
+        <form id="command-form">
+          <label for="command-input">Texto</label>
+          <div class="command-row">
+            <input id="command-input" name="command" autocomplete="off" placeholder="qual o status">
+            <button type="submit">Enviar</button>
+          </div>
+          <div class="toggles">
+            <label><input id="confirm-actions" type="checkbox"> confirmar acoes sensiveis</label>
+            <label><input id="private-command" type="checkbox"> modo privado</label>
+          </div>
+        </form>
+      </section>
+
+      <section class="grid" aria-label="Estado do assistente">
+        <article>
+          <h2>Presenca</h2>
+          <dl id="presence-list"></dl>
+          <div class="button-row">
+            <button id="pause-button" type="button">Pausar</button>
+            <button id="resume-button" type="button">Retomar</button>
+            <button id="refresh-button" type="button">Atualizar</button>
+          </div>
+        </article>
+
+        <article>
+          <h2>Checkpoints</h2>
+          <div id="checkpoint-list" class="stack"></div>
+        </article>
+
+        <article>
+          <h2>Privacidade</h2>
+          <dl id="privacy-list"></dl>
+        </article>
+
+        <article>
+          <h2>Historico</h2>
+          <ol id="history-list" class="history"></ol>
+        </article>
+      </section>
+
+      <section class="action-band" aria-labelledby="actions-title">
+        <h2 id="actions-title">Proximas acoes</h2>
+        <div id="next-actions" class="chips"></div>
+      </section>
+    </main>
+    <script src="/ui/assets/app.js" defer></script>
+  </body>
+</html>

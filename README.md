@@ -16,6 +16,7 @@ Visão rápida
 - Diagnóstico local de dependências opcionais
 - Validação e plano de instalação de dependências opcionais
 - Chat interativo no terminal
+- Interface web local em `GET /ui`
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
 - Planos seguros de automação
@@ -104,6 +105,7 @@ JARVIS_URL=http://127.0.0.1:8000 python -m app.cli panel
 
 Endpoints úteis
 - `GET /` — saudação e estado de presença do JARVIS
+- `GET /ui` — interface web local do JARVIS
 - `GET /presence` — estado detalhado de presença, privacidade e contexto
 - `GET /health` — healthcheck
 - `POST /start` — inicia loop de wake+listen (simulado wake) e fala uma saudação
@@ -278,6 +280,14 @@ make ui-state
 ```
 
 Esse endpoint reúne presença, checkpoints, histórico curto, privacidade e próximas ações em um payload estável para interfaces locais.
+
+Interface local:
+
+```text
+http://localhost:8000/ui
+```
+
+A interface usa apenas assets locais servidos pelo backend.
 
 Painel vivo:
 

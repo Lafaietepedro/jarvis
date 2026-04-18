@@ -72,6 +72,11 @@ class ApiSmokeTest(unittest.TestCase):
         self.assertEqual(checkpoints["status"], "pending")
         self.assertEqual(checkpoints["pending_count"], 1)
 
+        page = self._request_text("GET", "/ui")
+        self.assertIn('id="command-form"', page)
+        script = self._request_text("GET", "/ui/assets/app.js")
+        self.assertIn("/ui/state", script)
+
     def test_http_smoke_session_and_checkpoint_events(self):
         self._start_server()
 
@@ -129,6 +134,10 @@ class ApiSmokeTest(unittest.TestCase):
         raise AssertionError(f"API server did not become ready: {last_error}")
 
     def _request(self, method: str, path: str, payload: dict | None = None) -> dict:
+        response = self._request_text(method, path, payload)
+        return json.loads(response)
+
+    def _request_text(self, method: str, path: str, payload: dict | None = None) -> str:
         data = json.dumps(payload or {}).encode("utf-8") if payload is not None else None
         request = urllib.request.Request(
             f"{self.base_url}{path}",
@@ -137,7 +146,7 @@ class ApiSmokeTest(unittest.TestCase):
             method=method,
         )
         with urllib.request.urlopen(request, timeout=3) as response:
-            return json.loads(response.read().decode("utf-8"))
+            return response.read().decode("utf-8")
 
 
 def _find_free_port() -> int:
