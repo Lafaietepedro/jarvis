@@ -28,6 +28,7 @@ O nucleo atual ja consegue:
 - confirmar checkpoints por id no CLI e no chat;
 - registrar eventos recentes de checkpoints confirmados na sessao;
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
+- expor estado agregado para UI desktop por `GET /ui/state`;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - validar dependencias opcionais por comando natural, CLI ou chat;
@@ -41,6 +42,7 @@ O nucleo atual ja consegue:
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
+- cobrir contrato agregado para futuras interfaces locais;
 - manter acoes sensiveis bloqueadas por padrao;
 - validar por HTTP real os estados de pausa/retomada e eventos de checkpoints;
 - executar testes automatizados do core e do NLU.
@@ -372,6 +374,18 @@ Entregas:
 - Validacao de eventos recentes por `GET /checkpoints`, incluindo bloqueio por `shell_disabled`.
 - Cobertura preserva a regra de seguranca: checkpoint sensivel continua pendente quando shell esta bloqueado.
 
+### Fase 3V - Contrato Agregado Para UI Desktop
+
+Status: concluida.
+
+Entregas:
+- Novo modulo `ui_state` para montar um contrato estavel para interfaces locais.
+- Novo endpoint `GET /ui/state` com `schema_version`, presenca, checkpoints, historico curto, privacidade e proximas acoes.
+- O contrato evita acionar skills e nao altera memoria ao ser consultado.
+- Proximas acoes priorizam confirmacao de checkpoints pendentes antes das sugestoes gerais.
+- Testes unitarios para o builder de UI state.
+- Teste de contrato da API para `GET /ui/state`.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -391,7 +405,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Preparar um contrato leve para uma futura UI desktop consumir presenca, checkpoints, historico e privacidade de forma consistente.
+- Criar um formatador/CLI de preview para o contrato `GET /ui/state` ou iniciar a base da interface desktop local.
 
 ## Fases Futuras Planejadas
 
@@ -502,13 +516,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-140 tests OK
+143 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 6 testes de contrato da API e o smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 140 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 143 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

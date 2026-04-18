@@ -14,6 +14,7 @@ from .diagnostics import collect_diagnostics
 from .presence import build_greeting, build_presence
 from .wakeword import WakewordSimulator
 from .tts import speak
+from .ui_state import build_ui_state
 
 logging.basicConfig(level=logging.INFO)
 
@@ -191,6 +192,15 @@ class CheckpointsResponse(BaseModel):
     events: list[dict[str, Any]]
 
 
+class UIStateResponse(BaseModel):
+    schema_version: int
+    presence: dict[str, Any]
+    checkpoints: dict[str, Any]
+    history: dict[str, Any]
+    privacy: dict[str, Any]
+    next_actions: list[str]
+
+
 @app.get('/', response_model=PresenceResponse)
 async def root():
     context = jarvis.context_provider.get_context()
@@ -206,6 +216,17 @@ async def presence():
 @app.get('/checkpoints', response_model=CheckpointsResponse)
 async def checkpoints():
     return build_checkpoint_state(jarvis.session_state.snapshot())
+
+
+@app.get('/ui/state', response_model=UIStateResponse)
+async def ui_state(history_limit: int = 5):
+    context = jarvis.context_provider.get_context()
+    return build_ui_state(
+        context,
+        session=jarvis.session_state.snapshot(),
+        memory_store=jarvis.memory_store,
+        history_limit=history_limit,
+    )
 
 
 @app.post('/recognize_file', response_model=UploadResponse)

@@ -25,6 +25,7 @@ Visão rápida
 - Confirmação rápida de checkpoints pelo CLI/chat
 - Histórico curto de eventos de checkpoints na sessão
 - Endpoint dedicado para checkpoints e eventos
+- Contrato agregado para UI desktop em `GET /ui/state`
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -113,6 +114,7 @@ Endpoints úteis
 - `GET /history/export` — exporta histórico local como JSON
 - `POST /history/clear` — limpa histórico local com confirmação
 - `GET /checkpoints` — lista checkpoints pendentes e eventos recentes
+- `GET /ui/state` — agrega presença, checkpoints, histórico curto e privacidade para UI desktop
 - `GET /privacy` — mostra painel de privacidade, memória, sessão e permissões
 - `GET /diagnostics` — mostra dependências opcionais e saúde local
 - `POST /recognize_file` — faz upload de WAV e retorna transcrição
@@ -265,6 +267,14 @@ make confirm-checkpoint ID=1
 ```
 
 O painel de checkpoints também mostra eventos recentes da sessão, como confirmações bloqueadas por permissão ou execuções concluídas.
+
+Contrato para UI desktop:
+
+```bash
+curl http://localhost:8000/ui/state
+```
+
+Esse endpoint reúne presença, checkpoints, histórico curto, privacidade e próximas ações em um payload estável para interfaces locais.
 
 Painel vivo:
 

@@ -119,6 +119,20 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(checkpoints["event_count"], 1)
         self.assertEqual(checkpoints["events"][0]["reason"], "shell_disabled")
 
+    def test_ui_state_contract(self):
+        command = main.CommandRequest(text="qual o status")
+        asyncio.run(main.command(command))
+
+        payload = asyncio.run(main.ui_state(history_limit=3))
+
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["presence"]["name"], "JARVIS")
+        self.assertEqual(payload["checkpoints"]["status"], "empty")
+        self.assertEqual(payload["history"]["limit"], 3)
+        self.assertEqual(payload["history"]["commands"][0]["text"], "qual o status")
+        self.assertFalse(payload["privacy"]["permissions"]["cloud_enabled"])
+        self.assertIn("next_actions", payload)
+
 
 if __name__ == "__main__":
     unittest.main()
