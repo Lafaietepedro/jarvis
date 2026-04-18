@@ -26,6 +26,7 @@ Visão rápida
 - Histórico curto de eventos de checkpoints na sessão
 - Endpoint dedicado para checkpoints e eventos
 - Contrato agregado para UI desktop em `GET /ui/state`
+- Preview CLI do contrato de UI desktop
 - Skill inicial de mídia/volume
 - Sugestões de próximas ações
 - Permissões conservadoras para ações sensíveis
@@ -76,6 +77,7 @@ Ou diretamente:
 cd backend
 python -m app.cli panel
 python -m app.cli checkpoints
+python -m app.cli ui-state
 python -m app.cli confirm-checkpoint 1
 python -m app.cli watch
 python -m app.cli presence
@@ -272,6 +274,7 @@ Contrato para UI desktop:
 
 ```bash
 curl http://localhost:8000/ui/state
+make ui-state
 ```
 
 Esse endpoint reúne presença, checkpoints, histórico curto, privacidade e próximas ações em um payload estável para interfaces locais.
@@ -296,6 +299,8 @@ Dentro do chat:
 /?
 /panel
 /p
+/ui-state
+/ui
 /checkpoints
 /chk
 /confirm-checkpoint 1

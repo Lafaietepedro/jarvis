@@ -9,6 +9,7 @@ from app.cli_format import (
     format_panel,
     format_presence,
     format_privacy,
+    format_ui_state,
 )
 
 
@@ -99,6 +100,14 @@ class CliFormatTest(unittest.TestCase):
                 }
             ],
         }
+        self.ui_state = {
+            "schema_version": 1,
+            "presence": self.presence,
+            "checkpoints": self.checkpoints,
+            "history": self.history,
+            "privacy": self.privacy["data"],
+            "next_actions": ["confirmar checkpoint 1", "qual o status"],
+        }
 
     def test_format_presence(self):
         output = format_presence(self.presence)
@@ -188,6 +197,14 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[PRIVACY]", output)
         self.assertIn("[HISTORY]", output)
         self.assertIn("[DIAGNOSTICS]", output)
+
+    def test_format_ui_state(self):
+        output = format_ui_state(self.ui_state)
+
+        self.assertIn("[UI STATE]", output)
+        self.assertIn("Schema: 1", output)
+        self.assertIn("[NEXT ACTIONS]", output)
+        self.assertIn("confirmar checkpoint 1", output)
 
 
 if __name__ == "__main__":

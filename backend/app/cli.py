@@ -17,6 +17,7 @@ from .cli_format import (
     format_panel,
     format_presence,
     format_privacy,
+    format_ui_state,
 )
 
 
@@ -74,6 +75,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("presence", help="Show presence state")
     subparsers.add_parser("checkpoints", help="Show pending automation checkpoints")
+    ui_state = subparsers.add_parser("ui-state", help="Show aggregated desktop UI state")
+    ui_state.add_argument("--history-limit", type=int, default=5)
     subparsers.add_parser("privacy", help="Show privacy panel")
     subparsers.add_parser("diagnostics", help="Show local diagnostics")
     subparsers.add_parser("dependencies", help="Validate optional dependencies")
@@ -127,6 +130,8 @@ def run(args: argparse.Namespace) -> str:
         return format_presence(client.get("/presence"))
     if command == "checkpoints":
         return format_checkpoints(client.get("/checkpoints"))
+    if command == "ui-state":
+        return format_ui_state(client.get("/ui/state", {"history_limit": args.history_limit}))
     if command == "privacy":
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":
@@ -203,6 +208,7 @@ CHAT_HELP = """Commands:
 /panel - show local panel
 /presence - show presence
 /checkpoints - show pending automation checkpoints
+/ui-state - show aggregated desktop UI state
 /confirm-checkpoint <id> - confirm a pending checkpoint
 /privacy - show privacy panel
 /diagnostics - show local diagnostics
@@ -221,7 +227,7 @@ CHAT_HELP = """Commands:
 /speak <text> - speak the response
 
 Shortcuts:
-/p panel, /chk checkpoints, /cc <id> confirm checkpoint
+/p panel, /ui ui-state, /chk checkpoints, /cc <id> confirm checkpoint
 /hist history, /s session, /priv privacy, /diag diagnostics, /deps dependencies
 /pv <text> private, /c <text> confirm, /say <text> speak
 """
@@ -231,6 +237,7 @@ CHAT_EXACT_ALIASES = {
     "/?": "/help",
     "/q": "/exit",
     "/p": "/panel",
+    "/ui": "/ui-state",
     "/chk": "/checkpoints",
     "/hist": "/history",
     "/s": "/session",
@@ -265,6 +272,7 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
         "/panel",
         "/presence",
         "/checkpoints",
+        "/ui-state",
         "/privacy",
         "/diagnostics",
         "/dependencies",
@@ -313,6 +321,8 @@ def handle_chat_action(
         return format_presence(client.get("/presence"))
     if action == "checkpoints":
         return format_checkpoints(client.get("/checkpoints"))
+    if action == "ui-state":
+        return format_ui_state(client.get("/ui/state", {"history_limit": 5}))
     if action == "confirm-checkpoint":
         return confirm_checkpoint(client, payload["checkpoint_id"])
     if action == "invalid":

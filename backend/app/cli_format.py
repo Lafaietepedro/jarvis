@@ -165,6 +165,27 @@ def format_panel(
     return "\n\n".join(sections)
 
 
+def format_ui_state(payload: dict[str, Any]) -> str:
+    sections = [
+        f"[UI STATE]\nSchema: {payload.get('schema_version', 'unknown')}",
+        format_presence(payload.get("presence", {})),
+        format_checkpoints(payload.get("checkpoints", {})),
+        format_privacy({"data": payload.get("privacy", {})}),
+        format_history(payload.get("history", {})),
+        _format_next_actions(payload.get("next_actions", [])),
+    ]
+    return "\n\n".join(sections)
+
+
+def _format_next_actions(actions: list[str]) -> str:
+    lines = ["[NEXT ACTIONS]"]
+    if not actions:
+        lines.append("No suggested actions.")
+        return "\n".join(lines)
+    lines.extend(f"- {action}" for action in actions)
+    return "\n".join(lines)
+
+
 def _extract_checkpoints(payload: dict[str, Any]) -> list[dict[str, Any]]:
     if "checkpoints" in payload:
         return payload.get("checkpoints") or []

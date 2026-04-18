@@ -70,6 +70,41 @@ class FakeClient:
                     }
                 ],
             }
+        if path == "/ui/state":
+            return {
+                "schema_version": 1,
+                "presence": {
+                    "status": "active",
+                    "voice_listening": False,
+                    "uptime_seconds": 1,
+                    "greeting": "JARVIS ativo.",
+                    "project": {"name": "jarvis", "path": "/tmp/jarvis"},
+                    "privacy": {"cloud_enabled": False, "memory_enabled": True},
+                    "automation_checkpoints": [],
+                    "automation_checkpoint_events": [],
+                },
+                "checkpoints": {
+                    "status": "pending",
+                    "pending_count": 1,
+                    "event_count": 0,
+                    "checkpoints": [
+                        {
+                            "checkpoint_id": 1,
+                            "label": "Rodar testes do projeto",
+                            "plan": "project_checkup",
+                            "reason": "confirmation_required",
+                        }
+                    ],
+                    "events": [],
+                },
+                "history": {"limit": 5, "commands": []},
+                "privacy": {
+                    "permissions": {"cloud_enabled": False, "shell_enabled": False},
+                    "memory": {"enabled": True, "commands_recorded": 0, "path": "/tmp/memory.sqlite"},
+                    "session": {"status": "active"},
+                },
+                "next_actions": ["confirmar checkpoint 1", "qual o status"],
+            }
         if path == "/privacy":
             return {
                 "data": {
@@ -199,6 +234,12 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "checkpoints")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_ui_state_shortcut(self):
+        action, payload = parse_chat_line("/ui")
+
+        self.assertEqual(action, "ui-state")
+        self.assertEqual(payload, {})
+
     def test_parse_chat_line_confirm_checkpoint(self):
         action, payload = parse_chat_line("/confirm-checkpoint 1")
 
@@ -229,6 +270,14 @@ class CliTest(unittest.TestCase):
         self.assertIn("[CHECKPOINTS]", output)
         self.assertIn("Rodar testes do projeto", output)
         self.assertIn("/checkpoints", FakeClient.get_paths)
+
+    def test_handle_chat_action_ui_state(self):
+        output = handle_chat_action(FakeClient(), "ui-state", {})
+
+        self.assertIn("[UI STATE]", output)
+        self.assertIn("[NEXT ACTIONS]", output)
+        self.assertIn("confirmar checkpoint 1", output)
+        self.assertIn("/ui/state", FakeClient.get_paths)
 
     def test_handle_chat_action_dependencies(self):
         output = handle_chat_action(FakeClient(), "dependencies", {})
@@ -304,6 +353,16 @@ class CliTest(unittest.TestCase):
 
         self.assertIn("[COMMAND]", output)
         self.assertEqual(FakeClient.posted_payloads[0]["text"], "validar dependencias opcionais")
+
+    def test_run_ui_state(self):
+        args = argparse.Namespace(url="http://test", command="ui-state", history_limit=5)
+
+        with patch("app.cli.JarvisHttpClient", return_value=FakeClient()):
+            output = run(args)
+
+        self.assertIn("[UI STATE]", output)
+        self.assertIn("Schema: 1", output)
+        self.assertIn("/ui/state", FakeClient.get_paths)
 
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})

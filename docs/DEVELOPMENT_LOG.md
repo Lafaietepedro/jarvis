@@ -29,6 +29,7 @@ O nucleo atual ja consegue:
 - registrar eventos recentes de checkpoints confirmados na sessao;
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - expor estado agregado para UI desktop por `GET /ui/state`;
+- visualizar o contrato de UI desktop por CLI e chat;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - validar dependencias opcionais por comando natural, CLI ou chat;
@@ -386,6 +387,18 @@ Entregas:
 - Testes unitarios para o builder de UI state.
 - Teste de contrato da API para `GET /ui/state`.
 
+### Fase 3W - Preview CLI Do Estado De UI
+
+Status: concluida.
+
+Entregas:
+- Novo formatador `format_ui_state` para exibir o contrato agregado no terminal.
+- Novo comando `python -m app.cli ui-state`.
+- Novo target `make ui-state`.
+- Chat interativo ganhou `/ui-state` e atalho `/ui`.
+- Preview mostra schema, presenca, checkpoints, privacidade, historico curto e proximas acoes.
+- Testes cobrindo formatador, comando CLI, acao do chat e atalho.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -405,7 +418,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar um formatador/CLI de preview para o contrato `GET /ui/state` ou iniciar a base da interface desktop local.
+- Iniciar a base da interface desktop local ou ampliar o contrato de UI com acoes permitidas por permissao.
 
 ## Fases Futuras Planejadas
 
@@ -516,13 +529,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-143 tests OK
+147 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 6 testes de contrato da API e o smoke HTTP sao pulados.
+- Em Python sem dependencias web instaladas, os 7 testes de contrato da API e os smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 143 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 147 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -13,6 +13,10 @@ panel:
 checkpoints:
 	cd backend && python -m app.cli checkpoints
 
+.PHONY: ui-state
+ui-state:
+	cd backend && python -m app.cli ui-state
+
 .PHONY: dependencies
 dependencies:
 	cd backend && python -m app.cli dependencies
