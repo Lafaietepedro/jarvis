@@ -477,6 +477,19 @@ Entregas:
 - Teste continua opcional e pula quando Chromium, `uvicorn` ou sockets localhost nao estao disponiveis.
 - Cobertura reduz risco de regressao visual basica sem adicionar dependencias novas.
 
+### Fase 3AD - Contrato De Acoes Da UI
+
+Status: concluida.
+
+Entregas:
+- `GET /ui/state` agora inclui `actions` estruturadas alem de `next_actions`.
+- Cada acao informa `label`, `command`, `kind`, `risk`, `requires_confirmation`, `permission`, `enabled` e `reason`.
+- Checkpoints viram acoes de risco medio/alto com confirmacao obrigatoria.
+- Sugestoes gerais viram acoes de baixo risco.
+- Interface web passa a consumir `actions` quando disponivel e preserva fallback para `next_actions`.
+- Preview CLI de UI state exibe risco e necessidade de confirmacao.
+- Testes cobrindo contrato agregado, API, frontend e formatador CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -496,7 +509,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar o contrato de acoes da UI para informar permissoes, risco e necessidade de confirmacao por acao.
+- Melhorar relatorios de resultado dos checkpoints e exibir detalhes de execucao/bloqueio na interface.
 
 ## Fases Futuras Planejadas
 

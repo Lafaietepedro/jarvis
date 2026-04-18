@@ -106,6 +106,14 @@ class CliFormatTest(unittest.TestCase):
             "checkpoints": self.checkpoints,
             "history": self.history,
             "privacy": self.privacy["data"],
+            "actions": [
+                {
+                    "label": "Confirmar checkpoint 1",
+                    "command": "confirmar checkpoint 1",
+                    "risk": "medium",
+                    "requires_confirmation": True,
+                }
+            ],
             "next_actions": ["confirmar checkpoint 1", "qual o status"],
         }
 
@@ -204,7 +212,7 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[UI STATE]", output)
         self.assertIn("Schema: 1", output)
         self.assertIn("[NEXT ACTIONS]", output)
-        self.assertIn("confirmar checkpoint 1", output)
+        self.assertIn("Confirmar checkpoint 1 [medium confirm]", output)
 
 
 if __name__ == "__main__":

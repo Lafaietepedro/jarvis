@@ -200,6 +200,7 @@ class UIStateResponse(BaseModel):
     checkpoints: dict[str, Any]
     history: dict[str, Any]
     privacy: dict[str, Any]
+    actions: list[dict[str, Any]]
     next_actions: list[str]
 
 

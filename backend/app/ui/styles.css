@@ -297,6 +297,16 @@ dd {
   background: #0d2525;
 }
 
+.chips .risk-medium {
+  border-color: var(--amber);
+  background: #2b2410;
+}
+
+.chips .risk-high {
+  border-color: var(--red);
+  background: #2d1513;
+}
+
 .action-header {
   display: flex;
   align-items: start;

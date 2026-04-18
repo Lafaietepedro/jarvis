@@ -283,7 +283,7 @@ curl http://localhost:8000/ui/state
 make ui-state
 ```
 
-Esse endpoint reúne presença, checkpoints, histórico curto, privacidade e próximas ações em um payload estável para interfaces locais.
+Esse endpoint reúne presença, checkpoints, histórico curto, privacidade, próximas ações e metadados de risco/permissão em um payload estável para interfaces locais.
 
 Interface local:
 

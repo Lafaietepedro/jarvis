@@ -85,7 +85,7 @@ function renderState(payload) {
   renderCheckpoints(checkpoints.checkpoints || []);
   renderCheckpointEvents(checkpoints.events || []);
   renderHistory((payload.history || {}).commands || []);
-  renderNextActions(payload.next_actions || []);
+  renderNextActions(payload.actions || payload.next_actions || []);
 }
 
 function renderDefinitionList(target, items) {
@@ -169,15 +169,48 @@ function renderNextActions(actions) {
   }
 
   for (const action of actions) {
+    const item = normalizeAction(action);
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = action;
+    button.className = `action-button risk-${item.risk}`;
+    button.disabled = !item.enabled;
+    button.textContent = item.requires_confirmation ? `${item.label} - confirmar` : item.label;
+    button.title = actionTitle(item);
     button.addEventListener("click", () => {
-      const needsConfirmation = action.startsWith("confirmar checkpoint");
-      sendCommand(action, needsConfirmation);
+      sendCommand(item.command, item.requires_confirmation);
     });
     nodes.nextActions.append(button);
   }
+}
+
+function normalizeAction(action) {
+  if (typeof action === "string") {
+    return {
+      label: action,
+      command: action,
+      risk: "low",
+      enabled: true,
+      requires_confirmation: action.startsWith("confirmar checkpoint"),
+      reason: "legacy",
+    };
+  }
+  return {
+    label: action.label || action.command || "acao",
+    command: action.command || action.label || "",
+    risk: action.risk || "low",
+    enabled: action.enabled !== false,
+    requires_confirmation: Boolean(action.requires_confirmation),
+    permission: action.permission || null,
+    reason: action.reason || "suggested",
+  };
+}
+
+function actionTitle(action) {
+  const parts = [`risco: ${action.risk}`, `motivo: ${action.reason}`];
+  if (action.permission) {
+    parts.push(`permissao: ${action.permission}`);
+  }
+  return parts.join(" | ");
 }
 
 function emptyText(text) {

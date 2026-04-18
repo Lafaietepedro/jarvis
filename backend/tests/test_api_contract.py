@@ -131,6 +131,8 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(payload["history"]["limit"], 3)
         self.assertEqual(payload["history"]["commands"][0]["text"], "qual o status")
         self.assertFalse(payload["privacy"]["permissions"]["cloud_enabled"])
+        self.assertEqual(payload["actions"][0]["risk"], "low")
+        self.assertFalse(payload["actions"][0]["requires_confirmation"])
         self.assertIn("next_actions", payload)
 
     def test_ui_frontend_contract(self):

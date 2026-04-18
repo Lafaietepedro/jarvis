@@ -31,6 +31,8 @@ class UIFrontendTest(unittest.TestCase):
         self.assertEqual(manifest[1], "application/manifest+json")
         self.assertEqual(icon[1], "image/svg+xml")
         self.assertIn("renderCheckpointEvents", script[0])
+        self.assertIn("normalizeAction", script[0])
+        self.assertIn("requires_confirmation", script[0])
         self.assertIn("jarvis.refreshInterval", script[0])
         self.assertIn('"start_url": "/ui"', manifest[0])
         self.assertIsNone(missing)

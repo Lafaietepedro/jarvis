@@ -54,6 +54,10 @@ class UIStateTest(unittest.TestCase):
         self.assertFalse(state["privacy"]["permissions"]["shell_enabled"])
         self.assertEqual(state["privacy"]["memory"]["commands_recorded"], 1)
         self.assertEqual(state["next_actions"][0], "confirmar checkpoint 1")
+        self.assertEqual(state["actions"][0]["command"], "confirmar checkpoint 1")
+        self.assertEqual(state["actions"][0]["risk"], "medium")
+        self.assertTrue(state["actions"][0]["requires_confirmation"])
+        self.assertEqual(state["actions"][1]["kind"], "suggestion")
 
     def test_build_ui_state_without_memory_store(self):
         session = SessionState().snapshot()
@@ -62,6 +66,7 @@ class UIStateTest(unittest.TestCase):
 
         self.assertEqual(state["history"]["commands"], [])
         self.assertFalse(state["privacy"]["memory"]["enabled"])
+        self.assertEqual(state["actions"][0]["risk"], "low")
 
 
 if __name__ == "__main__":

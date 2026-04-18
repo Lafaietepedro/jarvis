@@ -172,17 +172,22 @@ def format_ui_state(payload: dict[str, Any]) -> str:
         format_checkpoints(payload.get("checkpoints", {})),
         format_privacy({"data": payload.get("privacy", {})}),
         format_history(payload.get("history", {})),
-        _format_next_actions(payload.get("next_actions", [])),
+        _format_next_actions(payload.get("actions") or payload.get("next_actions", [])),
     ]
     return "\n\n".join(sections)
 
 
-def _format_next_actions(actions: list[str]) -> str:
+def _format_next_actions(actions: list[Any]) -> str:
     lines = ["[NEXT ACTIONS]"]
     if not actions:
         lines.append("No suggested actions.")
         return "\n".join(lines)
-    lines.extend(f"- {action}" for action in actions)
+    for action in actions:
+        if isinstance(action, dict):
+            suffix = " confirm" if action.get("requires_confirmation") else ""
+            lines.append(f"- {action.get('label', action.get('command', 'unknown'))} [{action.get('risk', 'low')}{suffix}]")
+        else:
+            lines.append(f"- {action}")
     return "\n".join(lines)
 
 
