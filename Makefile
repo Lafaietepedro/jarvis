@@ -21,6 +21,10 @@ ui-state:
 desktop-launcher:
 	cd backend && python -m app.cli desktop-launcher
 
+.PHONY: install-desktop-launcher
+install-desktop-launcher:
+	cd backend && python -m app.cli install-desktop-launcher
+
 .PHONY: dependencies
 dependencies:
 	cd backend && python -m app.cli dependencies

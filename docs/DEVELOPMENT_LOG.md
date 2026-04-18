@@ -442,6 +442,19 @@ Entregas:
 - Nenhuma instalacao automatica em diretorios do usuario.
 - Testes cobrindo manifest, icone, geracao do `.desktop`, escrita do arquivo e CLI.
 
+### Fase 3AA - Instalacao Confirmada Do Atalho Desktop
+
+Status: concluida.
+
+Entregas:
+- Novo comando `python -m app.cli install-desktop-launcher`.
+- Novo target `make install-desktop-launcher`.
+- Instalacao exige `--confirm` antes de escrever qualquer arquivo.
+- Sem `--confirm`, o comando informa destino, URL e deixa claro que nada foi escrito.
+- Caminho padrao de instalacao preparado para `~/.local/share/applications/jarvis-local.desktop`.
+- Suporte a `--output` para testes e instalacoes customizadas.
+- Testes cobrindo modo planejado sem escrita e instalacao confirmada em caminho temporario.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -461,7 +474,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Validar a interface web em navegador real e preparar um script opcional de instalacao do atalho com confirmacao explicita.
+- Validar a interface web em navegador real e adicionar verificacao visual automatizada quando houver navegador headless disponivel.
 
 ## Fases Futuras Planejadas
 
@@ -572,13 +585,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-155 tests OK
+159 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 155 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 159 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -3,6 +3,7 @@ from pathlib import Path
 
 DEFAULT_APP_NAME = "JARVIS Local"
 DEFAULT_UI_PATH = "/ui"
+DEFAULT_DESKTOP_FILE = "jarvis-local.desktop"
 
 
 def build_desktop_entry(
@@ -35,6 +36,15 @@ def write_desktop_entry(output_path: str, content: str) -> Path:
     path.write_text(content, encoding="utf-8")
     path.chmod(0o755)
     return path
+
+
+def install_desktop_launcher(ui_url: str, output_path: str | None = None) -> Path:
+    target = Path(output_path).expanduser() if output_path else default_user_launcher_path()
+    return write_desktop_entry(str(target), build_desktop_entry(ui_url=ui_url))
+
+
+def default_user_launcher_path() -> Path:
+    return Path.home() / ".local" / "share" / "applications" / DEFAULT_DESKTOP_FILE
 
 
 def default_icon_path() -> Path:

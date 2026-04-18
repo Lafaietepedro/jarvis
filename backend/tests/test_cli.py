@@ -392,6 +392,36 @@ class CliTest(unittest.TestCase):
             self.assertIn("Desktop launcher written", output)
             self.assertIn("Exec=xdg-open http://custom/ui", path.read_text(encoding="utf-8"))
 
+    def test_run_install_desktop_launcher_requires_confirmation(self):
+        args = argparse.Namespace(
+            url="http://test",
+            command="install-desktop-launcher",
+            ui_url=None,
+            output=None,
+            confirm=False,
+        )
+
+        output = run(args)
+
+        self.assertIn("requires --confirm", output)
+        self.assertIn("No files were written.", output)
+
+    def test_run_install_desktop_launcher_writes_custom_path_when_confirmed(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = Path(tempdir) / "jarvis.desktop"
+            args = argparse.Namespace(
+                url="http://test",
+                command="install-desktop-launcher",
+                ui_url="http://custom/ui",
+                output=str(path),
+                confirm=True,
+            )
+
+            output = run(args)
+
+            self.assertIn("Desktop launcher installed", output)
+            self.assertIn("Exec=xdg-open http://custom/ui", path.read_text(encoding="utf-8"))
+
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})
 

@@ -82,6 +82,7 @@ python -m app.cli checkpoints
 python -m app.cli ui-state
 python -m app.cli desktop-launcher
 python -m app.cli desktop-launcher --output ../jarvis.desktop
+python -m app.cli install-desktop-launcher
 python -m app.cli confirm-checkpoint 1
 python -m app.cli watch
 python -m app.cli presence
@@ -296,11 +297,13 @@ Atalho desktop:
 
 ```bash
 make desktop-launcher
+make install-desktop-launcher
 cd backend
 python -m app.cli desktop-launcher --output ../jarvis.desktop
+python -m app.cli install-desktop-launcher --confirm
 ```
 
-O comando apenas gera um arquivo `.desktop`; ele nao instala nada fora do projeto automaticamente.
+O comando `desktop-launcher` apenas gera um arquivo `.desktop`. O comando `install-desktop-launcher` exige `--confirm` antes de escrever em `~/.local/share/applications`.
 
 Painel vivo:
 

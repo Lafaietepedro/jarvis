@@ -2,7 +2,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.desktop_launcher import build_desktop_entry, default_icon_path, default_ui_url, write_desktop_entry
+from app.desktop_launcher import (
+    build_desktop_entry,
+    default_icon_path,
+    default_ui_url,
+    default_user_launcher_path,
+    install_desktop_launcher,
+    write_desktop_entry,
+)
 
 
 class DesktopLauncherTest(unittest.TestCase):
@@ -27,6 +34,18 @@ class DesktopLauncherTest(unittest.TestCase):
             self.assertEqual(written, path)
             self.assertEqual(path.read_text(encoding="utf-8"), "content")
             self.assertTrue(path.stat().st_mode & 0o111)
+
+    def test_default_user_launcher_path(self):
+        self.assertEqual(default_user_launcher_path().name, "jarvis-local.desktop")
+
+    def test_install_desktop_launcher_to_custom_path(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = Path(tempdir) / "jarvis.desktop"
+
+            written = install_desktop_launcher("http://127.0.0.1:8000/ui", output_path=str(path))
+
+            self.assertEqual(written, path)
+            self.assertIn("Exec=xdg-open http://127.0.0.1:8000/ui", path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

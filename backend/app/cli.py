@@ -8,7 +8,13 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
-from .desktop_launcher import build_desktop_entry, default_ui_url, write_desktop_entry
+from .desktop_launcher import (
+    build_desktop_entry,
+    default_ui_url,
+    default_user_launcher_path,
+    install_desktop_launcher,
+    write_desktop_entry,
+)
 from .cli_format import (
     format_checkpoints,
     format_command_result,
@@ -81,6 +87,10 @@ def build_parser() -> argparse.ArgumentParser:
     desktop_launcher = subparsers.add_parser("desktop-launcher", help="Generate a local .desktop launcher")
     desktop_launcher.add_argument("--ui-url", help="Full URL opened by the desktop launcher")
     desktop_launcher.add_argument("--output", help="Write the launcher to this path")
+    install_desktop = subparsers.add_parser("install-desktop-launcher", help="Install the local .desktop launcher")
+    install_desktop.add_argument("--ui-url", help="Full URL opened by the desktop launcher")
+    install_desktop.add_argument("--output", help="Install to a custom path instead of the user applications directory")
+    install_desktop.add_argument("--confirm", action="store_true", help="Confirm writing the launcher file")
     subparsers.add_parser("privacy", help="Show privacy panel")
     subparsers.add_parser("diagnostics", help="Show local diagnostics")
     subparsers.add_parser("dependencies", help="Validate optional dependencies")
@@ -143,6 +153,20 @@ def run(args: argparse.Namespace) -> str:
             path = write_desktop_entry(args.output, launcher)
             return f"Desktop launcher written to {path}"
         return launcher
+    if command == "install-desktop-launcher":
+        ui_url = args.ui_url or default_ui_url(args.url)
+        target = args.output or str(default_user_launcher_path())
+        if not args.confirm:
+            return "\n".join(
+                [
+                    "Desktop launcher install requires --confirm.",
+                    f"Target: {target}",
+                    f"URL: {ui_url}",
+                    "No files were written.",
+                ]
+            )
+        path = install_desktop_launcher(ui_url=ui_url, output_path=args.output)
+        return f"Desktop launcher installed at {path}"
     if command == "privacy":
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":
