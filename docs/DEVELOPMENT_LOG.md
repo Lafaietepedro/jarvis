@@ -466,6 +466,17 @@ Entregas:
 - O teste pula automaticamente quando `uvicorn`, Chromium ou sockets localhost nao estao disponiveis.
 - Cobertura prepara o caminho para verificacoes visuais mais ricas da interface.
 
+### Fase 3AC - Verificacao Visual Desktop E Mobile
+
+Status: concluida.
+
+Entregas:
+- Smoke visual agora valida DOM renderizado apos a interface consumir `GET /ui/state`.
+- Validacao confirma conteudo real da UI, como status ativo, projeto, comando e privacidade.
+- Captura screenshots separadas para viewport desktop e mobile.
+- Teste continua opcional e pula quando Chromium, `uvicorn` ou sockets localhost nao estao disponiveis.
+- Cobertura reduz risco de regressao visual basica sem adicionar dependencias novas.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -485,7 +496,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Ampliar a verificacao visual para conferir conteudo renderizado e estados mobile/desktop.
+- Melhorar o contrato de acoes da UI para informar permissoes, risco e necessidade de confirmacao por acao.
 
 ## Fases Futuras Planejadas
 
@@ -596,13 +607,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-160 tests OK
+161 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, a suite tem 160 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na `.venv` do projeto, a suite tem 161 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

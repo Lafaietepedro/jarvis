@@ -393,6 +393,8 @@ cd backend
 .venv/bin/python -m unittest tests/test_ui_browser_smoke.py -v
 ```
 
+Esse smoke confere conteudo renderizado e screenshots desktop/mobile.
+
 Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente. Em ambientes que bloqueiam sockets localhost, os smokes HTTP e visual tambem sao pulados.
 
 Notas
