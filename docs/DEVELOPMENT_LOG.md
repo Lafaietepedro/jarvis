@@ -32,6 +32,7 @@ O nucleo atual ja consegue:
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - validar dependencias opcionais por comando natural, CLI ou chat;
 - preparar comandos de instalacao de dependencias opcionais sem executar instalacao automaticamente;
+- validar a API por smoke test HTTP local quando sockets localhost estao disponiveis;
 - atualizar painel vivo por `python -m app.cli watch`;
 - conversar pelo terminal com `python -m app.cli chat` ou `make chat`;
 - usar atalhos e historico curto de sessao no chat interativo;
@@ -347,6 +348,18 @@ Entregas:
 - Diagnostico CLI agora mostra contagem e ausencias de modulos Python opcionais.
 - Testes cobrindo NLU, core, CLI e relatorio de dependencias opcionais.
 
+### Fase 3T - Smoke Test HTTP Local
+
+Status: concluida.
+
+Entregas:
+- Novo smoke test HTTP com `uvicorn` e `urllib`, sem depender de `httpx`/`TestClient`.
+- O teste sobe a API em `127.0.0.1` usando porta local livre.
+- Valida `GET /health`, `GET /presence`, `POST /command`, `GET /history` e `GET /checkpoints`.
+- O estado global do `JarvisCore` e da voz e isolado durante o smoke test.
+- O smoke test pula automaticamente quando dependencias web ou sockets locais nao estao disponiveis.
+- Smoke test validado fora do sandbox com sockets localhost permitidos.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -366,7 +379,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar smoke test HTTP com servidor local quando `httpx`/TestClient estiver disponivel.
+- Expandir smoke HTTP para pause/resume e historico de checkpoints quando sockets localhost estiverem disponiveis.
 
 ## Fases Futuras Planejadas
 
@@ -477,12 +490,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-138 tests OK
+139 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 6 testes de contrato da API sao pulados.
-- Na `.venv` do projeto, os 138 testes rodam completos.
+- Em Python sem dependencias web instaladas, os 6 testes de contrato da API e o smoke HTTP sao pulados.
+- Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
+- Na `.venv` do projeto, os 139 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

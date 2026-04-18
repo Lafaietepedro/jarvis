@@ -336,7 +336,14 @@ cd backend
 .venv/bin/python -m unittest discover -s tests
 ```
 
-Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente.
+Para rodar apenas o smoke HTTP local, quando sockets localhost estiverem disponiveis:
+
+```bash
+cd backend
+.venv/bin/python -m unittest tests/test_api_smoke.py -v
+```
+
+Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente. Em ambientes que bloqueiam sockets localhost, o smoke HTTP tambem e pulado.
 
 Notas
 - Este PoC usa um simulador de wake-word por simplicidade. Substitua por Porcupine/Precise quando estiver pronto.
