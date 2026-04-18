@@ -72,6 +72,35 @@ class ApiSmokeTest(unittest.TestCase):
         self.assertEqual(checkpoints["status"], "pending")
         self.assertEqual(checkpoints["pending_count"], 1)
 
+    def test_http_smoke_session_and_checkpoint_events(self):
+        self._start_server()
+
+        pause = self._request("POST", "/pause")
+        self.assertEqual(pause["status"], "paused")
+        presence = self._request("GET", "/presence")
+        self.assertEqual(presence["status"], "paused")
+        self.assertFalse(presence["voice_listening"])
+
+        resume = self._request("POST", "/resume")
+        self.assertEqual(resume["status"], "active")
+        presence = self._request("GET", "/presence")
+        self.assertEqual(presence["status"], "active")
+
+        self._request("POST", "/command", {"text": "executar checkup do projeto"})
+        confirm = self._request(
+            "POST",
+            "/command",
+            {"text": "confirmar checkpoint 1", "confirm_actions": True},
+        )
+        self.assertEqual(confirm["action"]["name"], "confirm_checkpoint")
+        self.assertEqual(confirm["action"]["status"], "blocked")
+
+        checkpoints = self._request("GET", "/checkpoints")
+        self.assertEqual(checkpoints["status"], "pending")
+        self.assertEqual(checkpoints["pending_count"], 1)
+        self.assertEqual(checkpoints["event_count"], 1)
+        self.assertEqual(checkpoints["events"][0]["reason"], "shell_disabled")
+
     def _start_server(self):
         port = _find_free_port()
         self.base_url = f"http://127.0.0.1:{port}"

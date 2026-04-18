@@ -42,6 +42,7 @@ O nucleo atual ja consegue:
 - expor `GET /history` para consultar comandos recentes;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - manter acoes sensiveis bloqueadas por padrao;
+- validar por HTTP real os estados de pausa/retomada e eventos de checkpoints;
 - executar testes automatizados do core e do NLU.
 
 ## Fases Completadas
@@ -360,6 +361,17 @@ Entregas:
 - O smoke test pula automaticamente quando dependencias web ou sockets locais nao estao disponiveis.
 - Smoke test validado fora do sandbox com sockets localhost permitidos.
 
+### Fase 3U - Smoke HTTP De Sessao E Eventos
+
+Status: concluida.
+
+Entregas:
+- Smoke HTTP expandido para validar `POST /pause` e `POST /resume` atravessando o servidor local real.
+- Validacao de `GET /presence` depois de pausar e retomar, cobrindo `status` e `voice_listening`.
+- Smoke HTTP agora confirma um checkpoint via `POST /command` com `confirm_actions=true`.
+- Validacao de eventos recentes por `GET /checkpoints`, incluindo bloqueio por `shell_disabled`.
+- Cobertura preserva a regra de seguranca: checkpoint sensivel continua pendente quando shell esta bloqueado.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -379,7 +391,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Expandir smoke HTTP para pause/resume e historico de checkpoints quando sockets localhost estiverem disponiveis.
+- Preparar um contrato leve para uma futura UI desktop consumir presenca, checkpoints, historico e privacidade de forma consistente.
 
 ## Fases Futuras Planejadas
 
@@ -490,13 +502,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-139 tests OK
+140 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 6 testes de contrato da API e o smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 139 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 140 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

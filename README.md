@@ -343,6 +343,8 @@ cd backend
 .venv/bin/python -m unittest tests/test_api_smoke.py -v
 ```
 
+Esse smoke cobre healthcheck, presenca, pausa/retomada, comando, historico e eventos de checkpoints via servidor local real.
+
 Em um Python sem FastAPI instalada, os testes de contrato da API sao pulados automaticamente. Em ambientes que bloqueiam sockets localhost, o smoke HTTP tambem e pulado.
 
 Notas
