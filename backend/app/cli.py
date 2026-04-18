@@ -8,6 +8,7 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
+from .desktop_launcher import build_desktop_entry, default_ui_url, write_desktop_entry
 from .cli_format import (
     format_checkpoints,
     format_command_result,
@@ -77,6 +78,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("checkpoints", help="Show pending automation checkpoints")
     ui_state = subparsers.add_parser("ui-state", help="Show aggregated desktop UI state")
     ui_state.add_argument("--history-limit", type=int, default=5)
+    desktop_launcher = subparsers.add_parser("desktop-launcher", help="Generate a local .desktop launcher")
+    desktop_launcher.add_argument("--ui-url", help="Full URL opened by the desktop launcher")
+    desktop_launcher.add_argument("--output", help="Write the launcher to this path")
     subparsers.add_parser("privacy", help="Show privacy panel")
     subparsers.add_parser("diagnostics", help="Show local diagnostics")
     subparsers.add_parser("dependencies", help="Validate optional dependencies")
@@ -132,6 +136,13 @@ def run(args: argparse.Namespace) -> str:
         return format_checkpoints(client.get("/checkpoints"))
     if command == "ui-state":
         return format_ui_state(client.get("/ui/state", {"history_limit": args.history_limit}))
+    if command == "desktop-launcher":
+        ui_url = args.ui_url or default_ui_url(args.url)
+        launcher = build_desktop_entry(ui_url=ui_url)
+        if args.output:
+            path = write_desktop_entry(args.output, launcher)
+            return f"Desktop launcher written to {path}"
+        return launcher
     if command == "privacy":
         return format_privacy(client.get("/privacy"))
     if command == "diagnostics":

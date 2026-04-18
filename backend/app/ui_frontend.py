@@ -6,6 +6,8 @@ UI_DIR = Path(__file__).with_name("ui")
 ASSET_TYPES = {
     "app.js": "text/javascript",
     "styles.css": "text/css",
+    "manifest.webmanifest": "application/manifest+json",
+    "icon.svg": "image/svg+xml",
 }
 
 

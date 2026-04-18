@@ -136,11 +136,14 @@ class ApiContractTest(unittest.TestCase):
     def test_ui_frontend_contract(self):
         page = asyncio.run(main.ui())
         script = asyncio.run(main.ui_asset("app.js"))
+        manifest = asyncio.run(main.ui_asset("manifest.webmanifest"))
         missing = asyncio.run(main.ui_asset("../main.py"))
 
         self.assertIn(b"id=\"command-form\"", page.body)
         self.assertIn(b"/ui/state", script.body)
+        self.assertIn(b"JARVIS Local", manifest.body)
         self.assertEqual(script.media_type, "text/javascript")
+        self.assertEqual(manifest.media_type, "application/manifest+json")
         self.assertEqual(missing.status_code, 404)
 
 

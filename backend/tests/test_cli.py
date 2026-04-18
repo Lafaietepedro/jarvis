@@ -364,6 +364,34 @@ class CliTest(unittest.TestCase):
         self.assertIn("Schema: 1", output)
         self.assertIn("/ui/state", FakeClient.get_paths)
 
+    def test_run_desktop_launcher_prints_entry(self):
+        args = argparse.Namespace(
+            url="http://test",
+            command="desktop-launcher",
+            ui_url=None,
+            output=None,
+        )
+
+        output = run(args)
+
+        self.assertIn("[Desktop Entry]", output)
+        self.assertIn("Exec=xdg-open http://test/ui", output)
+
+    def test_run_desktop_launcher_writes_entry(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = Path(tempdir) / "jarvis.desktop"
+            args = argparse.Namespace(
+                url="http://test",
+                command="desktop-launcher",
+                ui_url="http://custom/ui",
+                output=str(path),
+            )
+
+            output = run(args)
+
+            self.assertIn("Desktop launcher written", output)
+            self.assertIn("Exec=xdg-open http://custom/ui", path.read_text(encoding="utf-8"))
+
     def test_handle_chat_action_clear_history(self):
         output = handle_chat_action(FakeClient(), "clear-history", {})
 

@@ -17,6 +17,10 @@ checkpoints:
 ui-state:
 	cd backend && python -m app.cli ui-state
 
+.PHONY: desktop-launcher
+desktop-launcher:
+	cd backend && python -m app.cli desktop-launcher
+
 .PHONY: dependencies
 dependencies:
 	cd backend && python -m app.cli dependencies

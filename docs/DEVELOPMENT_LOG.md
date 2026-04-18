@@ -32,6 +32,7 @@ O nucleo atual ja consegue:
 - visualizar o contrato de UI desktop por CLI e chat;
 - servir uma interface web local por `GET /ui`;
 - controlar comandos, pausa/retomada e checkpoints pela interface web local;
+- preparar manifest local e atalho desktop sem instalacao automatica;
 - exibir um painel CLI local por `python -m app.cli panel` ou `make panel`;
 - exibir diagnostico local por `GET /diagnostics`, comando natural ou `python -m app.cli diagnostics`;
 - validar dependencias opcionais por comando natural, CLI ou chat;
@@ -427,6 +428,20 @@ Entregas:
 - Preferencia de refresh fica apenas no `localStorage` do navegador.
 - Testes dos assets cobrem os novos elementos de eventos e refresh.
 
+### Fase 3Z - Manifest E Atalho Desktop Local
+
+Status: concluida.
+
+Entregas:
+- Interface web ganhou `manifest.webmanifest` local para instalacao/atalho pelo navegador.
+- Icone local `icon.svg` servido pelo backend, sem asset remoto.
+- Novo modulo `desktop_launcher` para gerar arquivos `.desktop`.
+- Novo comando `python -m app.cli desktop-launcher`.
+- Novo target `make desktop-launcher`.
+- Geracao do atalho apenas imprime o conteudo por padrao ou escreve no caminho indicado por `--output`.
+- Nenhuma instalacao automatica em diretorios do usuario.
+- Testes cobrindo manifest, icone, geracao do `.desktop`, escrita do arquivo e CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -446,7 +461,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Validar a interface web em navegador real e preparar instalacao local como atalho/aplicativo desktop.
+- Validar a interface web em navegador real e preparar um script opcional de instalacao do atalho com confirmacao explicita.
 
 ## Fases Futuras Planejadas
 
@@ -557,13 +572,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-150 tests OK
+155 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smoke HTTP sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, os 150 testes rodam completos quando sockets localhost estao disponiveis.
+- Na `.venv` do projeto, os 155 testes rodam completos quando sockets localhost estao disponiveis.
 
 ```bash
 python -m compileall backend/app

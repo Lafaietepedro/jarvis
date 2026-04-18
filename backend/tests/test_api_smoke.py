@@ -76,6 +76,10 @@ class ApiSmokeTest(unittest.TestCase):
         self.assertIn('id="command-form"', page)
         script = self._request_text("GET", "/ui/assets/app.js")
         self.assertIn("/ui/state", script)
+        manifest = self._request_text("GET", "/ui/assets/manifest.webmanifest")
+        self.assertIn("JARVIS Local", manifest)
+        icon = self._request_text("GET", "/ui/assets/icon.svg")
+        self.assertIn("<svg", icon)
 
     def test_http_smoke_session_and_checkpoint_events(self):
         self._start_server()

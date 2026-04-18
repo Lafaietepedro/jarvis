@@ -17,6 +17,7 @@ Visão rápida
 - Validação e plano de instalação de dependências opcionais
 - Chat interativo no terminal
 - Interface web local em `GET /ui`
+- Manifest local e gerador de atalho desktop
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
 - Planos seguros de automação
@@ -79,6 +80,8 @@ cd backend
 python -m app.cli panel
 python -m app.cli checkpoints
 python -m app.cli ui-state
+python -m app.cli desktop-launcher
+python -m app.cli desktop-launcher --output ../jarvis.desktop
 python -m app.cli confirm-checkpoint 1
 python -m app.cli watch
 python -m app.cli presence
@@ -288,6 +291,16 @@ http://localhost:8000/ui
 ```
 
 A interface usa apenas assets locais servidos pelo backend, mostra eventos recentes de checkpoints e permite configurar o refresh automatico.
+
+Atalho desktop:
+
+```bash
+make desktop-launcher
+cd backend
+python -m app.cli desktop-launcher --output ../jarvis.desktop
+```
+
+O comando apenas gera um arquivo `.desktop`; ele nao instala nada fora do projeto automaticamente.
 
 Painel vivo:
 
