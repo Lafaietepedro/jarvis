@@ -86,6 +86,24 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(payload["by_intent"][0]["name"], "status")
         self.assertEqual(payload["sample"][0]["text"], "qual o status")
 
+    def test_history_delete_contract(self):
+        command = main.CommandRequest(text="qual o status")
+        asyncio.run(main.command(command))
+        command_id = self.memory.recent_commands()[0]["id"]
+
+        preview = asyncio.run(main.delete_history(main.DeleteHistoryRequest(command_ids=[command_id])))
+
+        self.assertEqual(preview["status"], "needs_confirmation")
+        self.assertEqual(preview["preview"]["matching_count"], 1)
+
+        deleted = asyncio.run(
+            main.delete_history(main.DeleteHistoryRequest(command_ids=[command_id], confirm=True))
+        )
+
+        self.assertEqual(deleted["status"], "done")
+        self.assertEqual(deleted["deleted"], 1)
+        self.assertEqual(self.memory.recent_commands(), [])
+
     def test_pause_and_resume_contract(self):
         paused = asyncio.run(main.pause())
 

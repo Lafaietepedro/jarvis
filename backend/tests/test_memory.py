@@ -25,6 +25,7 @@ class MemoryStoreTest(unittest.TestCase):
         commands = self.memory.recent_commands()
 
         self.assertEqual(len(commands), 1)
+        self.assertIn("id", commands[0])
         self.assertEqual(commands[0]["text"], "qual o status")
         self.assertEqual(commands[0]["intent"]["intent"], "status")
 
@@ -87,6 +88,44 @@ class MemoryStoreTest(unittest.TestCase):
         self.assertEqual(audit["by_intent"][0], {"name": "status", "count": 1})
         self.assertEqual(audit["by_skill"][0], {"name": "system", "count": 1})
         self.assertEqual(audit["sample"][0]["text"], "qual o status")
+
+    def test_deletes_commands_by_id(self):
+        self.memory.record_command(
+            text="qual o status",
+            intent={"intent": "status"},
+            action={"skill": "system", "name": "status", "status": "done"},
+            response="ok",
+        )
+        command_id = self.memory.recent_commands()[0]["id"]
+
+        deleted = self.memory.delete_commands(command_ids=[command_id])
+
+        self.assertEqual(deleted["deleted"], 1)
+        self.assertEqual(self.memory.recent_commands(), [])
+
+    def test_deletes_commands_by_filter(self):
+        self.memory.record_command(
+            text="qual o status",
+            intent={"intent": "status"},
+            action={"skill": "system", "name": "status", "status": "done"},
+            response="ok",
+        )
+        self.memory.record_command(
+            text="ultimos comandos",
+            intent={"intent": "command_history"},
+            action={"skill": "memory", "name": "command_history", "status": "done"},
+            response="ok",
+        )
+
+        deleted = self.memory.delete_commands(intent="status")
+
+        self.assertEqual(deleted["deleted"], 1)
+        self.assertEqual(self.memory.recent_commands()[0]["text"], "ultimos comandos")
+
+    def test_delete_commands_requires_selector(self):
+        deleted = self.memory.delete_commands()
+
+        self.assertEqual(deleted["status"], "needs_selector")
 
 
 if __name__ == "__main__":

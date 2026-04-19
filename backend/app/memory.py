@@ -46,7 +46,7 @@ class MemoryStore:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 """
-                SELECT created_at, text, intent, action, response
+                SELECT id, created_at, text, intent, action, response
                 FROM command_history
                 ORDER BY id DESC
                 LIMIT ?
@@ -56,6 +56,7 @@ class MemoryStore:
 
         return [
             {
+                "id": row["id"],
                 "created_at": row["created_at"],
                 "text": row["text"],
                 "intent": json.loads(row["intent"]),
@@ -67,7 +68,7 @@ class MemoryStore:
 
     def export_history(self, limit: int | None = None) -> dict[str, Any]:
         query = """
-            SELECT created_at, text, intent, action, response
+            SELECT id, created_at, text, intent, action, response
             FROM command_history
             ORDER BY id ASC
         """
@@ -82,6 +83,7 @@ class MemoryStore:
 
         commands = [
             {
+                "id": row["id"],
                 "created_at": row["created_at"],
                 "text": row["text"],
                 "intent": json.loads(row["intent"]),
@@ -95,6 +97,77 @@ class MemoryStore:
             "exported_at": datetime.now(timezone.utc).isoformat(),
             "stats": self.stats(),
             "commands": commands,
+        }
+
+    def delete_commands(
+        self,
+        command_ids: list[int] | None = None,
+        intent: str | None = None,
+        skill: str | None = None,
+        action: str | None = None,
+        since: str | None = None,
+        until: str | None = None,
+    ) -> dict[str, Any]:
+        filters = {
+            "intent": intent,
+            "skill": skill,
+            "action": action,
+            "since": since,
+            "until": until,
+        }
+        ids = _normalize_ids(command_ids)
+        if not ids and not any(filters.values()):
+            return {
+                "status": "needs_selector",
+                "deleted": 0,
+                "selected": 0,
+                "command_ids": [],
+                "filters": filters,
+            }
+
+        selected_ids = ids or [
+            command["id"]
+            for command in self._filtered_commands(
+                intent=intent,
+                skill=skill,
+                action=action,
+                since=since,
+                until=until,
+            )
+        ]
+
+        if not selected_ids:
+            return {
+                "status": "done",
+                "deleted": 0,
+                "selected": 0,
+                "command_ids": [],
+                "filters": filters,
+                "stats": self.stats(),
+            }
+
+        placeholders = ",".join("?" for _ in selected_ids)
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            existing = conn.execute(
+                f"SELECT id FROM command_history WHERE id IN ({placeholders})",
+                tuple(selected_ids),
+            ).fetchall()
+            existing_ids = [row[0] for row in existing]
+            if existing_ids:
+                delete_placeholders = ",".join("?" for _ in existing_ids)
+                conn.execute(
+                    f"DELETE FROM command_history WHERE id IN ({delete_placeholders})",
+                    tuple(existing_ids),
+                )
+                conn.commit()
+
+        return {
+            "status": "done",
+            "deleted": len(existing_ids),
+            "selected": len(selected_ids),
+            "command_ids": existing_ids,
+            "filters": filters,
+            "stats": self.stats(),
         }
 
     def audit_summary(
@@ -133,6 +206,35 @@ class MemoryStore:
             "by_status": _count_by(commands, lambda command: command.get("action", {}).get("status", "unknown")),
             "sample": commands[:limit],
         }
+
+    def commands_by_ids(self, command_ids: list[int]) -> list[dict[str, Any]]:
+        ids = _normalize_ids(command_ids)
+        if not ids:
+            return []
+        placeholders = ",".join("?" for _ in ids)
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                f"""
+                SELECT id, created_at, text, intent, action, response
+                FROM command_history
+                WHERE id IN ({placeholders})
+                ORDER BY id DESC
+                """,
+                tuple(ids),
+            ).fetchall()
+
+        return [
+            {
+                "id": row["id"],
+                "created_at": row["created_at"],
+                "text": row["text"],
+                "intent": json.loads(row["intent"]),
+                "action": json.loads(row["action"]),
+                "response": row["response"],
+            }
+            for row in rows
+        ]
 
     def clear_history(self) -> int:
         with closing(sqlite3.connect(self.db_path)) as conn:
@@ -214,6 +316,19 @@ def _count_by(commands: list[dict[str, Any]], key_func) -> list[dict[str, Any]]:
         {"name": name, "count": count}
         for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
     ]
+
+
+def _normalize_ids(command_ids: list[int] | None) -> list[int]:
+    if not command_ids:
+        return []
+    seen = set()
+    ids = []
+    for command_id in command_ids:
+        if command_id <= 0 or command_id in seen:
+            continue
+        seen.add(command_id)
+        ids.append(command_id)
+    return ids
 
 
 def _parse_datetime_filter(value: str | None, end_of_day: bool) -> datetime | None:

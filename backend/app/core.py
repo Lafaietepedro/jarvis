@@ -100,7 +100,11 @@ class JarvisCore:
             "session": self.session_state.snapshot(),
         }
 
-        skip_memory_record = result.action.get("skill") == "memory" and result.action.get("name") == "clear_history" and result.action.get("status") == "done"
+        skip_memory_record = (
+            result.action.get("skill") == "memory"
+            and result.action.get("name") in {"clear_history", "delete_memory"}
+            and result.action.get("status") == "done"
+        )
         if not skip_memory_record:
             self.memory_store.record_command(
                 text=text,

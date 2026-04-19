@@ -194,6 +194,14 @@ class FakeClient:
             return {"status": path.lstrip("/")}
         if path == "/history/clear":
             return {"status": "done", "deleted": 1 if payload and payload.get("confirm") else 0}
+        if path == "/history/delete":
+            self.posted_payloads.append(payload)
+            return {
+                "status": "done" if payload and payload.get("confirm") else "needs_confirmation",
+                "deleted": 1 if payload and payload.get("confirm") else 0,
+                "selected": 1,
+                "command_ids": (payload or {}).get("command_ids") or [1],
+            }
         raise AssertionError(f"Unexpected path: {path}")
 
 
@@ -264,6 +272,12 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "memory-audit")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_memory_delete(self):
+        action, payload = parse_chat_line("/memory-delete")
+
+        self.assertEqual(action, "memory-delete")
+        self.assertEqual(payload, {})
+
     def test_parse_chat_line_checkpoints(self):
         action, payload = parse_chat_line("/checkpoints")
 
@@ -304,6 +318,11 @@ class CliTest(unittest.TestCase):
 
         self.assertIn("[MEMORY AUDIT]", output)
         self.assertIn("/history/audit", FakeClient.get_paths)
+
+    def test_handle_chat_action_memory_delete_guides_to_cli(self):
+        output = handle_chat_action(FakeClient(), "memory-delete", {})
+
+        self.assertIn("memory-delete --id", output)
 
     def test_handle_chat_action_checkpoints(self):
         client = FakeClient()
@@ -423,6 +442,26 @@ class CliTest(unittest.TestCase):
 
         self.assertIn("[MEMORY AUDIT]", output)
         self.assertIn("/history/audit", FakeClient.get_paths)
+
+    def test_run_memory_delete(self):
+        args = argparse.Namespace(
+            url="http://test",
+            command="memory-delete",
+            command_ids=[1],
+            intent=None,
+            skill=None,
+            action=None,
+            since=None,
+            until=None,
+            confirm=True,
+        )
+
+        with patch("app.cli.JarvisHttpClient", return_value=FakeClient()):
+            output = run(args)
+
+        self.assertIn("[HISTORY DELETE]", output)
+        self.assertEqual(FakeClient.posted_payloads[0]["command_ids"], [1])
+        self.assertTrue(FakeClient.posted_payloads[0]["confirm"])
 
     def test_run_desktop_launcher_prints_entry(self):
         args = argparse.Namespace(

@@ -71,6 +71,16 @@ MEMORY_AUDIT_TERMS = (
 )
 EXPORT_HISTORY_TERMS = ("exportar historico", "exportar histórico", "backup do historico", "backup do histórico")
 CLEAR_HISTORY_TERMS = ("limpar historico", "limpar histórico", "apagar historico", "apagar histórico", "esquecer historico", "esquecer histórico")
+DELETE_MEMORY_TERMS = (
+    "apagar comando",
+    "remover comando",
+    "excluir comando",
+    "esquecer comando",
+    "apagar memoria",
+    "apagar memória",
+    "remover memoria",
+    "remover memória",
+)
 CONFIRM_CHECKPOINT_TERMS = (
     "confirmar checkpoint",
     "confirmar passo",
@@ -181,6 +191,13 @@ def _extract_checkpoint_id(text: str) -> int | None:
     return int(match.group(1))
 
 
+def _extract_memory_command_id(text: str) -> int | None:
+    match = re.search(r"\b(?:comando|memoria|memória)\s+(\d+)\b", text)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
 def _extract_web_query(text: str) -> str | None:
     match = re.search(r"\b(?:pesquisar|pesquise|buscar|busque|procurar|procure|search)\b\s+(?:por|sobre|for)?\s*(.+)", text)
     if not match:
@@ -225,6 +242,9 @@ def parse_intent(text: str):
 
     if _has_any(normalized, CLEAR_HISTORY_TERMS):
         return {"intent": "clear_history", "text": text}
+
+    if _has_any(normalized, DELETE_MEMORY_TERMS):
+        return {"intent": "delete_memory", "command_id": _extract_memory_command_id(normalized), "text": text}
 
     if _has_any(normalized, MEMORY_AUDIT_TERMS):
         return {"intent": "memory_audit", "text": text}

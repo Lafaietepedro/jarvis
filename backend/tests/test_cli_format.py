@@ -4,6 +4,7 @@ from app.cli_format import (
     format_checkpoints,
     format_command_result,
     format_history_export,
+    format_history_delete,
     format_memory_audit,
     format_diagnostics,
     format_history,
@@ -62,6 +63,7 @@ class CliFormatTest(unittest.TestCase):
         self.history = {
             "commands": [
                 {
+                    "id": 1,
                     "text": "qual o status",
                     "action": {"skill": "system", "name": "status", "status": "done"},
                 }
@@ -126,6 +128,7 @@ class CliFormatTest(unittest.TestCase):
                 "by_status": [{"name": "done", "count": 1}],
                 "sample": [
                     {
+                        "id": 1,
                         "text": "qual o status",
                         "action": {"skill": "system", "name": "status", "status": "done"},
                     }
@@ -236,6 +239,7 @@ class CliFormatTest(unittest.TestCase):
                 "by_status": [{"name": "done", "count": 1}],
                 "sample": [
                     {
+                        "id": 1,
                         "text": "qual o status",
                         "action": {"skill": "system", "name": "status", "status": "done"},
                     }
@@ -246,7 +250,22 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[MEMORY AUDIT]", output)
         self.assertIn("Filters: intent=status", output)
         self.assertIn("By intent: status=1", output)
+        self.assertIn("#1", output)
         self.assertIn("qual o status", output)
+
+    def test_format_history_delete(self):
+        output = format_history_delete(
+            {
+                "status": "done",
+                "deleted": 1,
+                "selected": 1,
+                "command_ids": [1],
+            }
+        )
+
+        self.assertIn("[HISTORY DELETE]", output)
+        self.assertIn("Deleted commands: 1", output)
+        self.assertIn("Command ids: 1", output)
 
     def test_format_empty_history(self):
         output = format_history({"commands": []})

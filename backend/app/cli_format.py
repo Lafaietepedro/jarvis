@@ -94,8 +94,9 @@ def format_history(payload: dict[str, Any]) -> str:
 
     for index, command in enumerate(commands, start=1):
         action = command.get("action", {})
+        command_id = command.get("id", index)
         lines.append(
-            f"{index}. {command.get('text', '')} -> "
+            f"{index}. #{command_id} {command.get('text', '')} -> "
             f"{action.get('skill', 'unknown')}.{action.get('name', 'unknown')} "
             f"({action.get('status', 'unknown')})"
         )
@@ -146,11 +147,32 @@ def format_memory_audit(payload: dict[str, Any]) -> str:
         lines.append("Sample:")
         for command in sample:
             action = command.get("action", {})
+            command_id = command.get("id", "?")
             lines.append(
-                f"- {command.get('text', '')} -> "
+                f"- #{command_id} {command.get('text', '')} -> "
                 f"{action.get('skill', 'unknown')}.{action.get('name', 'unknown')} "
                 f"({action.get('status', 'unknown')})"
             )
+    return "\n".join(lines)
+
+
+def format_history_delete(payload: dict[str, Any]) -> str:
+    lines = [
+        "[HISTORY DELETE]",
+        f"Status: {payload.get('status', 'unknown')}",
+    ]
+    if payload.get("reason"):
+        lines.append(f"Reason: {payload['reason']}")
+    if payload.get("deleted") is not None:
+        lines.append(f"Deleted commands: {payload.get('deleted', 0)}")
+    if payload.get("selected") is not None:
+        lines.append(f"Selected commands: {payload.get('selected', 0)}")
+    command_ids = payload.get("command_ids") or []
+    if command_ids:
+        lines.append(f"Command ids: {', '.join(str(command_id) for command_id in command_ids)}")
+    preview = payload.get("preview", {})
+    if preview:
+        lines.append(f"Preview matches: {preview.get('matching_count', 0)}")
     return "\n".join(lines)
 
 

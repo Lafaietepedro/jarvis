@@ -153,6 +153,16 @@ class ClearHistoryRequest(BaseModel):
     confirm: bool = False
 
 
+class DeleteHistoryRequest(BaseModel):
+    confirm: bool = False
+    command_ids: list[int] | None = None
+    intent: str | None = None
+    skill: str | None = None
+    action: str | None = None
+    since: str | None = None
+    until: str | None = None
+
+
 class CommandResponse(BaseModel):
     text: str
     intent: dict[str, Any]
@@ -316,6 +326,46 @@ async def clear_history(payload: ClearHistoryRequest):
         return {"status": "needs_confirmation", "reason": "confirmation_required"}
     deleted = jarvis.memory_store.clear_history()
     return {"status": "done", "deleted": deleted}
+
+
+@app.post('/history/delete')
+async def delete_history(payload: DeleteHistoryRequest):
+    has_selector = bool(payload.command_ids) or any(
+        [payload.intent, payload.skill, payload.action, payload.since, payload.until]
+    )
+    if not has_selector:
+        return {"status": "needs_selector", "reason": "missing_selector"}
+    if payload.command_ids:
+        sample = jarvis.memory_store.commands_by_ids(payload.command_ids)
+        preview = {
+            "matching_count": len(sample),
+            "sample": sample,
+            "filters": {"command_ids": payload.command_ids},
+        }
+    else:
+        preview = jarvis.memory_store.audit_summary(
+            intent=payload.intent,
+            skill=payload.skill,
+            action=payload.action,
+            since=payload.since,
+            until=payload.until,
+            limit=5,
+        )
+    if not payload.confirm:
+        return {
+            "status": "needs_confirmation",
+            "reason": "confirmation_required",
+            "command_ids": payload.command_ids or [],
+            "preview": preview,
+        }
+    return jarvis.memory_store.delete_commands(
+        command_ids=payload.command_ids,
+        intent=payload.intent,
+        skill=payload.skill,
+        action=payload.action,
+        since=payload.since,
+        until=payload.until,
+    )
 
 
 @app.get('/privacy')

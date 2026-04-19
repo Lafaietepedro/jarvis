@@ -12,6 +12,7 @@ Visão rápida
 - Contexto local do projeto/computador
 - Memória local de histórico em SQLite
 - Auditoria local da memória com filtros
+- Exclusão seletiva da memória local com confirmação
 - Painel de privacidade e permissões
 - CLI local para painel, histórico e comandos
 - Diagnóstico local de dependências opcionais
@@ -99,6 +100,8 @@ python -m app.cli install-dependencies
 python -m app.cli history
 python -m app.cli memory-audit
 python -m app.cli memory-audit --intent status
+python -m app.cli memory-delete --id 1 --confirm
+python -m app.cli memory-delete --intent status --confirm
 python -m app.cli export-history
 python -m app.cli export-history --output history.json
 python -m app.cli clear-history --confirm
@@ -129,6 +132,7 @@ Endpoints úteis
 - `GET /history` — lista comandos recentes registrados localmente
 - `GET /history/audit` — resume a memória local com filtros por intenção, skill, ação e data
 - `GET /history/export` — exporta histórico local como JSON
+- `POST /history/delete` — remove memórias por id ou filtro com confirmação
 - `POST /history/clear` — limpa histórico local com confirmação
 - `GET /checkpoints` — lista checkpoints pendentes e eventos recentes
 - `GET /ui/state` — agrega presença, checkpoints, histórico curto e privacidade para UI desktop
@@ -157,6 +161,8 @@ Comandos iniciais
 - `analisar projeto`
 - `rodar testes`
 - `ultimos comandos`
+- `resumo da memoria`
+- `apagar comando 1`
 - `exportar historico`
 - `limpar historico`
 - `painel de privacidade`
@@ -354,6 +360,7 @@ Dentro do chat:
 /hist
 /memory-audit
 /mem
+/memory-delete
 /session
 /s
 /export-history

@@ -104,6 +104,26 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "done")
         self.assertEqual(self.memory.recent_commands(), [])
 
+    def test_delete_memory_requires_confirmation(self):
+        self.core.execute("qual o status")
+        command_id = self.memory.recent_commands()[0]["id"]
+
+        result = self.core.execute(f"apagar comando {command_id}")
+
+        self.assertEqual(result["action"]["name"], "delete_memory")
+        self.assertEqual(result["action"]["status"], "needs_confirmation")
+        self.assertTrue(self.memory.recent_commands())
+
+    def test_delete_memory_confirmed(self):
+        self.core.execute("qual o status")
+        command_id = self.memory.recent_commands()[0]["id"]
+
+        result = self.core.execute(f"apagar comando {command_id}", options={"confirm_actions": True})
+
+        self.assertEqual(result["action"]["name"], "delete_memory")
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(self.memory.recent_commands(), [])
+
     def test_privacy_panel_reports_memory_and_permissions(self):
         result = self.core.execute("painel de privacidade")
 

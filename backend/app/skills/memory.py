@@ -7,7 +7,13 @@ class MemorySkill(BaseSkill):
     name = "memory"
 
     def can_handle(self, intent: dict[str, Any]) -> bool:
-        return intent.get("intent") in {"command_history", "export_history", "clear_history", "memory_audit"}
+        return intent.get("intent") in {
+            "command_history",
+            "export_history",
+            "clear_history",
+            "delete_memory",
+            "memory_audit",
+        }
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
         memory_store = options.get("memory_store")
@@ -32,6 +38,45 @@ class MemorySkill(BaseSkill):
                 action={"skill": self.name, "name": "memory_audit", "status": "done"},
                 suggestions=["exportar historico", "limpar historico"],
                 data={"audit": audit},
+            )
+
+        if intent.get("intent") == "delete_memory":
+            command_id = intent.get("command_id")
+            if not command_id:
+                return SkillResult(
+                    response="Diga qual id de comando devo esquecer, por exemplo: apagar comando 3.",
+                    action={
+                        "skill": self.name,
+                        "name": "delete_memory",
+                        "status": "needs_selector",
+                        "reason": "missing_command_id",
+                    },
+                    suggestions=["resumo da memoria", "ultimos comandos"],
+                )
+            if not options.get("confirm_actions"):
+                return SkillResult(
+                    response=f"Posso apagar o comando {command_id} da memoria local, mas preciso de confirmacao explicita.",
+                    action={
+                        "skill": self.name,
+                        "name": "delete_memory",
+                        "status": "needs_confirmation",
+                        "reason": "confirmation_required",
+                        "command_id": command_id,
+                    },
+                    suggestions=[f"confirmar apagar comando {command_id}", "resumo da memoria"],
+                )
+
+            deleted = memory_store.delete_commands(command_ids=[command_id])
+            return SkillResult(
+                response=f"Memoria local atualizada. Removi {deleted['deleted']} comando(s).",
+                action={
+                    "skill": self.name,
+                    "name": "delete_memory",
+                    "status": "done",
+                    "deleted": deleted["deleted"],
+                },
+                suggestions=["resumo da memoria"],
+                data={"deleted": deleted},
             )
 
         if intent.get("intent") == "clear_history":

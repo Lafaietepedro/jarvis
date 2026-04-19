@@ -20,6 +20,7 @@ from .cli_format import (
     format_command_result,
     format_diagnostics,
     format_history,
+    format_history_delete,
     format_history_export,
     format_memory_audit,
     format_panel,
@@ -107,6 +108,15 @@ def build_parser() -> argparse.ArgumentParser:
     memory_audit.add_argument("--since", help="ISO datetime or YYYY-MM-DD")
     memory_audit.add_argument("--until", help="ISO datetime or YYYY-MM-DD")
     memory_audit.add_argument("--limit", type=int, default=5)
+
+    memory_delete = subparsers.add_parser("memory-delete", help="Delete local memory entries by id or filter")
+    memory_delete.add_argument("--id", dest="command_ids", action="append", type=int, help="Command id to delete")
+    memory_delete.add_argument("--intent")
+    memory_delete.add_argument("--skill")
+    memory_delete.add_argument("--action")
+    memory_delete.add_argument("--since", help="ISO datetime or YYYY-MM-DD")
+    memory_delete.add_argument("--until", help="ISO datetime or YYYY-MM-DD")
+    memory_delete.add_argument("--confirm", action="store_true", help="Confirm selective memory deletion")
 
     export_history = subparsers.add_parser("export-history", help="Export local command history")
     export_history.add_argument("--limit", type=int, default=None)
@@ -206,6 +216,23 @@ def run(args: argparse.Namespace) -> str:
                 ),
             )
         )
+    if command == "memory-delete":
+        return format_history_delete(
+            client.post(
+                "/history/delete",
+                _compact_params(
+                    {
+                        "command_ids": args.command_ids,
+                        "intent": args.intent,
+                        "skill": args.skill,
+                        "action": args.action,
+                        "since": args.since,
+                        "until": args.until,
+                        "confirm": args.confirm,
+                    }
+                ),
+            )
+        )
     if command == "export-history":
         export = client.get("/history/export", {"limit": args.limit} if args.limit is not None else None)
         if args.output:
@@ -276,6 +303,7 @@ CHAT_HELP = """Commands:
 /install-dependencies - show optional dependency install commands
 /history - show recent commands
 /memory-audit - summarize local memory
+/memory-delete - delete local memory by id or filter
 /session - show this chat session history
 /export-history - summarize a local history export
 /clear-history - clear local command history
@@ -341,6 +369,7 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
         "/install-dependencies",
         "/history",
         "/memory-audit",
+        "/memory-delete",
         "/export-history",
         "/clear-history",
         "/pause",
@@ -406,6 +435,8 @@ def handle_chat_action(
         return format_history(client.get("/history", {"limit": 10}))
     if action == "memory-audit":
         return format_memory_audit(client.get("/history/audit", {"limit": 5}))
+    if action == "memory-delete":
+        return "Use o CLI com filtros explicitos: python -m app.cli memory-delete --id <id> --confirm"
     if action == "export-history":
         return format_history_export(client.get("/history/export"))
     if action == "clear-history":

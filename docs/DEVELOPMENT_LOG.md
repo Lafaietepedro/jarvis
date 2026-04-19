@@ -13,6 +13,7 @@ O nucleo atual ja consegue:
 - alternar estado de sessao por `POST /pause` e `POST /resume`;
 - registrar historico local em SQLite, com modo privado por comando;
 - auditar memoria local com filtros por intent, skill, acao e data;
+- apagar entradas especificas da memoria local por id ou filtro confirmado;
 - interpretar intencoes simples com NLU rule-based;
 - rotear intencoes para skills locais;
 - consultar politica central de permissoes antes de acoes sensiveis;
@@ -51,6 +52,7 @@ O nucleo atual ja consegue:
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
 - expor `GET /history/audit` para resumir a memoria local com filtros;
+- expor `POST /history/delete` para exclusao seletiva da memoria local;
 - exibir auditoria da memoria local no contrato de UI e na interface web;
 - filtrar auditoria da memoria local pela interface web;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
@@ -586,6 +588,20 @@ Entregas:
 - CSS responsivo para os controles de auditoria.
 - Testes cobrindo markup, assets JS/CSS e smoke visual em Chromium.
 
+### Fase 3AL - Exclusao Seletiva Da Memoria Local
+
+Status: concluida.
+
+Entregas:
+- Historico e auditoria agora expõem `id` por comando para permitir alvos auditaveis.
+- `MemoryStore.delete_commands` remove entradas por id ou por filtros de intent, skill, acao e periodo.
+- Novo endpoint `POST /history/delete`, com seletor obrigatorio e confirmacao explicita.
+- Novo comando natural `apagar comando <id>` com confirmacao obrigatoria.
+- CLI ganhou `memory-delete --id <id> --confirm` e suporte a exclusao por filtros.
+- Formatadores mostram ids de comandos e resultado `[HISTORY DELETE]`.
+- Exclusoes seletivas confirmadas nao sao regravadas no historico local.
+- Testes cobrindo memoria, NLU, core, API, CLI e formatadores.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -604,7 +620,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Evoluir memoria local editavel com exclusao seletiva por comando ou filtro.
+- Expor exclusao seletiva de memoria na interface web com confirmacao.
 
 ## Fases Futuras Planejadas
 
@@ -715,13 +731,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-174 tests OK
+185 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 9 testes de contrato da API e os smokes HTTP/visual sao pulados.
+- Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 174 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 185 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app
