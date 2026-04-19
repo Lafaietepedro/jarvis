@@ -22,6 +22,7 @@ O nucleo atual ja consegue:
 - preparar abertura de URL e pesquisa web com permissao explicita;
 - listar comandos de projeto e preparar abertura do workspace na IDE;
 - gerar snapshot local de projeto com comandos, arquivos e marcadores;
+- sugerir proximos passos com base em historico local recente e snapshot do projeto;
 - montar planos seguros de automacao com revisao manual obrigatoria;
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
@@ -530,6 +531,19 @@ Entregas:
 - Preview CLI de UI state mostra contagem de arquivos do projeto.
 - Testes cobrindo NLU, core, skill de IDE, contrato de UI state, frontend e formatador CLI.
 
+### Fase 3AH - Sugestoes Proativas Contextuais
+
+Status: concluida.
+
+Entregas:
+- Novo modulo `proactive` para sugerir proximos passos sem executar acoes sozinho.
+- Sugestoes combinam historico local recente, snapshot do projeto, marcadores e comandos detectados.
+- Respostas de comando agora mesclam sugestoes das skills com sugestoes proativas globais.
+- `GET /ui/state` ganhou bloco `proactive` e injeta sugestoes proativas nas acoes da interface.
+- Interface web mostra a quantidade de sugestoes proativas ativas.
+- Preview CLI de UI state ganhou secao `[PROACTIVE]`.
+- Testes cobrindo gerador proativo, core, contrato de UI state, API, frontend e formatador CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -545,11 +559,10 @@ Prioridades atuais:
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
 - Melhorar a politica de permissoes por risco e por tipo de alvo.
-- Melhorar sugestoes com base em historico recente.
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar sugestoes proativas com base no historico recente e no snapshot local do projeto.
+- Criar um resumo auditavel da memoria local com filtros por intent, acao e data.
 
 ## Fases Futuras Planejadas
 
@@ -660,13 +673,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-164 tests OK
+166 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 164 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 166 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

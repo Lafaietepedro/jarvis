@@ -185,6 +185,7 @@ def format_ui_state(payload: dict[str, Any]) -> str:
         format_checkpoints(payload.get("checkpoints", {})),
         format_privacy({"data": payload.get("privacy", {})}),
         _format_capabilities(payload.get("capabilities", {})),
+        _format_proactive(payload.get("proactive", {})),
         format_history(payload.get("history", {})),
         _format_next_actions(payload.get("actions") or payload.get("next_actions", [])),
     ]
@@ -206,6 +207,20 @@ def _format_capabilities(payload: dict[str, Any]) -> str:
     for action in actions[:5]:
         status = "enabled" if action.get("enabled") else f"blocked ({action.get('env_var')})"
         lines.append(f"- {action.get('label', action.get('id', 'unknown'))}: {status}")
+    return "\n".join(lines)
+
+
+def _format_proactive(payload: dict[str, Any]) -> str:
+    suggestions = payload.get("suggestions", [])
+    lines = ["[PROACTIVE]"]
+    if not suggestions:
+        lines.append("No proactive suggestions.")
+        return "\n".join(lines)
+
+    for suggestion in suggestions[:5]:
+        command = suggestion.get("command", suggestion.get("label", "unknown"))
+        reason = suggestion.get("reason", "suggested")
+        lines.append(f"- {command} ({reason})")
     return "\n".join(lines)
 
 

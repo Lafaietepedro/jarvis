@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 from .context import LocalContextProvider
@@ -6,6 +7,7 @@ from .memory import MemoryStore
 from .nlu import parse_intent
 from .permissions import PermissionPolicy
 from .session import SessionState
+from .skills.ide import detect_project_state
 from .skills import (
     ComputerSkill,
     AutomationSkill,
@@ -74,7 +76,16 @@ class JarvisCore:
         else:
             result = skill.handle(intent, context, options)
 
-        suggestions = result.suggestions or build_suggestions(intent, context, result.action)
+        history = self.memory_store.recent_commands(limit=5)
+        project_state = detect_project_state(Path(context["project"]["path"]))
+        suggestions = build_suggestions(
+            intent,
+            context,
+            result.action,
+            base_suggestions=result.suggestions,
+            history=history,
+            project_state=project_state,
+        )
         response = {
             "text": text,
             "intent": intent,

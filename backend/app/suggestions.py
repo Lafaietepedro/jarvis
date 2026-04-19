@@ -1,8 +1,17 @@
 from typing import Any
 
+from .proactive import build_proactive_suggestions
 
-def build_suggestions(intent: dict[str, Any], context: dict[str, Any], action: dict[str, Any]) -> list[str]:
-    suggestions = []
+
+def build_suggestions(
+    intent: dict[str, Any],
+    context: dict[str, Any],
+    action: dict[str, Any],
+    base_suggestions: list[str] | None = None,
+    history: list[dict[str, Any]] | None = None,
+    project_state: dict[str, Any] | None = None,
+) -> list[str]:
+    suggestions = list(base_suggestions or [])
     project = context["project"]
     capabilities = project["capabilities"]
 
@@ -11,6 +20,15 @@ def build_suggestions(intent: dict[str, Any], context: dict[str, Any], action: d
 
     if action.get("status") == "blocked" and action.get("reason") == "shell_disabled":
         suggestions.append("ativar execucao de shell somente se confiar no comando")
+
+    suggestions.extend(
+        item["command"]
+        for item in build_proactive_suggestions(
+            context,
+            history=history,
+            project_state=project_state,
+        )
+    )
 
     if intent.get("intent") in {"status", "unknown", "none"}:
         suggestions.append("listar arquivos do projeto")

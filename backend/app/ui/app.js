@@ -60,6 +60,7 @@ function renderState(payload) {
   const memory = privacy.memory || {};
   const summary = checkpoints.summary || {};
   const capabilities = payload.capabilities || {};
+  const proactive = payload.proactive || {};
 
   nodes.title.textContent = `${presence.name || "JARVIS"} - ${presence.status || "unknown"}`;
   nodes.greeting.textContent = presence.greeting || "Estado local indisponivel.";
@@ -75,6 +76,7 @@ function renderState(payload) {
     ["Checkpoints", String(checkpoints.pending_count || 0)],
     ["Proximo passo", summary.next_step || "nenhum"],
     ["Arquivos", String(((capabilities.state || {}).files || {}).tracked_count || 0)],
+    ["Sugestoes proativas", String((proactive.suggestions || []).length)],
   ]);
 
   renderDefinitionList(nodes.privacyList, [

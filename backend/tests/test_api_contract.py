@@ -136,6 +136,8 @@ class ApiContractTest(unittest.TestCase):
         self.assertFalse(payload["privacy"]["permissions"]["cloud_enabled"])
         self.assertIn("capabilities", payload)
         self.assertIn("actions", payload["capabilities"])
+        self.assertIn("proactive", payload)
+        self.assertTrue(payload["proactive"]["suggestions"])
         self.assertEqual(payload["actions"][0]["risk"], "low")
         self.assertFalse(payload["actions"][0]["requires_confirmation"])
         self.assertIn("next_actions", payload)

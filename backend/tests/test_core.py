@@ -27,6 +27,7 @@ class JarvisCoreTest(unittest.TestCase):
 
         self.assertEqual(result["action"]["status"], "done")
         self.assertEqual(result["context"]["project"]["path"], str(self.project_path))
+        self.assertIn("estado do projeto", result["suggestions"])
         self.assertIn("rodar make test", result["suggestions"])
 
     def test_list_files(self):

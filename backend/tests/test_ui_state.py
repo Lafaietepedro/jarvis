@@ -58,7 +58,9 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["actions"][0]["command"], "confirmar checkpoint 1")
         self.assertEqual(state["actions"][0]["risk"], "medium")
         self.assertTrue(state["actions"][0]["requires_confirmation"])
-        self.assertEqual(state["actions"][1]["kind"], "suggestion")
+        self.assertEqual(state["actions"][1]["kind"], "proactive")
+        self.assertIn("estado do projeto", state["next_actions"])
+        self.assertTrue(state["proactive"]["suggestions"])
         self.assertEqual(state["capabilities"]["commands"]["count"], 1)
         self.assertGreaterEqual(state["capabilities"]["state"]["files"]["tracked_count"], 2)
         self.assertEqual(state["capabilities"]["blocked_count"], 5)
@@ -72,6 +74,7 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["history"]["commands"], [])
         self.assertFalse(state["privacy"]["memory"]["enabled"])
         self.assertEqual(state["actions"][0]["risk"], "low")
+        self.assertEqual(state["proactive"]["suggestions"][0]["command"], "estado do projeto")
         self.assertIn("capabilities", state)
 
 

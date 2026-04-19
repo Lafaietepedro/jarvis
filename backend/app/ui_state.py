@@ -3,6 +3,7 @@ from typing import Any
 
 from .checkpoints import build_checkpoint_state
 from .presence import build_presence
+from .proactive import build_proactive_suggestions
 from .skills.ide import detect_project_commands, detect_project_state
 
 
@@ -19,6 +20,14 @@ def build_ui_state(
         "limit": history_limit,
         "commands": memory_store.recent_commands(limit=history_limit) if memory_store else [],
     }
+    capabilities = _build_capabilities(context)
+    proactive = {
+        "suggestions": build_proactive_suggestions(
+            context,
+            history=history["commands"],
+            project_state=capabilities["state"],
+        )
+    }
 
     return {
         "schema_version": 1,
@@ -26,9 +35,10 @@ def build_ui_state(
         "checkpoints": checkpoints,
         "history": history,
         "privacy": privacy,
-        "capabilities": _build_capabilities(context),
-        "actions": _build_actions(presence, checkpoints),
-        "next_actions": _build_next_actions(presence, checkpoints),
+        "capabilities": capabilities,
+        "proactive": proactive,
+        "actions": _build_actions(presence, checkpoints, proactive["suggestions"]),
+        "next_actions": _build_next_actions(presence, checkpoints, proactive["suggestions"]),
     }
 
 
@@ -49,13 +59,18 @@ def _build_privacy_state(context: dict[str, Any], session: dict[str, Any], memor
     }
 
 
-def _build_next_actions(presence: dict[str, Any], checkpoints: dict[str, Any]) -> list[str]:
+def _build_next_actions(
+    presence: dict[str, Any],
+    checkpoints: dict[str, Any],
+    proactive: list[dict[str, Any]],
+) -> list[str]:
     actions = []
     if checkpoints["pending_count"]:
         actions.extend(
             f"confirmar checkpoint {checkpoint['checkpoint_id']}"
             for checkpoint in checkpoints["checkpoints"][:3]
         )
+    actions.extend(action["command"] for action in proactive)
     actions.extend(presence.get("suggestions", []))
     return list(dict.fromkeys(actions))[:6]
 
@@ -63,6 +78,7 @@ def _build_next_actions(presence: dict[str, Any], checkpoints: dict[str, Any]) -
 def _build_actions(
     presence: dict[str, Any],
     checkpoints: dict[str, Any],
+    proactive: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     actions = []
     for checkpoint in checkpoints["checkpoints"][:3]:
@@ -81,6 +97,8 @@ def _build_actions(
                 "reason": reason,
             }
         )
+
+    actions.extend(proactive)
 
     for index, suggestion in enumerate(presence.get("suggestions", []), start=1):
         actions.append(

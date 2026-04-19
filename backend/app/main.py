@@ -202,6 +202,7 @@ class UIStateResponse(BaseModel):
     history: dict[str, Any]
     privacy: dict[str, Any]
     capabilities: dict[str, Any]
+    proactive: dict[str, Any]
     actions: list[dict[str, Any]]
     next_actions: list[str]
 

@@ -21,6 +21,7 @@ Visão rápida
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
 - Snapshot local de projeto para comandos, arquivos e marcadores
+- Sugestões proativas baseadas em histórico local e snapshot do projeto
 - Planos seguros de automação
 - Executor de automações com checkpoints
 - Confirmação de checkpoints pendentes
