@@ -21,6 +21,7 @@ O nucleo atual ja consegue:
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
 - listar comandos de projeto e preparar abertura do workspace na IDE;
+- gerar snapshot local de projeto com comandos, arquivos e marcadores;
 - montar planos seguros de automacao com revisao manual obrigatoria;
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
@@ -516,6 +517,19 @@ Entregas:
 - Interface web mostra quantidade de comandos detectados e acoes bloqueadas no painel de privacidade.
 - Testes cobrindo contrato agregado, API, frontend e formatador CLI.
 
+### Fase 3AG - Snapshot Local De Projeto
+
+Status: concluida.
+
+Entregas:
+- `IDESkill` ganhou intent `project_state` para responder `estado do projeto`.
+- Novo detector `detect_project_state` com marcadores, diretorios, arquivos relevantes e comandos detectados.
+- Snapshot ignora diretorios locais/sensiveis como `.git`, `.jarvis`, `.venv`, `node_modules` e `__pycache__`.
+- `GET /ui/state` inclui o snapshot dentro de `capabilities.state`.
+- Interface web mostra contagem de arquivos relevantes no painel de presenca.
+- Preview CLI de UI state mostra contagem de arquivos do projeto.
+- Testes cobrindo NLU, core, skill de IDE, contrato de UI state, frontend e formatador CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -535,7 +549,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Evoluir integracoes de IDE com leitura mais detalhada de comandos, arquivos e estado do projeto.
+- Melhorar sugestoes proativas com base no historico recente e no snapshot local do projeto.
 
 ## Fases Futuras Planejadas
 
@@ -646,13 +660,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-161 tests OK
+164 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na `.venv` do projeto, a suite tem 161 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 164 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -20,6 +20,7 @@ Visão rápida
 - Manifest local e gerador de atalho desktop
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto
+- Snapshot local de projeto para comandos, arquivos e marcadores
 - Planos seguros de automação
 - Executor de automações com checkpoints
 - Confirmação de checkpoints pendentes
@@ -159,6 +160,7 @@ Comandos iniciais
 - `pesquisar por python fastapi`
 - `abrir site example.com`
 - `comandos do projeto`
+- `estado do projeto`
 - `abrir projeto`
 - `checkup do projeto`
 - `rotina de desenvolvimento`

@@ -3,7 +3,7 @@ from typing import Any
 
 from .checkpoints import build_checkpoint_state
 from .presence import build_presence
-from .skills.ide import detect_project_commands
+from .skills.ide import detect_project_commands, detect_project_state
 
 
 def build_ui_state(
@@ -140,6 +140,7 @@ def _build_capabilities(context: dict[str, Any]) -> dict[str, Any]:
     ]
     return {
         "project": context["project"]["capabilities"],
+        "state": detect_project_state(Path(context["project"]["path"])),
         "commands": {
             "count": len(commands),
             "items": commands[:10],

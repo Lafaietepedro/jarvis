@@ -116,6 +116,7 @@ class CliFormatTest(unittest.TestCase):
             "privacy": self.privacy["data"],
             "capabilities": {
                 "commands": {"count": 2, "items": []},
+                "state": {"files": {"tracked_count": 4}},
                 "enabled_count": 0,
                 "blocked_count": 5,
                 "actions": [
@@ -235,6 +236,7 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[UI STATE]", output)
         self.assertIn("Schema: 1", output)
         self.assertIn("[CAPABILITIES]", output)
+        self.assertIn("Project files: 4", output)
         self.assertIn("JARVIS_ENABLE_SHELL", output)
         self.assertIn("[NEXT ACTIONS]", output)
         self.assertIn("Confirmar checkpoint 1 [medium confirm]", output)

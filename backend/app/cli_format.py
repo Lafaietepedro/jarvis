@@ -194,9 +194,12 @@ def format_ui_state(payload: dict[str, Any]) -> str:
 def _format_capabilities(payload: dict[str, Any]) -> str:
     actions = payload.get("actions", [])
     commands = payload.get("commands", {})
+    state = payload.get("state", {})
+    files = state.get("files", {})
     lines = [
         "[CAPABILITIES]",
         f"Project commands: {commands.get('count', 0)}",
+        f"Project files: {files.get('tracked_count', 0)}",
         f"Enabled actions: {payload.get('enabled_count', 0)}",
         f"Blocked actions: {payload.get('blocked_count', 0)}",
     ]

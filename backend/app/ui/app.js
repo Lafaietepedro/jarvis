@@ -74,6 +74,7 @@ function renderState(payload) {
     ["Uptime", `${presence.uptime_seconds || 0}s`],
     ["Checkpoints", String(checkpoints.pending_count || 0)],
     ["Proximo passo", summary.next_step || "nenhum"],
+    ["Arquivos", String(((capabilities.state || {}).files || {}).tracked_count || 0)],
   ]);
 
   renderDefinitionList(nodes.privacyList, [

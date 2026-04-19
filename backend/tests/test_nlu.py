@@ -115,6 +115,11 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "project_commands")
 
+    def test_project_state(self):
+        intent = parse_intent("estado do projeto")
+
+        self.assertEqual(intent["intent"], "project_state")
+
     def test_history(self):
         intent = parse_intent("ultimos comandos")
 

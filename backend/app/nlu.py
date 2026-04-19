@@ -49,6 +49,14 @@ EXECUTE_PROJECT_CHECKUP_TERMS = (
 RUN_TESTS_TERMS = ("rodar testes", "executar testes", "rode testes", "run tests")
 OPEN_PROJECT_TERMS = ("abrir projeto", "abra o projeto", "abrir workspace", "abrir vscode", "abrir projeto no vscode")
 PROJECT_COMMANDS_TERMS = ("comandos do projeto", "scripts do projeto", "listar comandos do projeto", "quais comandos do projeto")
+PROJECT_STATE_TERMS = (
+    "estado do projeto",
+    "snapshot do projeto",
+    "visao do projeto",
+    "visão do projeto",
+    "arquivos importantes do projeto",
+    "mapear projeto",
+)
 HISTORY_TERMS = ("historico", "ultimos comandos", "comandos recentes")
 EXPORT_HISTORY_TERMS = ("exportar historico", "exportar histórico", "backup do historico", "backup do histórico")
 CLEAR_HISTORY_TERMS = ("limpar historico", "limpar histórico", "apagar historico", "apagar histórico", "esquecer historico", "esquecer histórico")
@@ -272,6 +280,9 @@ def parse_intent(text: str):
 
     if _has_any(normalized, PROJECT_COMMANDS_TERMS):
         return {"intent": "project_commands", "text": text}
+
+    if _has_any(normalized, PROJECT_STATE_TERMS):
+        return {"intent": "project_state", "text": text}
 
     if _has_any(normalized, OPEN_PROJECT_TERMS):
         return {"intent": "open_project", "text": text}

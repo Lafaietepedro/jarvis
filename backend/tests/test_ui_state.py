@@ -60,6 +60,7 @@ class UIStateTest(unittest.TestCase):
         self.assertTrue(state["actions"][0]["requires_confirmation"])
         self.assertEqual(state["actions"][1]["kind"], "suggestion")
         self.assertEqual(state["capabilities"]["commands"]["count"], 1)
+        self.assertGreaterEqual(state["capabilities"]["state"]["files"]["tracked_count"], 2)
         self.assertEqual(state["capabilities"]["blocked_count"], 5)
         self.assertEqual(state["capabilities"]["actions"][0]["env_var"], "JARVIS_ENABLE_SHELL")
 

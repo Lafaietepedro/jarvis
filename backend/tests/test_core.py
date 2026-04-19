@@ -154,6 +154,13 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "project_commands")
         self.assertIn("commands", result["data"])
 
+    def test_project_state_uses_ide_skill(self):
+        result = self.core.execute("estado do projeto")
+
+        self.assertEqual(result["action"]["skill"], "ide")
+        self.assertEqual(result["action"]["name"], "project_state")
+        self.assertIn("files", result["data"])
+
     def test_open_project_is_blocked_by_default(self):
         result = self.core.execute("abrir projeto")
 
