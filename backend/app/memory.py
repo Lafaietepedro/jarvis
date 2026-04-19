@@ -2,7 +2,7 @@ import json
 import os
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from pathlib import Path
 from typing import Any
 
@@ -97,6 +97,43 @@ class MemoryStore:
             "commands": commands,
         }
 
+    def audit_summary(
+        self,
+        intent: str | None = None,
+        skill: str | None = None,
+        action: str | None = None,
+        since: str | None = None,
+        until: str | None = None,
+        limit: int = 5,
+    ) -> dict[str, Any]:
+        commands = self._filtered_commands(
+            intent=intent,
+            skill=skill,
+            action=action,
+            since=since,
+            until=until,
+        )
+        return {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "filters": {
+                "intent": intent,
+                "skill": skill,
+                "action": action,
+                "since": since,
+                "until": until,
+                "limit": limit,
+            },
+            "stats": self.stats(),
+            "matching_count": len(commands),
+            "first_command_at": commands[-1]["created_at"] if commands else None,
+            "latest_command_at": commands[0]["created_at"] if commands else None,
+            "by_intent": _count_by(commands, lambda command: command.get("intent", {}).get("intent", "unknown")),
+            "by_skill": _count_by(commands, lambda command: command.get("action", {}).get("skill", "unknown")),
+            "by_action": _count_by(commands, lambda command: command.get("action", {}).get("name", "unknown")),
+            "by_status": _count_by(commands, lambda command: command.get("action", {}).get("status", "unknown")),
+            "sample": commands[:limit],
+        }
+
     def clear_history(self) -> int:
         with closing(sqlite3.connect(self.db_path)) as conn:
             total = conn.execute("SELECT COUNT(*) FROM command_history").fetchone()[0]
@@ -139,3 +176,57 @@ class MemoryStore:
 
         root = Path(project_path or os.environ.get("JARVIS_WORKSPACE") or Path.cwd())
         return str(root / ".jarvis" / "memory.sqlite")
+
+    def _filtered_commands(
+        self,
+        intent: str | None = None,
+        skill: str | None = None,
+        action: str | None = None,
+        since: str | None = None,
+        until: str | None = None,
+    ) -> list[dict[str, Any]]:
+        since_at = _parse_datetime_filter(since, end_of_day=False)
+        until_at = _parse_datetime_filter(until, end_of_day=True)
+        commands = self.export_history()["commands"]
+        filtered = []
+        for command in reversed(commands):
+            created_at = _parse_datetime_filter(command["created_at"], end_of_day=False)
+            if since_at and created_at and created_at < since_at:
+                continue
+            if until_at and created_at and created_at > until_at:
+                continue
+            if intent and command.get("intent", {}).get("intent") != intent:
+                continue
+            if skill and command.get("action", {}).get("skill") != skill:
+                continue
+            if action and command.get("action", {}).get("name") != action:
+                continue
+            filtered.append(command)
+        return filtered
+
+
+def _count_by(commands: list[dict[str, Any]], key_func) -> list[dict[str, Any]]:
+    counts: dict[str, int] = {}
+    for command in commands:
+        key = key_func(command) or "unknown"
+        counts[key] = counts.get(key, 0) + 1
+    return [
+        {"name": name, "count": count}
+        for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+
+def _parse_datetime_filter(value: str | None, end_of_day: bool) -> datetime | None:
+    if not value:
+        return None
+    try:
+        if len(value) == 10:
+            parsed_date = datetime.fromisoformat(value).date()
+            parsed_time = time.max if end_of_day else time.min
+            return datetime.combine(parsed_date, parsed_time, tzinfo=timezone.utc)
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)

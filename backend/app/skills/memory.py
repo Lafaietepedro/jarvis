@@ -7,7 +7,7 @@ class MemorySkill(BaseSkill):
     name = "memory"
 
     def can_handle(self, intent: dict[str, Any]) -> bool:
-        return intent.get("intent") in {"command_history", "export_history", "clear_history"}
+        return intent.get("intent") in {"command_history", "export_history", "clear_history", "memory_audit"}
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
         memory_store = options.get("memory_store")
@@ -23,6 +23,15 @@ class MemorySkill(BaseSkill):
                 response=f"Histórico exportado com {len(exported['commands'])} comandos.",
                 action={"skill": self.name, "name": "export_history", "status": "done"},
                 data=exported,
+            )
+
+        if intent.get("intent") == "memory_audit":
+            audit = memory_store.audit_summary()
+            return SkillResult(
+                response=f"Auditoria local pronta: {audit['matching_count']} comando(s) encontrados.",
+                action={"skill": self.name, "name": "memory_audit", "status": "done"},
+                suggestions=["exportar historico", "limpar historico"],
+                data={"audit": audit},
             )
 
         if intent.get("intent") == "clear_history":

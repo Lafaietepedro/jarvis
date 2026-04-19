@@ -114,6 +114,46 @@ def format_history_export(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def format_memory_audit(payload: dict[str, Any]) -> str:
+    filters = payload.get("filters", {})
+    lines = [
+        "[MEMORY AUDIT]",
+        f"Generated at: {payload.get('generated_at', 'unknown')}",
+        f"Matching commands: {payload.get('matching_count', 0)}",
+        f"First command: {payload.get('first_command_at') or 'none'}",
+        f"Latest command: {payload.get('latest_command_at') or 'none'}",
+    ]
+    active_filters = [
+        f"{key}={value}"
+        for key, value in filters.items()
+        if key != "limit" and value
+    ]
+    if active_filters:
+        lines.append(f"Filters: {', '.join(active_filters)}")
+
+    for label, key in (
+        ("By intent", "by_intent"),
+        ("By skill", "by_skill"),
+        ("By action", "by_action"),
+        ("By status", "by_status"),
+    ):
+        items = payload.get(key, [])
+        if items:
+            lines.append(f"{label}: {_format_counts(items)}")
+
+    sample = payload.get("sample", [])
+    if sample:
+        lines.append("Sample:")
+        for command in sample:
+            action = command.get("action", {})
+            lines.append(
+                f"- {command.get('text', '')} -> "
+                f"{action.get('skill', 'unknown')}.{action.get('name', 'unknown')} "
+                f"({action.get('status', 'unknown')})"
+            )
+    return "\n".join(lines)
+
+
 def format_command_result(payload: dict[str, Any]) -> str:
     action = payload.get("action", {})
     suggestions = payload.get("suggestions", [])
@@ -222,6 +262,10 @@ def _format_proactive(payload: dict[str, Any]) -> str:
         reason = suggestion.get("reason", "suggested")
         lines.append(f"- {command} ({reason})")
     return "\n".join(lines)
+
+
+def _format_counts(items: list[dict[str, Any]]) -> str:
+    return ", ".join(f"{item.get('name', 'unknown')}={item.get('count', 0)}" for item in items[:5])
 
 
 def _format_next_actions(actions: list[Any]) -> str:

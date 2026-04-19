@@ -21,6 +21,7 @@ from .cli_format import (
     format_diagnostics,
     format_history,
     format_history_export,
+    format_memory_audit,
     format_panel,
     format_presence,
     format_privacy,
@@ -98,6 +99,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     history = subparsers.add_parser("history", help="Show recent command history")
     history.add_argument("--limit", type=int, default=10)
+
+    memory_audit = subparsers.add_parser("memory-audit", help="Summarize local memory with optional filters")
+    memory_audit.add_argument("--intent")
+    memory_audit.add_argument("--skill")
+    memory_audit.add_argument("--action")
+    memory_audit.add_argument("--since", help="ISO datetime or YYYY-MM-DD")
+    memory_audit.add_argument("--until", help="ISO datetime or YYYY-MM-DD")
+    memory_audit.add_argument("--limit", type=int, default=5)
 
     export_history = subparsers.add_parser("export-history", help="Export local command history")
     export_history.add_argument("--limit", type=int, default=None)
@@ -181,6 +190,22 @@ def run(args: argparse.Namespace) -> str:
         )
     if command == "history":
         return format_history(client.get("/history", {"limit": args.limit}))
+    if command == "memory-audit":
+        return format_memory_audit(
+            client.get(
+                "/history/audit",
+                _compact_params(
+                    {
+                        "intent": args.intent,
+                        "skill": args.skill,
+                        "action": args.action,
+                        "since": args.since,
+                        "until": args.until,
+                        "limit": args.limit,
+                    }
+                ),
+            )
+        )
     if command == "export-history":
         export = client.get("/history/export", {"limit": args.limit} if args.limit is not None else None)
         if args.output:
@@ -250,6 +275,7 @@ CHAT_HELP = """Commands:
 /dependencies - validate optional dependencies
 /install-dependencies - show optional dependency install commands
 /history - show recent commands
+/memory-audit - summarize local memory
 /session - show this chat session history
 /export-history - summarize a local history export
 /clear-history - clear local command history
@@ -263,7 +289,7 @@ CHAT_HELP = """Commands:
 
 Shortcuts:
 /p panel, /ui ui-state, /chk checkpoints, /cc <id> confirm checkpoint
-/hist history, /s session, /priv privacy, /diag diagnostics, /deps dependencies
+/hist history, /mem memory-audit, /s session, /priv privacy, /diag diagnostics, /deps dependencies
 /pv <text> private, /c <text> confirm, /say <text> speak
 """
 
@@ -275,6 +301,7 @@ CHAT_EXACT_ALIASES = {
     "/ui": "/ui-state",
     "/chk": "/checkpoints",
     "/hist": "/history",
+    "/mem": "/memory-audit",
     "/s": "/session",
     "/priv": "/privacy",
     "/diag": "/diagnostics",
@@ -313,6 +340,7 @@ def parse_chat_line(line: str) -> tuple[str, dict[str, Any]]:
         "/dependencies",
         "/install-dependencies",
         "/history",
+        "/memory-audit",
         "/export-history",
         "/clear-history",
         "/pause",
@@ -376,6 +404,8 @@ def handle_chat_action(
         )
     if action == "history":
         return format_history(client.get("/history", {"limit": 10}))
+    if action == "memory-audit":
+        return format_memory_audit(client.get("/history/audit", {"limit": 5}))
     if action == "export-history":
         return format_history_export(client.get("/history/export"))
     if action == "clear-history":
@@ -464,6 +494,10 @@ def write_json_file(path: str, payload: dict[str, Any]):
     with open(path, "w", encoding="utf-8") as file:
         json.dump(payload, file, indent=2, ensure_ascii=True)
         file.write("\n")
+
+
+def _compact_params(params: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in params.items() if value is not None}
 
 
 def main(argv: list[str] | None = None) -> int:

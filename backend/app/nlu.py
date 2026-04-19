@@ -58,6 +58,17 @@ PROJECT_STATE_TERMS = (
     "mapear projeto",
 )
 HISTORY_TERMS = ("historico", "ultimos comandos", "comandos recentes")
+MEMORY_AUDIT_TERMS = (
+    "auditar memoria",
+    "auditar memória",
+    "auditoria da memoria",
+    "auditoria da memória",
+    "resumo da memoria",
+    "resumo da memória",
+    "resumo do historico",
+    "resumo do histórico",
+    "o que voce lembra",
+)
 EXPORT_HISTORY_TERMS = ("exportar historico", "exportar histórico", "backup do historico", "backup do histórico")
 CLEAR_HISTORY_TERMS = ("limpar historico", "limpar histórico", "apagar historico", "apagar histórico", "esquecer historico", "esquecer histórico")
 CONFIRM_CHECKPOINT_TERMS = (
@@ -214,6 +225,9 @@ def parse_intent(text: str):
 
     if _has_any(normalized, CLEAR_HISTORY_TERMS):
         return {"intent": "clear_history", "text": text}
+
+    if _has_any(normalized, MEMORY_AUDIT_TERMS):
+        return {"intent": "memory_audit", "text": text}
 
     if _has_any(normalized, CONFIRM_CHECKPOINT_TERMS):
         return {"intent": "confirm_checkpoint", "checkpoint_id": _extract_checkpoint_id(normalized), "text": text}

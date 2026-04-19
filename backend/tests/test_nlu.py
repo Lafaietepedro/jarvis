@@ -125,6 +125,11 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "command_history")
 
+    def test_memory_audit(self):
+        intent = parse_intent("resumo da memoria")
+
+        self.assertEqual(intent["intent"], "memory_audit")
+
     def test_export_history(self):
         intent = parse_intent("exportar historico")
 

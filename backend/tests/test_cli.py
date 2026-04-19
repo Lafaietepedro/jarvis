@@ -115,6 +115,24 @@ class FakeClient:
             }
         if path == "/history":
             return {"commands": []}
+        if path == "/history/audit":
+            return {
+                "generated_at": "2026-04-15T00:00:00+00:00",
+                "filters": params or {},
+                "matching_count": 1,
+                "first_command_at": "2026-04-15T00:00:00+00:00",
+                "latest_command_at": "2026-04-15T00:00:00+00:00",
+                "by_intent": [{"name": "status", "count": 1}],
+                "by_skill": [{"name": "system", "count": 1}],
+                "by_action": [{"name": "status", "count": 1}],
+                "by_status": [{"name": "done", "count": 1}],
+                "sample": [
+                    {
+                        "text": "qual o status",
+                        "action": {"skill": "system", "name": "status", "status": "done"},
+                    }
+                ],
+            }
         if path == "/history/export":
             return {
                 "exported_at": "2026-04-15T00:00:00+00:00",
@@ -228,6 +246,12 @@ class CliTest(unittest.TestCase):
         self.assertEqual(action, "export-history")
         self.assertEqual(payload, {})
 
+    def test_parse_chat_line_memory_audit_shortcut(self):
+        action, payload = parse_chat_line("/mem")
+
+        self.assertEqual(action, "memory-audit")
+        self.assertEqual(payload, {})
+
     def test_parse_chat_line_checkpoints(self):
         action, payload = parse_chat_line("/checkpoints")
 
@@ -262,6 +286,12 @@ class CliTest(unittest.TestCase):
         output = handle_chat_action(FakeClient(), "export-history", {})
 
         self.assertIn("[HISTORY EXPORT]", output)
+
+    def test_handle_chat_action_memory_audit(self):
+        output = handle_chat_action(FakeClient(), "memory-audit", {})
+
+        self.assertIn("[MEMORY AUDIT]", output)
+        self.assertIn("/history/audit", FakeClient.get_paths)
 
     def test_handle_chat_action_checkpoints(self):
         client = FakeClient()
@@ -363,6 +393,24 @@ class CliTest(unittest.TestCase):
         self.assertIn("[UI STATE]", output)
         self.assertIn("Schema: 1", output)
         self.assertIn("/ui/state", FakeClient.get_paths)
+
+    def test_run_memory_audit(self):
+        args = argparse.Namespace(
+            url="http://test",
+            command="memory-audit",
+            intent="status",
+            skill=None,
+            action=None,
+            since=None,
+            until=None,
+            limit=3,
+        )
+
+        with patch("app.cli.JarvisHttpClient", return_value=FakeClient()):
+            output = run(args)
+
+        self.assertIn("[MEMORY AUDIT]", output)
+        self.assertIn("/history/audit", FakeClient.get_paths)
 
     def test_run_desktop_launcher_prints_entry(self):
         args = argparse.Namespace(

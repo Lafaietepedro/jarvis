@@ -290,6 +290,25 @@ async def export_history(limit: int | None = None):
     return jarvis.memory_store.export_history(limit=limit)
 
 
+@app.get('/history/audit')
+async def audit_history(
+    intent: str | None = None,
+    skill: str | None = None,
+    action: str | None = None,
+    since: str | None = None,
+    until: str | None = None,
+    limit: int = 5,
+):
+    return jarvis.memory_store.audit_summary(
+        intent=intent,
+        skill=skill,
+        action=action,
+        since=since,
+        until=until,
+        limit=limit,
+    )
+
+
 @app.post('/history/clear')
 async def clear_history(payload: ClearHistoryRequest):
     if not payload.confirm:

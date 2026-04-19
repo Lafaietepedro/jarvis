@@ -75,6 +75,17 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(history_entry["action"]["status"], "done")
         self.assertIn("response", history_entry)
 
+    def test_history_audit_contract(self):
+        command = main.CommandRequest(text="qual o status")
+        asyncio.run(main.command(command))
+
+        payload = asyncio.run(main.audit_history(intent="status", limit=3))
+
+        self.assertEqual(payload["filters"]["intent"], "status")
+        self.assertEqual(payload["matching_count"], 1)
+        self.assertEqual(payload["by_intent"][0]["name"], "status")
+        self.assertEqual(payload["sample"][0]["text"], "qual o status")
+
     def test_pause_and_resume_contract(self):
         paused = asyncio.run(main.pause())
 

@@ -11,6 +11,7 @@ Visão rápida
 - Núcleo de skills expansível
 - Contexto local do projeto/computador
 - Memória local de histórico em SQLite
+- Auditoria local da memória com filtros
 - Painel de privacidade e permissões
 - CLI local para painel, histórico e comandos
 - Diagnóstico local de dependências opcionais
@@ -94,6 +95,8 @@ python -m app.cli diagnostics
 python -m app.cli dependencies
 python -m app.cli install-dependencies
 python -m app.cli history
+python -m app.cli memory-audit
+python -m app.cli memory-audit --intent status
 python -m app.cli export-history
 python -m app.cli export-history --output history.json
 python -m app.cli clear-history --confirm
@@ -122,6 +125,7 @@ Endpoints úteis
 - `POST /command` — executa um comando em texto e retorna intent/ação/resposta/sugestões/contexto
 - `GET /context` — mostra o contexto local usado pelo JARVIS
 - `GET /history` — lista comandos recentes registrados localmente
+- `GET /history/audit` — resume a memória local com filtros por intenção, skill, ação e data
 - `GET /history/export` — exporta histórico local como JSON
 - `POST /history/clear` — limpa histórico local com confirmação
 - `GET /checkpoints` — lista checkpoints pendentes e eventos recentes
@@ -346,6 +350,8 @@ Dentro do chat:
 /install-deps
 /history
 /hist
+/memory-audit
+/mem
 /session
 /s
 /export-history

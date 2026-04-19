@@ -74,6 +74,14 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["skill"], "memory")
         self.assertTrue(result["data"]["commands"])
 
+    def test_memory_audit_command_reads_summary(self):
+        self.core.execute("qual o status")
+        result = self.core.execute("resumo da memoria")
+
+        self.assertEqual(result["action"]["skill"], "memory")
+        self.assertEqual(result["action"]["name"], "memory_audit")
+        self.assertGreaterEqual(result["data"]["audit"]["matching_count"], 1)
+
     def test_export_history_command(self):
         self.core.execute("qual o status")
         result = self.core.execute("exportar historico")

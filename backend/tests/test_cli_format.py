@@ -4,6 +4,7 @@ from app.cli_format import (
     format_checkpoints,
     format_command_result,
     format_history_export,
+    format_memory_audit,
     format_diagnostics,
     format_history,
     format_panel,
@@ -203,6 +204,32 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[HISTORY EXPORT]", output)
         self.assertIn("Commands exported: 1", output)
+
+    def test_format_memory_audit(self):
+        output = format_memory_audit(
+            {
+                "generated_at": "2026-04-15T00:00:00+00:00",
+                "filters": {"intent": "status", "limit": 5},
+                "matching_count": 1,
+                "first_command_at": "2026-04-15T00:00:00+00:00",
+                "latest_command_at": "2026-04-15T00:00:00+00:00",
+                "by_intent": [{"name": "status", "count": 1}],
+                "by_skill": [{"name": "system", "count": 1}],
+                "by_action": [{"name": "status", "count": 1}],
+                "by_status": [{"name": "done", "count": 1}],
+                "sample": [
+                    {
+                        "text": "qual o status",
+                        "action": {"skill": "system", "name": "status", "status": "done"},
+                    }
+                ],
+            }
+        )
+
+        self.assertIn("[MEMORY AUDIT]", output)
+        self.assertIn("Filters: intent=status", output)
+        self.assertIn("By intent: status=1", output)
+        self.assertIn("qual o status", output)
 
     def test_format_empty_history(self):
         output = format_history({"commands": []})

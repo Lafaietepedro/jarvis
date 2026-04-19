@@ -12,6 +12,7 @@ O nucleo atual ja consegue:
 - saudar o usuario ao iniciar o modo voz por `POST /start`;
 - alternar estado de sessao por `POST /pause` e `POST /resume`;
 - registrar historico local em SQLite, com modo privado por comando;
+- auditar memoria local com filtros por intent, skill, acao e data;
 - interpretar intencoes simples com NLU rule-based;
 - rotear intencoes para skills locais;
 - consultar politica central de permissoes antes de acoes sensiveis;
@@ -49,6 +50,7 @@ O nucleo atual ja consegue:
 - retornar sugestoes de proximas acoes;
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
+- expor `GET /history/audit` para resumir a memoria local com filtros;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - cobrir contrato agregado para futuras interfaces locais;
 - manter acoes sensiveis bloqueadas por padrao;
@@ -544,6 +546,20 @@ Entregas:
 - Preview CLI de UI state ganhou secao `[PROACTIVE]`.
 - Testes cobrindo gerador proativo, core, contrato de UI state, API, frontend e formatador CLI.
 
+### Fase 3AI - Auditoria Filtravel Da Memoria Local
+
+Status: concluida.
+
+Entregas:
+- `MemoryStore.audit_summary` resume a memoria local sem exportar todo o historico por padrao.
+- Auditoria aceita filtros por `intent`, `skill`, `action`, `since`, `until` e limite de amostra.
+- Relatorio agrega comandos por intent, skill, acao e status.
+- Novo endpoint `GET /history/audit`.
+- Novo comando natural `resumo da memoria`.
+- CLI ganhou `memory-audit` com filtros e o chat ganhou `/memory-audit` e `/mem`.
+- Novo formatador `[MEMORY AUDIT]` para terminal.
+- Testes cobrindo memoria, NLU, core, API, CLI e formatador.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -562,7 +578,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar um resumo auditavel da memoria local com filtros por intent, acao e data.
+- Expor auditoria da memoria local na interface web e no contrato agregado de UI.
 
 ## Fases Futuras Planejadas
 
@@ -673,13 +689,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-166 tests OK
+174 tests OK
 ```
 
 Observacao:
-- Em Python sem dependencias web instaladas, os 8 testes de contrato da API e os smokes HTTP/visual sao pulados.
+- Em Python sem dependencias web instaladas, os 9 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 166 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 174 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app
