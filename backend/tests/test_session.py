@@ -47,6 +47,37 @@ class SessionStateTest(unittest.TestCase):
         session.remove_automation_checkpoint(1)
         self.assertEqual(session.snapshot()["automation_checkpoints"], [])
 
+    def test_automation_checkpoints_can_be_appended(self):
+        session = SessionState()
+        session.set_automation_checkpoints(
+            "project_checkup",
+            [
+                {
+                    "index": 1,
+                    "label": "Rodar testes do projeto",
+                    "reason": "confirmation_required",
+                    "step": {"intent": "run_command", "command": "make test"},
+                }
+            ],
+        )
+
+        stored = session.add_automation_checkpoints(
+            "multi_action",
+            [
+                {
+                    "index": 2,
+                    "label": "Etapa 2: abrir projeto",
+                    "reason": "permission_required",
+                    "step": {"intent": "open_project"},
+                }
+            ],
+        )
+
+        snapshot = session.snapshot()
+        self.assertEqual(stored[0]["checkpoint_id"], 2)
+        self.assertEqual(len(snapshot["automation_checkpoints"]), 2)
+        self.assertEqual(snapshot["automation_checkpoints"][1]["plan"], "multi_action")
+
     def test_automation_checkpoint_events_are_recorded_newest_first(self):
         session = SessionState()
 

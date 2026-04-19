@@ -64,6 +64,23 @@ class SessionState:
                 for index, checkpoint in enumerate(checkpoints, start=1)
             ]
 
+    def add_automation_checkpoints(self, plan_name: str, checkpoints: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        with self._lock:
+            next_id = max(
+                [checkpoint["checkpoint_id"] for checkpoint in self._automation_checkpoints],
+                default=0,
+            ) + 1
+            stored = [
+                {
+                    **checkpoint,
+                    "checkpoint_id": index,
+                    "plan": plan_name,
+                }
+                for index, checkpoint in enumerate(checkpoints, start=next_id)
+            ]
+            self._automation_checkpoints.extend(stored)
+            return list(stored)
+
     def get_automation_checkpoint(self, checkpoint_id: int | None = None) -> dict[str, Any] | None:
         with self._lock:
             if not self._automation_checkpoints:

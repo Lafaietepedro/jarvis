@@ -215,12 +215,29 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "needs_review")
         self.assertEqual(result["action"]["done"], 1)
         self.assertEqual(result["action"]["needs_confirmation"], 1)
+        self.assertEqual(result["action"]["checkpoint_count"], 1)
+        self.assertEqual(result["action"]["checkpoint_ids"], [1])
         self.assertEqual(result["action"]["risk"], "medium")
         self.assertTrue(result["action"]["requires_confirmation"])
         self.assertEqual(result["action"]["permission"], "JARVIS_ENABLE_SHELL")
         test_step = result["data"]["steps"][1]
         self.assertEqual(test_step["action"]["status"], "needs_confirmation")
+        self.assertEqual(result["data"]["checkpoints"][0]["step"]["command"], "make test")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["plan"], "multi_action")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["command"], "make test")
         self.assertIn("confirmar a execucao", result["suggestions"])
+        self.assertIn("confirmar checkpoint 1", result["suggestions"])
+
+    def test_multi_action_checkpoint_can_be_confirmed(self):
+        self.core.execute("estado do projeto e rodar testes")
+
+        result = self.core.execute("confirmar checkpoint 1")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "confirm_checkpoint")
+        self.assertEqual(result["action"]["status"], "blocked")
+        self.assertEqual(result["action"]["delegated_action"]["reason"], "shell_disabled")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["checkpoint_id"], 1)
 
     def test_open_project_is_blocked_by_default(self):
         result = self.core.execute("abrir projeto")

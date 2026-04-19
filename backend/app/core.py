@@ -145,6 +145,7 @@ class JarvisCore:
         step_results = []
         suggestions: list[str] = []
         safe_options = {**options, "confirm_actions": False}
+        session_state = options.get("session_state")
 
         for index, step in enumerate(steps, start=1):
             result = self._handle_single_intent(step, context, safe_options)
@@ -158,6 +159,11 @@ class JarvisCore:
                     "data": result.data,
                 }
             )
+
+        checkpoints = _checkpoints_from_multi_action(step_results)
+        if checkpoints and session_state:
+            checkpoints = session_state.add_automation_checkpoints("multi_action", checkpoints)
+            suggestions.extend(f"confirmar checkpoint {checkpoint['checkpoint_id']}" for checkpoint in checkpoints)
 
         step_actions = [item["action"] for item in step_results]
         needs_confirmation = len([action for action in step_actions if action.get("status") == "needs_confirmation"])
@@ -175,6 +181,8 @@ class JarvisCore:
                 f"Preparei o pedido composto: {done} etapa(s) concluidas, "
                 f"{needs_confirmation} aguardando confirmacao e {blocked} bloqueada(s)."
             )
+        if checkpoints:
+            response += f" Criei {len(checkpoints)} checkpoint(s) para as etapas sensiveis."
 
         if needs_confirmation:
             suggestions.append("confirmar a execucao")
@@ -191,10 +199,12 @@ class JarvisCore:
                 "done": done,
                 "needs_confirmation": needs_confirmation,
                 "blocked": blocked,
+                "checkpoint_count": len(checkpoints),
+                "checkpoint_ids": [checkpoint["checkpoint_id"] for checkpoint in checkpoints],
                 "step_actions": step_actions,
             },
             suggestions=suggestions,
-            data={"steps": step_results},
+            data={"steps": step_results, "checkpoints": checkpoints},
         )
 
     def _select_skill(self, intent: dict[str, Any]):
@@ -202,3 +212,58 @@ class JarvisCore:
             if skill.can_handle(intent):
                 return skill
         return None
+
+
+def _checkpoints_from_multi_action(step_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    checkpoints = []
+    for result in step_results:
+        checkpoint = _checkpoint_from_step_result(result)
+        if checkpoint:
+            checkpoints.append(checkpoint)
+    return checkpoints
+
+
+def _checkpoint_from_step_result(result: dict[str, Any]) -> dict[str, Any] | None:
+    action = result.get("action", {})
+    status = action.get("status")
+    if status not in {"needs_confirmation", "blocked"}:
+        return None
+
+    step = result.get("intent", {})
+    checkpoint_step = _checkpoint_step_for_action(action, step)
+    if checkpoint_step is None:
+        return None
+
+    index = result.get("index", 0)
+    reason = "confirmation_required" if status == "needs_confirmation" else "permission_required"
+    return {
+        "index": index,
+        "label": f"Etapa {index}: {step.get('text') or action.get('command') or action.get('name')}",
+        "status": "checkpoint",
+        "reason": reason,
+        "source": "multi_action",
+        "step": checkpoint_step,
+    }
+
+
+def _checkpoint_step_for_action(action: dict[str, Any], step: dict[str, Any]) -> dict[str, Any] | None:
+    if action.get("skill") == "shell" and action.get("name") == "run_command" and action.get("command"):
+        return {
+            "label": step.get("text") or action["command"],
+            "intent": "run_command",
+            "command": action["command"],
+            "risk": action.get("risk", "medium"),
+            "requires_confirmation": True,
+            "permission": action.get("permission"),
+        }
+
+    if action.get("skill") == "ide" and action.get("name") == "open_project":
+        return {
+            "label": step.get("text") or "abrir projeto",
+            "intent": "open_project",
+            "risk": action.get("risk", "medium"),
+            "requires_confirmation": action.get("requires_confirmation", False),
+            "permission": action.get("permission"),
+        }
+
+    return None
