@@ -186,6 +186,26 @@ class ParseIntentTest(unittest.TestCase):
         self.assertEqual(intent["intent"], "open_url")
         self.assertEqual(intent["url"], "example.com")
 
+    def test_multi_action_with_safe_steps(self):
+        intent = parse_intent("qual o status e listar arquivos")
+
+        self.assertEqual(intent["intent"], "multi_action")
+        self.assertEqual(intent["step_count"], 2)
+        self.assertEqual(intent["steps"][0]["intent"], "status")
+        self.assertEqual(intent["steps"][1]["intent"], "list_files")
+
+    def test_multi_action_keeps_sensitive_step_as_step(self):
+        intent = parse_intent("estado do projeto e rodar testes")
+
+        self.assertEqual(intent["intent"], "multi_action")
+        self.assertEqual([step["intent"] for step in intent["steps"]], ["project_state", "run_tests"])
+
+    def test_single_search_query_with_connector_does_not_become_multi_action(self):
+        intent = parse_intent("pesquisar python e fastapi")
+
+        self.assertEqual(intent["intent"], "web_search")
+        self.assertEqual(intent["query"], "python e fastapi")
+
     def test_unknown(self):
         intent = parse_intent("toque minha playlist")
 

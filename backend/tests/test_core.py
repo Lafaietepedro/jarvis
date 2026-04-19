@@ -195,6 +195,33 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "project_state")
         self.assertIn("files", result["data"])
 
+    def test_multi_action_runs_safe_steps(self):
+        result = self.core.execute("qual o status e listar arquivos")
+
+        self.assertEqual(result["intent"]["intent"], "multi_action")
+        self.assertEqual(result["action"]["skill"], "core")
+        self.assertEqual(result["action"]["name"], "multi_action")
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(result["action"]["done"], 2)
+        self.assertEqual(result["action"]["risk"], "low")
+        self.assertEqual(len(result["data"]["steps"]), 2)
+        self.assertEqual(result["data"]["steps"][0]["action"]["name"], "status")
+        self.assertEqual(result["data"]["steps"][1]["action"]["name"], "list_files")
+
+    def test_multi_action_prepares_sensitive_steps_without_execution(self):
+        result = self.core.execute("estado do projeto e rodar testes", options={"confirm_actions": True})
+
+        self.assertEqual(result["intent"]["intent"], "multi_action")
+        self.assertEqual(result["action"]["status"], "needs_review")
+        self.assertEqual(result["action"]["done"], 1)
+        self.assertEqual(result["action"]["needs_confirmation"], 1)
+        self.assertEqual(result["action"]["risk"], "medium")
+        self.assertTrue(result["action"]["requires_confirmation"])
+        self.assertEqual(result["action"]["permission"], "JARVIS_ENABLE_SHELL")
+        test_step = result["data"]["steps"][1]
+        self.assertEqual(test_step["action"]["status"], "needs_confirmation")
+        self.assertIn("confirmar a execucao", result["suggestions"])
+
     def test_open_project_is_blocked_by_default(self):
         result = self.core.execute("abrir projeto")
 

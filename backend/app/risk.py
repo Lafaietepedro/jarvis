@@ -141,6 +141,12 @@ def classify_action(action: dict[str, Any] | None, intent: dict[str, Any] | None
             return classify_action(delegated, intent)
         return _profile("medium", True, None, "checkpoint_confirmation", "automation", "Confirma uma acao pendente.")
 
+    if skill == "core" and name == "multi_action":
+        step_actions = [item for item in action.get("step_actions", []) if isinstance(item, dict)]
+        if step_actions:
+            return _aggregate_profiles([classify_action(step_action) for step_action in step_actions])
+        return _profile("low", False, None, "multi_action", "automation", "Pedido composto sem acoes sensiveis.")
+
     if (skill, name) in READ_ONLY_ACTIONS:
         return _profile("low", False, None, "read_only", "read", "Consulta informacoes locais sem alterar o sistema.")
 
@@ -415,6 +421,27 @@ def _with_status_confirmation(profile: ActionRiskProfile, action: dict[str, Any]
             profile.description,
         )
     return profile
+
+
+def _aggregate_profiles(profiles: list[ActionRiskProfile]) -> ActionRiskProfile:
+    if not profiles:
+        return _profile("low", False, None, "multi_action", "automation", "Pedido composto sem acoes sensiveis.")
+
+    highest = profiles[0]
+    for profile in profiles[1:]:
+        if RISK_LEVELS[profile.risk] > RISK_LEVELS[highest.risk]:
+            highest = profile
+
+    permission = next((profile.permission for profile in profiles if profile.permission), None)
+    requires_confirmation = any(profile.requires_confirmation for profile in profiles)
+    return _profile(
+        highest.risk,
+        requires_confirmation,
+        permission,
+        "multi_action",
+        "automation",
+        "Pedido composto classificado pelo maior risco entre as etapas.",
+    )
 
 
 def _severity(risk: str, requires_confirmation: bool, reason: str) -> str:

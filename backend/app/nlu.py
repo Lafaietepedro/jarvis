@@ -111,6 +111,9 @@ WEB_SEARCH_TERMS = ("pesquisar", "pesquise", "buscar", "busque", "procurar", "pr
 OPEN_URL_TERMS = ("abrir site", "abra o site", "abrir url", "abra a url", "abrir link", "abra o link")
 OPEN_APP_TERMS = ("abrir", "abra", "iniciar", "start", "open")
 RUN_COMMAND_TERMS = ("rodar", "rode", "executar", "execute", "run")
+COMPOSITE_CONNECTOR_PATTERN = re.compile(
+    r"\s*(?:;|,|\be depois\b|\bdepois\b|\be em seguida\b|\bem seguida\b|\be tambem\b|\btambem\b|\be\s+)\s*"
+)
 FILLER_TERMS = (
     "jarvis",
     "por favor",
@@ -217,13 +220,46 @@ def _extract_url(text: str) -> str | None:
     return None
 
 
-def parse_intent(text: str):
+def _split_composite_text(text: str) -> list[str]:
+    parts = [part.strip() for part in COMPOSITE_CONNECTOR_PATTERN.split(text) if part.strip()]
+    return parts if len(parts) > 1 else []
+
+
+def _parse_composite_intent(text: str, normalized: str) -> dict | None:
+    parts = _split_composite_text(normalized)
+    if not parts:
+        return None
+
+    steps = []
+    for part in parts:
+        step = parse_intent(part, allow_composite=False)
+        if step.get("intent") in {"unknown", "none", "multi_action"}:
+            continue
+        steps.append({**step, "text": part})
+
+    if len(steps) < 2:
+        return None
+
+    return {
+        "intent": "multi_action",
+        "text": text,
+        "steps": steps,
+        "step_count": len(steps),
+    }
+
+
+def parse_intent(text: str, allow_composite: bool = True):
     if not text:
         return {"intent": "none", "text": text}
 
     normalized = _strip_fillers(_normalize(text))
     if not normalized:
         return {"intent": "none", "text": text}
+
+    if allow_composite:
+        composite = _parse_composite_intent(text, normalized)
+        if composite:
+            return composite
 
     if _has_any(normalized, CAPABILITY_TERMS):
         return {"intent": "capabilities", "text": text}

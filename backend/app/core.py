@@ -67,15 +67,10 @@ class JarvisCore:
             "permission_policy": self.permission_policy,
             "session_state": self.session_state,
         }
-        skill = self._select_skill(intent)
-
-        if skill is None:
-            result = SkillResult(
-                response="Ainda não entendi como executar isso. Posso listar arquivos, checar status, abrir apps conhecidos ou preparar comandos de shell.",
-                action={"skill": "core", "name": "fallback", "status": "unknown_intent"},
-            )
+        if intent.get("intent") == "multi_action":
+            result = self._handle_multi_action(intent, context, options)
         else:
-            result = skill.handle(intent, context, options)
+            result = self._handle_single_intent(intent, context, options)
 
         result.action = enrich_action(result.action, intent)
         history = self.memory_store.recent_commands(limit=5)
@@ -122,6 +117,85 @@ class JarvisCore:
             self.session_state.set_active()
         response["session"] = self.session_state.snapshot()
         return response
+
+    def _handle_single_intent(
+        self,
+        intent: dict[str, Any],
+        context: dict[str, Any],
+        options: dict[str, Any],
+    ) -> SkillResult:
+        skill = self._select_skill(intent)
+        if skill is None:
+            result = SkillResult(
+                response="Ainda não entendi como executar isso. Posso listar arquivos, checar status, abrir apps conhecidos ou preparar comandos de shell.",
+                action={"skill": "core", "name": "fallback", "status": "unknown_intent"},
+            )
+        else:
+            result = skill.handle(intent, context, options)
+        result.action = enrich_action(result.action, intent)
+        return result
+
+    def _handle_multi_action(
+        self,
+        intent: dict[str, Any],
+        context: dict[str, Any],
+        options: dict[str, Any],
+    ) -> SkillResult:
+        steps = intent.get("steps", [])
+        step_results = []
+        suggestions: list[str] = []
+        safe_options = {**options, "confirm_actions": False}
+
+        for index, step in enumerate(steps, start=1):
+            result = self._handle_single_intent(step, context, safe_options)
+            suggestions.extend(result.suggestions)
+            step_results.append(
+                {
+                    "index": index,
+                    "intent": step,
+                    "response": result.response,
+                    "action": result.action,
+                    "data": result.data,
+                }
+            )
+
+        step_actions = [item["action"] for item in step_results]
+        needs_confirmation = len([action for action in step_actions if action.get("status") == "needs_confirmation"])
+        blocked = len([action for action in step_actions if action.get("status") == "blocked"])
+        done = len([action for action in step_actions if action.get("status") == "done"])
+        if needs_confirmation or blocked:
+            status = "needs_review"
+        else:
+            status = "done"
+
+        if status == "done":
+            response = f"Executei {done} etapa(s) do pedido composto."
+        else:
+            response = (
+                f"Preparei o pedido composto: {done} etapa(s) concluidas, "
+                f"{needs_confirmation} aguardando confirmacao e {blocked} bloqueada(s)."
+            )
+
+        if needs_confirmation:
+            suggestions.append("confirmar a execucao")
+        if blocked:
+            suggestions.append("revisar permissoes")
+
+        return SkillResult(
+            response=response,
+            action={
+                "skill": "core",
+                "name": "multi_action",
+                "status": status,
+                "steps": len(step_results),
+                "done": done,
+                "needs_confirmation": needs_confirmation,
+                "blocked": blocked,
+                "step_actions": step_actions,
+            },
+            suggestions=suggestions,
+            data={"steps": step_results},
+        )
 
     def _select_skill(self, intent: dict[str, Any]):
         for skill in self.skills:

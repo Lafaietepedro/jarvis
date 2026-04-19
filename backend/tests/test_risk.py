@@ -58,6 +58,23 @@ class RiskPolicyTest(unittest.TestCase):
         self.assertEqual(permission_for_reason("media_actions_disabled"), "JARVIS_ENABLE_MEDIA_ACTIONS")
         self.assertIsNone(permission_for_reason("read_only"))
 
+    def test_multi_action_uses_highest_step_risk(self):
+        profile = classify_action(
+            {
+                "skill": "core",
+                "name": "multi_action",
+                "step_actions": [
+                    {"skill": "system", "name": "status", "status": "done"},
+                    {"skill": "shell", "name": "run_command", "command": "make test", "status": "needs_confirmation"},
+                ],
+            }
+        )
+
+        self.assertEqual(profile.risk, "medium")
+        self.assertTrue(profile.requires_confirmation)
+        self.assertEqual(profile.permission, "JARVIS_ENABLE_SHELL")
+        self.assertEqual(profile.reason, "multi_action")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -15,6 +15,7 @@ O nucleo atual ja consegue:
 - auditar memoria local com filtros por intent, skill, acao e data;
 - apagar entradas especificas da memoria local por id ou filtro confirmado;
 - interpretar intencoes simples com NLU rule-based;
+- interpretar pedidos compostos com multiplas acoes em uma mesma frase;
 - rotear intencoes para skills locais;
 - consultar politica central de permissoes antes de acoes sensiveis;
 - exibir painel de privacidade por `GET /privacy` ou comando em linguagem natural;
@@ -630,6 +631,19 @@ Entregas:
 - CLI de estado mostra risco resumido nas capacidades.
 - Testes dedicados cobrem comandos perigosos, exclusao de memoria, checkpoints e permissoes por alvo.
 
+### Fase 3AO - Comandos Compostos Seguros
+
+Status: concluida.
+
+Entregas:
+- NLU agora reconhece pedidos com mais de uma acao, como `qual o status e listar arquivos`.
+- Novo intent `multi_action` preserva as etapas detectadas em ordem.
+- O core executa etapas seguras de leitura e prepara etapas sensiveis sem usar confirmacao herdada por acidente.
+- Resultado composto agrega etapas concluidas, etapas bloqueadas e etapas aguardando confirmacao.
+- Politica de risco agrega comandos compostos pelo maior risco entre as etapas.
+- Comandos compostos entram no historico como um unico pedido do usuario, mantendo detalhes por etapa em `data.steps`.
+- Testes cobrem NLU composto, execucao segura, etapa sensivel e risco agregado.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -647,7 +661,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Expandir o NLU para acoes locais mais naturais e comandos compostos.
+- Melhorar comandos compostos com checkpoints dedicados por etapa sensivel.
 
 ## Fases Futuras Planejadas
 
@@ -758,13 +772,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-191 tests OK
+197 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 191 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 197 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app
