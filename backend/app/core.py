@@ -6,6 +6,7 @@ from .context import LocalContextProvider
 from .memory import MemoryStore
 from .nlu import parse_intent
 from .permissions import PermissionPolicy
+from .risk import enrich_action
 from .session import SessionState
 from .skills.ide import detect_project_state
 from .skills import (
@@ -76,6 +77,7 @@ class JarvisCore:
         else:
             result = skill.handle(intent, context, options)
 
+        result.action = enrich_action(result.action, intent)
         history = self.memory_store.recent_commands(limit=5)
         project_state = detect_project_state(Path(context["project"]["path"]))
         suggestions = build_suggestions(

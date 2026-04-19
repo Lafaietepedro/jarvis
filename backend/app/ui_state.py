@@ -4,6 +4,7 @@ from typing import Any
 from .checkpoints import build_checkpoint_state
 from .presence import build_presence
 from .proactive import build_proactive_suggestions
+from .risk import apply_profile, classify_capability, classify_command_text, classify_checkpoint
 from .skills.ide import detect_project_commands, detect_project_state
 
 
@@ -104,54 +105,34 @@ def _build_actions(
     for checkpoint in checkpoints["checkpoints"][:3]:
         checkpoint_id = checkpoint["checkpoint_id"]
         reason = checkpoint.get("reason", "confirmation_required")
+        action = {
+            "id": f"checkpoint-{checkpoint_id}",
+            "label": f"Confirmar checkpoint {checkpoint_id}",
+            "command": f"confirmar checkpoint {checkpoint_id}",
+            "kind": "checkpoint",
+            "enabled": True,
+            "reason": reason,
+        }
         actions.append(
-            {
-                "id": f"checkpoint-{checkpoint_id}",
-                "label": f"Confirmar checkpoint {checkpoint_id}",
-                "command": f"confirmar checkpoint {checkpoint_id}",
-                "kind": "checkpoint",
-                "risk": _risk_for_reason(reason),
-                "requires_confirmation": True,
-                "permission": _permission_for_reason(reason),
-                "enabled": True,
-                "reason": reason,
-            }
+            apply_profile(action, classify_checkpoint(checkpoint))
         )
 
     actions.extend(proactive)
 
     for index, suggestion in enumerate(presence.get("suggestions", []), start=1):
+        action = {
+            "id": f"suggestion-{index}",
+            "label": suggestion,
+            "command": suggestion,
+            "kind": "suggestion",
+            "enabled": True,
+            "reason": "suggested",
+        }
         actions.append(
-            {
-                "id": f"suggestion-{index}",
-                "label": suggestion,
-                "command": suggestion,
-                "kind": "suggestion",
-                "risk": "low",
-                "requires_confirmation": False,
-                "permission": None,
-                "enabled": True,
-                "reason": "suggested",
-            }
+            apply_profile(action, classify_command_text(suggestion))
         )
 
     return _dedupe_actions(actions)[:6]
-
-
-def _risk_for_reason(reason: str) -> str:
-    if reason in {"shell_disabled", "permission_required"}:
-        return "high"
-    if reason == "confirmation_required":
-        return "medium"
-    return "low"
-
-
-def _permission_for_reason(reason: str) -> str | None:
-    if reason == "shell_disabled":
-        return "shell_enabled"
-    if reason == "permission_required":
-        return "explicit_permission"
-    return None
 
 
 def _dedupe_actions(actions: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -190,10 +171,12 @@ def _build_capabilities(context: dict[str, Any]) -> dict[str, Any]:
 
 
 def _capability(capability_id: str, label: str, enabled: bool, env_var: str) -> dict[str, Any]:
+    profile = classify_capability(capability_id, enabled=enabled)
     return {
         "id": capability_id,
         "label": label,
         "enabled": enabled,
         "status": "enabled" if enabled else "blocked",
         "env_var": env_var,
+        **profile.to_dict(),
     }

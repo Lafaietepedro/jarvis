@@ -34,6 +34,10 @@ class ProactiveSuggestionsTest(unittest.TestCase):
         self.assertEqual(commands[0], "estado do projeto")
         self.assertIn("rodar make test", commands)
         self.assertEqual(suggestions[0]["kind"], "proactive")
+        test_suggestion = next(suggestion for suggestion in suggestions if suggestion["command"] == "rodar make test")
+        self.assertEqual(test_suggestion["risk"], "medium")
+        self.assertTrue(test_suggestion["requires_confirmation"])
+        self.assertEqual(test_suggestion["permission"], "JARVIS_ENABLE_SHELL")
 
     def test_uses_recent_status_as_next_intent_signal(self):
         history = [{"intent": {"intent": "status"}, "text": "qual o status"}]

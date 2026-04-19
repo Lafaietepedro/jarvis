@@ -25,6 +25,7 @@ O nucleo atual ja consegue:
 - listar comandos de projeto e preparar abertura do workspace na IDE;
 - gerar snapshot local de projeto com comandos, arquivos e marcadores;
 - sugerir proximos passos com base em historico local recente e snapshot do projeto;
+- classificar risco de acoes por tipo, alvo, permissao e necessidade de confirmacao;
 - montar planos seguros de automacao com revisao manual obrigatoria;
 - executar automacoes seguras de leitura com checkpoints para qualquer passo sensivel;
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
@@ -616,6 +617,19 @@ Entregas:
 - CSS dedicado para acoes destrutivas e layout responsivo da amostra de memoria.
 - Testes cobrindo markup, JS/CSS e smoke visual em Chromium.
 
+### Fase 3AN - Politica Central De Risco
+
+Status: concluida.
+
+Entregas:
+- Novo modulo `backend/app/risk.py` centraliza classificacao de risco por skill, acao, comando, checkpoint e capacidade.
+- Acoes agora carregam metadados consistentes: `risk`, `requires_confirmation`, `permission`, `risk_reason`, `risk_category` e descricao curta.
+- Checkpoints passam a herdar risco e permissao do passo pendente, inclusive comandos de shell confirmaveis.
+- Sugestoes proativas classificam comandos sensiveis, como `rodar make test`, antes de aparecerem na UI.
+- `GET /ui/state` expoe risco tambem nas capacidades operacionais bloqueadas ou habilitadas.
+- CLI de estado mostra risco resumido nas capacidades.
+- Testes dedicados cobrem comandos perigosos, exclusao de memoria, checkpoints e permissoes por alvo.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -630,11 +644,10 @@ Prioridades atuais:
 - Melhorar relatorios de resultado dos checkpoints e preparar contrato para UI desktop.
 - Evoluir integracoes de IDE mais profundas.
 - Evoluir a presenca para um indicador visual persistente de estado ativo/ouvindo/pausado.
-- Melhorar a politica de permissoes por risco e por tipo de alvo.
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar politica de risco por tipo de acao e alvo.
+- Expandir o NLU para acoes locais mais naturais e comandos compostos.
 
 ## Fases Futuras Planejadas
 
@@ -745,13 +758,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-185 tests OK
+191 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 185 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 191 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -40,6 +40,9 @@ class JarvisCoreTest(unittest.TestCase):
         result = self.core.execute("rode make test")
 
         self.assertEqual(result["action"]["status"], "needs_confirmation")
+        self.assertEqual(result["action"]["risk"], "medium")
+        self.assertTrue(result["action"]["requires_confirmation"])
+        self.assertEqual(result["action"]["permission"], "JARVIS_ENABLE_SHELL")
         self.assertIn("confirmar a execucao", result["suggestions"])
 
     def test_desktop_actions_are_blocked_by_default(self):
@@ -95,6 +98,8 @@ class JarvisCoreTest(unittest.TestCase):
         result = self.core.execute("limpar historico")
 
         self.assertEqual(result["action"]["status"], "needs_confirmation")
+        self.assertEqual(result["action"]["risk"], "high")
+        self.assertEqual(result["action"]["risk_reason"], "memory_deletion")
         self.assertTrue(self.memory.recent_commands())
 
     def test_clear_history_confirmed(self):

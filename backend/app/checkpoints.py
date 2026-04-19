@@ -1,5 +1,7 @@
 from typing import Any
 
+from .risk import classify_checkpoint, permission_for_reason, severity_for_event
+
 
 def build_checkpoint_state(session: dict[str, Any]) -> dict[str, Any]:
     checkpoints = [_enrich_checkpoint(checkpoint) for checkpoint in session.get("automation_checkpoints", [])]
@@ -34,11 +36,16 @@ def _build_summary(checkpoints: list[dict[str, Any]], events: list[dict[str, Any
 
 
 def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
-    reason = checkpoint.get("reason", "confirmation_required")
+    profile = classify_checkpoint(checkpoint)
     return {
         **checkpoint,
-        "risk": checkpoint.get("risk") or _risk_for_reason(reason),
-        "severity": _severity_for_reason(reason),
+        "risk": profile.risk,
+        "requires_confirmation": profile.requires_confirmation,
+        "permission": profile.permission,
+        "risk_reason": profile.reason,
+        "risk_category": profile.category,
+        "risk_description": profile.description,
+        "severity": profile.severity,
         "next_step": _checkpoint_next_step(checkpoint),
     }
 
@@ -48,7 +55,7 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
     status = event.get("status", "unknown")
     return {
         **event,
-        "severity": _severity_for_event(status, reason),
+        "severity": severity_for_event(status, reason),
         "message": _event_message(event),
         "next_step": _event_next_step(event),
     }
@@ -83,32 +90,9 @@ def _event_message(event: dict[str, Any]) -> str:
 
 def _event_next_step(event: dict[str, Any]) -> str:
     reason = event.get("reason")
-    if reason == "shell_disabled":
-        return "Ative JARVIS_ENABLE_SHELL=1 apenas se quiser permitir comandos de shell."
+    permission = permission_for_reason(reason)
+    if permission:
+        return f"Ative {permission}=1 apenas se quiser permitir esse tipo de acao."
     if reason:
         return "Revise a permissao ou ajuste a configuracao antes de tentar novamente."
     return "Nenhuma acao pendente."
-
-
-def _risk_for_reason(reason: str) -> str:
-    if reason in {"shell_disabled", "risk_or_permission", "permission_required"}:
-        return "high"
-    if reason == "confirmation_required":
-        return "medium"
-    return "low"
-
-
-def _severity_for_reason(reason: str) -> str:
-    if reason in {"shell_disabled", "risk_or_permission", "permission_required"}:
-        return "blocked"
-    if reason == "confirmation_required":
-        return "review"
-    return "info"
-
-
-def _severity_for_event(status: str, reason: str | None) -> str:
-    if status == "blocked":
-        return "blocked"
-    if reason:
-        return "review"
-    return "info"

@@ -1,5 +1,7 @@
 from typing import Any
 
+from .risk import apply_profile, classify_command_text
+
 
 def build_proactive_suggestions(
     context: dict[str, Any],
@@ -52,19 +54,15 @@ def build_proactive_suggestions(
 
 
 def _add(suggestions: list[dict[str, Any]], command: str, reason: str):
-    suggestions.append(
-        {
-            "id": f"proactive-{len(suggestions) + 1}",
-            "label": command,
-            "command": command,
-            "kind": "proactive",
-            "risk": "low",
-            "requires_confirmation": False,
-            "permission": None,
-            "enabled": True,
-            "reason": reason,
-        }
-    )
+    action = {
+        "id": f"proactive-{len(suggestions) + 1}",
+        "label": command,
+        "command": command,
+        "kind": "proactive",
+        "enabled": True,
+        "reason": reason,
+    }
+    suggestions.append(apply_profile(action, classify_command_text(command)))
 
 
 def _preferred_test_command(commands: list[dict[str, Any]]) -> str | None:

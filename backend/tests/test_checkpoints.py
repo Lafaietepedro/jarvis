@@ -30,6 +30,8 @@ class CheckpointsTest(unittest.TestCase):
         self.assertEqual(state["event_count"], 1)
         self.assertEqual(state["checkpoints"][0]["checkpoint_id"], 1)
         self.assertEqual(state["checkpoints"][0]["severity"], "review")
+        self.assertEqual(state["checkpoints"][0]["risk"], "medium")
+        self.assertTrue(state["checkpoints"][0]["requires_confirmation"])
         self.assertEqual(state["summary"]["pending"], 1)
         self.assertEqual(state["summary"]["blocked_events"], 1)
         self.assertIn("Rodar testes", state["events"][0]["message"])

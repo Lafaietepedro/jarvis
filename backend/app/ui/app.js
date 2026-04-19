@@ -288,11 +288,19 @@ function normalizeAction(action) {
     requires_confirmation: Boolean(action.requires_confirmation),
     permission: action.permission || null,
     reason: action.reason || "suggested",
+    risk_reason: action.risk_reason || null,
+    risk_category: action.risk_category || null,
   };
 }
 
 function actionTitle(action) {
   const parts = [`risco: ${action.risk}`, `motivo: ${action.reason}`];
+  if (action.risk_reason && action.risk_reason !== action.reason) {
+    parts.push(`politica: ${action.risk_reason}`);
+  }
+  if (action.risk_category) {
+    parts.push(`categoria: ${action.risk_category}`);
+  }
   if (action.permission) {
     parts.push(`permissao: ${action.permission}`);
   }

@@ -269,7 +269,8 @@ def _format_capabilities(payload: dict[str, Any]) -> str:
     ]
     for action in actions[:5]:
         status = "enabled" if action.get("enabled") else f"blocked ({action.get('env_var')})"
-        lines.append(f"- {action.get('label', action.get('id', 'unknown'))}: {status}")
+        risk = action.get("risk", "low")
+        lines.append(f"- {action.get('label', action.get('id', 'unknown'))}: {status} [{risk}]")
     return "\n".join(lines)
 
 
