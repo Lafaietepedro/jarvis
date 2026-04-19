@@ -46,6 +46,13 @@ class RiskPolicyTest(unittest.TestCase):
         self.assertFalse(profile.requires_confirmation)
         self.assertEqual(profile.reason, "read_only")
 
+    def test_apply_file_edit_is_high_risk(self):
+        profile = classify_action({"skill": "files", "name": "apply_file_edit", "status": "done"})
+
+        self.assertEqual(profile.risk, "high")
+        self.assertTrue(profile.requires_confirmation)
+        self.assertEqual(profile.reason, "file_write")
+
     def test_checkpoint_inherits_step_permission(self):
         profile = classify_checkpoint(
             {

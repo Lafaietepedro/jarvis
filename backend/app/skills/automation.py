@@ -2,7 +2,9 @@ from pathlib import Path
 from typing import Any
 
 from ..diagnostics import collect_diagnostics
+from ..risk import enrich_action
 from .base import BaseSkill, SkillResult
+from .files import FileSkill
 from .ide import IDESkill, detect_project_commands
 from .shell import ShellSkill
 
@@ -197,6 +199,7 @@ def confirm_checkpoint(intent: dict[str, Any], context: dict[str, Any], options:
         )
 
     result = _execute_confirmed_checkpoint(checkpoint, context, options)
+    result.action = enrich_action(result.action, {"intent": checkpoint.get("step", {}).get("intent")})
     status = result.action.get("status", "done")
     event = _checkpoint_event(checkpoint, result)
     session_state.record_automation_checkpoint_event(event)
@@ -275,6 +278,19 @@ def _execute_confirmed_checkpoint(
 
     if step_intent == "open_project":
         return IDESkill().handle({"intent": "open_project", "text": step["label"]}, context, options)
+
+    if step_intent == "apply_file_edit":
+        return FileSkill().handle(
+            {
+                "intent": "apply_file_edit",
+                "path": step.get("path"),
+                "old_text": step.get("old_text"),
+                "new_text": step.get("new_text"),
+                "text": step.get("label"),
+            },
+            context,
+            {**options, "confirm_actions": True},
+        )
 
     return SkillResult(
         response="Ainda nao tenho executor seguro para esse tipo de checkpoint.",

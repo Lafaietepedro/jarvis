@@ -138,6 +138,9 @@ def classify_action(action: dict[str, Any] | None, intent: dict[str, Any] | None
             "Remove dados da memoria local do usuario.",
         )
 
+    if skill == "files" and name == "apply_file_edit":
+        return _profile("high", True, None, "file_write", "files", "Grava alteracoes em arquivo local.")
+
     if skill == "automation" and name == "confirm_checkpoint":
         delegated = action.get("delegated_action")
         if isinstance(delegated, dict):
@@ -186,6 +189,8 @@ def classify_intent(intent: dict[str, Any] | None) -> ActionRiskProfile:
         return classify_capability("media.control")
     if name in {"clear_history", "delete_memory"}:
         return _profile("high", True, None, "memory_deletion", "memory", "Remove dados da memoria local do usuario.")
+    if name == "apply_file_edit":
+        return _profile("high", True, None, "file_write", "files", "Grava alteracoes em arquivo local.")
     if name == "confirm_checkpoint":
         return _profile("medium", True, None, "checkpoint_confirmation", "automation", "Confirma uma acao pendente.")
     return _profile("low", False, None, "read_only", "read", "Consulta ou planejamento sem execucao sensivel.")
@@ -223,6 +228,8 @@ def classify_step(step: dict[str, Any]) -> ActionRiskProfile:
         return classify_capability("media.control")
     if intent in {"clear_history", "delete_memory"}:
         return _profile("high", True, None, "memory_deletion", "memory", "Remove dados da memoria local do usuario.")
+    if intent == "apply_file_edit":
+        return _profile("high", True, None, "file_write", "files", "Grava alteracoes em arquivo local.")
 
     risk = step.get("risk")
     if risk and risk != "low":

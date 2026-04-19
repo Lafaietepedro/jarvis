@@ -70,10 +70,15 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "propose_file_edit")
         self.assertEqual(result["action"]["status"], "planned")
         self.assertEqual(result["action"]["risk"], "low")
+        self.assertEqual(result["action"]["checkpoint_count"], 1)
+        self.assertEqual(result["action"]["checkpoint_ids"], [1])
         self.assertFalse(result["data"]["writes_file"])
         self.assertIn("-# Test Project", result["data"]["diff"])
         self.assertIn("+# Projeto Seguro", result["data"]["diff"])
+        self.assertEqual(result["data"]["checkpoints"][0]["source"], "file_edit")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["plan"], "file_edit")
         self.assertIn("# Test Project", (self.project_path / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("confirmar checkpoint 1", result["suggestions"])
 
     def test_propose_file_edit_requires_existing_text(self):
         result = self.core.execute("preparar edição arquivo README.md trocar Ausente por Novo")
@@ -81,6 +86,22 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "propose_file_edit")
         self.assertEqual(result["action"]["status"], "not_found")
         self.assertEqual(result["action"]["reason"], "old_text_not_found")
+
+    def test_confirm_file_edit_checkpoint_applies_change(self):
+        self.core.execute("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+
+        result = self.core.execute("confirmar checkpoint 1")
+
+        self.assertEqual(result["action"]["skill"], "automation")
+        self.assertEqual(result["action"]["name"], "confirm_checkpoint")
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(result["action"]["delegated_action"]["name"], "apply_file_edit")
+        self.assertEqual(result["action"]["delegated_action"]["risk"], "high")
+        self.assertIn("# Projeto Seguro", (self.project_path / "README.md").read_text(encoding="utf-8"))
+        self.assertEqual(result["session"]["automation_checkpoints"], [])
+        event = result["session"]["automation_checkpoint_events"][0]
+        self.assertEqual(event["source"], "file_edit")
+        self.assertEqual(event["intent"], "apply_file_edit")
 
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")

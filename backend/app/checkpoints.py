@@ -96,6 +96,8 @@ def _checkpoint_next_step(checkpoint: dict[str, Any]) -> str:
 def _source_label(source: str) -> str:
     if source == "multi_action":
         return "pedido composto"
+    if source == "file_edit":
+        return "edicao de arquivo"
     return "plano de automacao"
 
 

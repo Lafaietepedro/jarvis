@@ -23,6 +23,7 @@ O nucleo atual ja consegue:
 - localizar arquivos por nome dentro do workspace;
 - ler e resumir arquivos de texto do workspace com limite de tamanho;
 - preparar propostas de edicao de arquivo com diff, sem gravar no disco;
+- aplicar propostas de edicao apenas por checkpoint confirmado;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -724,6 +725,19 @@ Entregas:
 - Quando o trecho antigo nao existe, a resposta falha sem gerar edicao ambigua.
 - Testes cobrem NLU, diff, ausencia de escrita em disco, trecho ausente e politica de risco.
 
+### Fase 3AV - Aplicacao Confirmada De Edicoes
+
+Status: concluida.
+
+Entregas:
+- Propostas validas de edicao agora criam checkpoint `file_edit` para aplicacao futura.
+- `confirmar checkpoint <id>` delega checkpoints de edicao para `FileSkill.apply_file_edit`.
+- Aplicacao reabre o arquivo, valida se o trecho antigo ainda existe e so entao grava.
+- Conflitos por arquivo alterado bloqueiam a aplicacao sem escrever.
+- Acoes delegadas por checkpoint agora tambem recebem metadados de risco.
+- Aplicar edicao e classificado como alto risco (`file_write`) e exige confirmacao.
+- Testes cobrem criacao do checkpoint, confirmacao, escrita real, remocao do checkpoint e auditoria do evento.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -741,7 +755,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar checkpoint para aplicar proposta de edicao de arquivo somente apos confirmacao.
+- Expor diff de propostas de edicao no CLI e na UI antes da confirmacao.
 
 ## Fases Futuras Planejadas
 
@@ -852,13 +866,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-213 tests OK
+216 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 213 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 216 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -102,6 +102,34 @@ class CheckpointsTest(unittest.TestCase):
         self.assertIn("pedido composto", event["event_detail"])
         self.assertIn("etapa 2", event["event_detail"])
 
+    def test_file_edit_checkpoint_uses_specific_source_label(self):
+        state = build_checkpoint_state(
+            {
+                "automation_checkpoints": [
+                    {
+                        "checkpoint_id": 1,
+                        "index": 1,
+                        "label": "Aplicar edicao em README.md",
+                        "plan": "file_edit",
+                        "source": "file_edit",
+                        "reason": "confirmation_required",
+                        "step": {
+                            "label": "Aplicar edicao em README.md",
+                            "intent": "apply_file_edit",
+                            "path": "README.md",
+                            "risk": "high",
+                            "requires_confirmation": True,
+                        },
+                    }
+                ],
+                "automation_checkpoint_events": [],
+            }
+        )
+
+        checkpoint = state["checkpoints"][0]
+        self.assertEqual(checkpoint["source_label"], "edicao de arquivo")
+        self.assertEqual(checkpoint["risk"], "high")
+
 
 if __name__ == "__main__":
     unittest.main()

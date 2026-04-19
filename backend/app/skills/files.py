@@ -14,7 +14,14 @@ class FileSkill(BaseSkill):
     name = "files"
 
     def can_handle(self, intent: dict[str, Any]) -> bool:
-        return intent.get("intent") in {"list_files", "where_am_i", "find_file", "read_file", "propose_file_edit"}
+        return intent.get("intent") in {
+            "list_files",
+            "where_am_i",
+            "find_file",
+            "read_file",
+            "propose_file_edit",
+            "apply_file_edit",
+        }
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
         project_path = Path(context["project"]["path"])
@@ -38,6 +45,16 @@ class FileSkill(BaseSkill):
                 intent.get("target") or "",
                 intent.get("old_text") or "",
                 intent.get("new_text") or "",
+                options,
+            )
+
+        if intent.get("intent") == "apply_file_edit":
+            return _apply_file_edit(
+                project_path,
+                intent.get("path") or intent.get("target") or "",
+                intent.get("old_text") or "",
+                intent.get("new_text") or "",
+                options,
             )
 
         entries = sorted(project_path.iterdir(), key=lambda item: (not item.is_dir(), item.name.lower()))
@@ -139,7 +156,13 @@ def _read_file(project_path: Path, target: str) -> SkillResult:
         )
 
 
-def _propose_file_edit(project_path: Path, target: str, old_text: str, new_text: str) -> SkillResult:
+def _propose_file_edit(
+    project_path: Path,
+    target: str,
+    old_text: str,
+    new_text: str,
+    options: dict[str, Any],
+) -> SkillResult:
     query = target.strip()
     if not query or not old_text:
         return SkillResult(
@@ -178,16 +201,25 @@ def _propose_file_edit(project_path: Path, target: str, old_text: str, new_text:
 
     updated = content.replace(old_text, new_text, 1)
     diff = _unified_diff(relative, content, updated)
+    checkpoints = _register_edit_checkpoint(options, relative, old_text, new_text, diff, occurrences)
+    checkpoint_ids = [checkpoint["checkpoint_id"] for checkpoint in checkpoints]
+    suggestions = [f"ler arquivo {relative}"]
+    suggestions.extend(f"confirmar checkpoint {checkpoint_id}" for checkpoint_id in checkpoint_ids)
+    response = f"Preparei uma proposta de edicao para `{relative}`. Nada foi gravado."
+    if checkpoint_ids:
+        response += f" Criei checkpoint {checkpoint_ids[0]} para aplicar a mudanca."
     return SkillResult(
-        response=f"Preparei uma proposta de edicao para `{relative}`. Nada foi gravado.",
+        response=response,
         action={
             "skill": "files",
             "name": "propose_file_edit",
             "status": "planned",
             "path": relative,
             "occurrences": occurrences,
+            "checkpoint_count": len(checkpoints),
+            "checkpoint_ids": checkpoint_ids,
         },
-        suggestions=[f"ler arquivo {relative}"],
+        suggestions=suggestions,
         data={
             "path": relative,
             "old_text": old_text,
@@ -195,8 +227,96 @@ def _propose_file_edit(project_path: Path, target: str, old_text: str, new_text:
             "occurrences": occurrences,
             "diff": diff,
             "writes_file": False,
+            "checkpoints": checkpoints,
         },
     )
+
+
+def _apply_file_edit(
+    project_path: Path,
+    target: str,
+    old_text: str,
+    new_text: str,
+    options: dict[str, Any],
+) -> SkillResult:
+    if not options.get("confirm_actions"):
+        return SkillResult(
+            response="Posso aplicar a edicao, mas preciso de confirmacao explicita.",
+            action={
+                "skill": "files",
+                "name": "apply_file_edit",
+                "status": "needs_confirmation",
+                "reason": "confirmation_required",
+                "path": target,
+            },
+        )
+
+    path = _resolve_project_file(project_path, target)
+    if path is None or not path.exists() or not path.is_file():
+        return SkillResult(
+            response=f"Nao encontrei `{target}` para aplicar a edicao.",
+            action={"skill": "files", "name": "apply_file_edit", "status": "not_found", "path": target},
+        )
+
+    blocked = _read_text_for_edit(project_path, path)
+    if isinstance(blocked, SkillResult):
+        blocked.action["name"] = "apply_file_edit"
+        return blocked
+
+    content = blocked
+    relative = _relative_path(project_path, path)
+    if old_text not in content:
+        return SkillResult(
+            response=f"O trecho original nao existe mais em `{relative}`. Nao apliquei a edicao.",
+            action={
+                "skill": "files",
+                "name": "apply_file_edit",
+                "status": "blocked",
+                "reason": "edit_conflict",
+                "path": relative,
+            },
+        )
+
+    updated = content.replace(old_text, new_text, 1)
+    diff = _unified_diff(relative, content, updated)
+    path.write_text(updated, encoding="utf-8")
+    return SkillResult(
+        response=f"Edicao aplicada em `{relative}`.",
+        action={"skill": "files", "name": "apply_file_edit", "status": "done", "path": relative},
+        data={"path": relative, "diff": diff, "writes_file": True},
+    )
+
+
+def _register_edit_checkpoint(
+    options: dict[str, Any],
+    path: str,
+    old_text: str,
+    new_text: str,
+    diff: str,
+    occurrences: int,
+) -> list[dict[str, Any]]:
+    session_state = options.get("session_state")
+    if session_state is None:
+        return []
+
+    checkpoint = {
+        "index": 1,
+        "label": f"Aplicar edicao em {path}",
+        "reason": "confirmation_required",
+        "source": "file_edit",
+        "step": {
+            "label": f"Aplicar edicao em {path}",
+            "intent": "apply_file_edit",
+            "path": path,
+            "old_text": old_text,
+            "new_text": new_text,
+            "diff": diff,
+            "occurrences": occurrences,
+            "risk": "high",
+            "requires_confirmation": True,
+        },
+    }
+    return session_state.add_automation_checkpoints("file_edit", [checkpoint])
 
 
 def _read_text_for_edit(project_path: Path, path: Path) -> str | SkillResult:
