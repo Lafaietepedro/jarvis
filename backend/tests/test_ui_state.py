@@ -52,6 +52,8 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["checkpoints"]["pending_count"], 1)
         self.assertEqual(state["history"]["limit"], 3)
         self.assertEqual(state["history"]["commands"][0]["text"], "qual o status")
+        self.assertEqual(state["memory_audit"]["matching_count"], 1)
+        self.assertEqual(state["memory_audit"]["by_intent"][0]["name"], "status")
         self.assertFalse(state["privacy"]["permissions"]["shell_enabled"])
         self.assertEqual(state["privacy"]["memory"]["commands_recorded"], 1)
         self.assertEqual(state["next_actions"][0], "confirmar checkpoint 1")
@@ -72,6 +74,8 @@ class UIStateTest(unittest.TestCase):
         state = build_ui_state(self.context, session=session, memory_store=None)
 
         self.assertEqual(state["history"]["commands"], [])
+        self.assertEqual(state["memory_audit"]["matching_count"], 0)
+        self.assertFalse(state["memory_audit"]["stats"]["enabled"])
         self.assertFalse(state["privacy"]["memory"]["enabled"])
         self.assertEqual(state["actions"][0]["risk"], "low")
         self.assertEqual(state["proactive"]["suggestions"][0]["command"], "estado do projeto")

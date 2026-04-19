@@ -144,6 +144,8 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(payload["checkpoints"]["status"], "empty")
         self.assertEqual(payload["history"]["limit"], 3)
         self.assertEqual(payload["history"]["commands"][0]["text"], "qual o status")
+        self.assertEqual(payload["memory_audit"]["matching_count"], 1)
+        self.assertEqual(payload["memory_audit"]["by_skill"][0]["name"], "system")
         self.assertFalse(payload["privacy"]["permissions"]["cloud_enabled"])
         self.assertIn("capabilities", payload)
         self.assertIn("actions", payload["capabilities"])

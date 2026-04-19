@@ -200,6 +200,7 @@ class UIStateResponse(BaseModel):
     presence: dict[str, Any]
     checkpoints: dict[str, Any]
     history: dict[str, Any]
+    memory_audit: dict[str, Any]
     privacy: dict[str, Any]
     capabilities: dict[str, Any]
     proactive: dict[str, Any]

@@ -224,6 +224,7 @@ def format_ui_state(payload: dict[str, Any]) -> str:
         format_presence(payload.get("presence", {})),
         format_checkpoints(payload.get("checkpoints", {})),
         format_privacy({"data": payload.get("privacy", {})}),
+        format_memory_audit(payload.get("memory_audit", {})),
         _format_capabilities(payload.get("capabilities", {})),
         _format_proactive(payload.get("proactive", {})),
         format_history(payload.get("history", {})),

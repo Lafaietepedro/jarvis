@@ -51,6 +51,7 @@ O nucleo atual ja consegue:
 - expor `GET /context` para auditar o contexto usado;
 - expor `GET /history` para consultar comandos recentes;
 - expor `GET /history/audit` para resumir a memoria local com filtros;
+- exibir auditoria da memoria local no contrato de UI e na interface web;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - cobrir contrato agregado para futuras interfaces locais;
 - manter acoes sensiveis bloqueadas por padrao;
@@ -560,6 +561,18 @@ Entregas:
 - Novo formatador `[MEMORY AUDIT]` para terminal.
 - Testes cobrindo memoria, NLU, core, API, CLI e formatador.
 
+### Fase 3AJ - Auditoria De Memoria Na UI Local
+
+Status: concluida.
+
+Entregas:
+- `GET /ui/state` ganhou bloco `memory_audit` com o resumo auditavel da memoria local.
+- Contrato de UI informa totais, primeira/ultima memoria, agregacoes e amostra limitada.
+- Interface web ganhou area de memoria com resumo e amostra local.
+- Painel de privacidade mostra contagem de comandos auditados.
+- Preview CLI de `ui-state` exibe `[MEMORY AUDIT]` junto do contrato agregado.
+- Testes cobrindo contrato de UI state, API, frontend, CLI e formatador.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -578,7 +591,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Expor auditoria da memoria local na interface web e no contrato agregado de UI.
+- Criar controles de filtro da auditoria de memoria na interface web.
 
 ## Fases Futuras Planejadas
 

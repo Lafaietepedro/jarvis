@@ -12,6 +12,8 @@ const nodes = {
   checkpointList: document.querySelector("#checkpoint-list"),
   checkpointEvents: document.querySelector("#checkpoint-events"),
   historyList: document.querySelector("#history-list"),
+  memoryAuditList: document.querySelector("#memory-audit-list"),
+  memoryAuditSample: document.querySelector("#memory-audit-sample"),
   nextActions: document.querySelector("#next-actions"),
   refreshInterval: document.querySelector("#refresh-interval"),
   form: document.querySelector("#command-form"),
@@ -61,6 +63,7 @@ function renderState(payload) {
   const summary = checkpoints.summary || {};
   const capabilities = payload.capabilities || {};
   const proactive = payload.proactive || {};
+  const memoryAudit = payload.memory_audit || {};
 
   nodes.title.textContent = `${presence.name || "JARVIS"} - ${presence.status || "unknown"}`;
   nodes.greeting.textContent = presence.greeting || "Estado local indisponivel.";
@@ -83,6 +86,7 @@ function renderState(payload) {
     ["Nuvem", permissions.cloud_enabled ? "ativa" : "desligada"],
     ["Memoria", memory.enabled ? "ativa" : "desligada"],
     ["Comandos", String(memory.commands_recorded || 0)],
+    ["Auditados", String(memoryAudit.matching_count || 0)],
     ["Shell", permissions.shell_enabled ? "permitido" : "bloqueado"],
     ["IDE", permissions.ide_actions_enabled ? "permitida" : "bloqueada"],
     ["Midia", permissions.media_actions_enabled ? "permitida" : "bloqueada"],
@@ -93,6 +97,7 @@ function renderState(payload) {
   renderCheckpoints(checkpoints.checkpoints || []);
   renderCheckpointEvents(checkpoints.events || []);
   renderHistory((payload.history || {}).commands || []);
+  renderMemoryAudit(memoryAudit);
   renderNextActions(payload.actions || payload.next_actions || []);
 }
 
@@ -175,6 +180,34 @@ function renderHistory(commands) {
   }
 }
 
+function renderMemoryAudit(audit) {
+  const byIntent = audit.by_intent || [];
+  const bySkill = audit.by_skill || [];
+  renderDefinitionList(nodes.memoryAuditList, [
+    ["Total", String(audit.matching_count || 0)],
+    ["Primeiro", audit.first_command_at || "nenhum"],
+    ["Ultimo", audit.latest_command_at || "nenhum"],
+    ["Intencoes", formatCounts(byIntent)],
+    ["Skills", formatCounts(bySkill)],
+  ]);
+
+  nodes.memoryAuditSample.replaceChildren();
+  const sample = audit.sample || [];
+  if (!sample.length) {
+    const item = document.createElement("li");
+    item.textContent = "Nenhuma memoria auditavel.";
+    nodes.memoryAuditSample.append(item);
+    return;
+  }
+
+  for (const command of sample.slice(0, 5)) {
+    const item = document.createElement("li");
+    const action = command.action || {};
+    item.textContent = `${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"} (${action.status || "unknown"})`;
+    nodes.memoryAuditSample.append(item);
+  }
+}
+
 function renderNextActions(actions) {
   nodes.nextActions.replaceChildren();
   if (!actions.length) {
@@ -231,6 +264,11 @@ function emptyText(text) {
   const paragraph = document.createElement("p");
   paragraph.textContent = text;
   return paragraph;
+}
+
+function formatCounts(items) {
+  if (!items.length) return "nenhum";
+  return items.slice(0, 3).map((item) => `${item.name || "unknown"}=${item.count || 0}`).join(", ");
 }
 
 async function sendCommand(text, confirmActions = false) {

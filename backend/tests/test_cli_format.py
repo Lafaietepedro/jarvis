@@ -114,6 +114,23 @@ class CliFormatTest(unittest.TestCase):
             "presence": self.presence,
             "checkpoints": self.checkpoints,
             "history": self.history,
+            "memory_audit": {
+                "generated_at": "2026-04-15T00:00:00+00:00",
+                "filters": {"limit": 5},
+                "matching_count": 1,
+                "first_command_at": "2026-04-15T00:00:00+00:00",
+                "latest_command_at": "2026-04-15T00:00:00+00:00",
+                "by_intent": [{"name": "status", "count": 1}],
+                "by_skill": [{"name": "system", "count": 1}],
+                "by_action": [{"name": "status", "count": 1}],
+                "by_status": [{"name": "done", "count": 1}],
+                "sample": [
+                    {
+                        "text": "qual o status",
+                        "action": {"skill": "system", "name": "status", "status": "done"},
+                    }
+                ],
+            },
             "privacy": self.privacy["data"],
             "capabilities": {
                 "commands": {"count": 2, "items": []},
@@ -272,6 +289,8 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[UI STATE]", output)
         self.assertIn("Schema: 1", output)
         self.assertIn("[CAPABILITIES]", output)
+        self.assertIn("[MEMORY AUDIT]", output)
+        self.assertIn("Matching commands: 1", output)
         self.assertIn("Project files: 4", output)
         self.assertIn("[PROACTIVE]", output)
         self.assertIn("estado do projeto", output)

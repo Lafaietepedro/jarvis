@@ -20,6 +20,7 @@ def build_ui_state(
         "limit": history_limit,
         "commands": memory_store.recent_commands(limit=history_limit) if memory_store else [],
     }
+    memory_audit = _build_memory_audit(memory_store, limit=history_limit)
     capabilities = _build_capabilities(context)
     proactive = {
         "suggestions": build_proactive_suggestions(
@@ -34,6 +35,7 @@ def build_ui_state(
         "presence": presence,
         "checkpoints": checkpoints,
         "history": history,
+        "memory_audit": memory_audit,
         "privacy": privacy,
         "capabilities": capabilities,
         "proactive": proactive,
@@ -57,6 +59,24 @@ def _build_privacy_state(context: dict[str, Any], session: dict[str, Any], memor
         "memory": memory_store.stats() if memory_store else {"enabled": False},
         "session": session,
     }
+
+
+def _build_memory_audit(memory_store: Any, limit: int) -> dict[str, Any]:
+    if memory_store is None:
+        return {
+            "generated_at": None,
+            "filters": {"limit": limit},
+            "stats": {"enabled": False},
+            "matching_count": 0,
+            "first_command_at": None,
+            "latest_command_at": None,
+            "by_intent": [],
+            "by_skill": [],
+            "by_action": [],
+            "by_status": [],
+            "sample": [],
+        }
+    return memory_store.audit_summary(limit=limit)
 
 
 def _build_next_actions(

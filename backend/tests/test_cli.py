@@ -98,6 +98,18 @@ class FakeClient:
                     "events": [],
                 },
                 "history": {"limit": 5, "commands": []},
+                "memory_audit": {
+                    "generated_at": "2026-04-15T00:00:00+00:00",
+                    "filters": {"limit": 5},
+                    "matching_count": 0,
+                    "first_command_at": None,
+                    "latest_command_at": None,
+                    "by_intent": [],
+                    "by_skill": [],
+                    "by_action": [],
+                    "by_status": [],
+                    "sample": [],
+                },
                 "privacy": {
                     "permissions": {"cloud_enabled": False, "shell_enabled": False},
                     "memory": {"enabled": True, "commands_recorded": 0, "path": "/tmp/memory.sqlite"},
