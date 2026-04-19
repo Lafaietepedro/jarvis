@@ -73,6 +73,8 @@ READ_ONLY_ACTIONS = {
     ("system", "install_dependencies"),
     ("files", "pwd"),
     ("files", "list_files"),
+    ("files", "find_file"),
+    ("files", "read_file"),
     ("ide", "project_commands"),
     ("ide", "project_state"),
     ("memory", "command_history"),

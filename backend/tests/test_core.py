@@ -36,6 +36,33 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["skill"], "files")
         self.assertIn("README.md", result["data"]["entries"])
 
+    def test_find_file(self):
+        result = self.core.execute("encontrar arquivo README.md")
+
+        self.assertEqual(result["action"]["skill"], "files")
+        self.assertEqual(result["action"]["name"], "find_file")
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(result["data"]["matches"][0]["path"], "README.md")
+        self.assertIn("ler arquivo README.md", result["suggestions"])
+
+    def test_read_file(self):
+        result = self.core.execute("ler arquivo README.md")
+
+        self.assertEqual(result["action"]["skill"], "files")
+        self.assertEqual(result["action"]["name"], "read_file")
+        self.assertEqual(result["action"]["status"], "done")
+        self.assertEqual(result["action"]["risk"], "low")
+        self.assertFalse(result["action"]["requires_confirmation"])
+        self.assertEqual(result["data"]["path"], "README.md")
+        self.assertIn("# Test Project", result["data"]["preview"])
+
+    def test_read_file_blocks_path_traversal(self):
+        result = self.core.execute("ler arquivo ../README.md")
+
+        self.assertEqual(result["action"]["skill"], "files")
+        self.assertEqual(result["action"]["name"], "read_file")
+        self.assertEqual(result["action"]["status"], "not_found")
+
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")
 

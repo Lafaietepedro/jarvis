@@ -55,6 +55,18 @@ class ParseIntentTest(unittest.TestCase):
 
         self.assertEqual(intent["intent"], "list_files")
 
+    def test_find_file(self):
+        intent = parse_intent("encontrar arquivo README.md")
+
+        self.assertEqual(intent["intent"], "find_file")
+        self.assertEqual(intent["target"], "readme.md")
+
+    def test_read_file(self):
+        intent = parse_intent("ler arquivo README.md")
+
+        self.assertEqual(intent["intent"], "read_file")
+        self.assertEqual(intent["target"], "readme.md")
+
     def test_capabilities(self):
         intent = parse_intent("o que voce pode controlar neste computador")
 

@@ -32,6 +32,13 @@ class RiskPolicyTest(unittest.TestCase):
         self.assertTrue(profile.requires_confirmation)
         self.assertEqual(profile.reason, "memory_deletion")
 
+    def test_read_file_is_read_only(self):
+        profile = classify_action({"skill": "files", "name": "read_file", "status": "done"})
+
+        self.assertEqual(profile.risk, "low")
+        self.assertFalse(profile.requires_confirmation)
+        self.assertEqual(profile.reason, "read_only")
+
     def test_checkpoint_inherits_step_permission(self):
         profile = classify_checkpoint(
             {

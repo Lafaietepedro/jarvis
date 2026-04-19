@@ -7,6 +7,29 @@ TURN_ON_TERMS = ("ligar", "ligue", "liga", "acender", "acenda", "turn on")
 TURN_OFF_TERMS = ("desligar", "desliga", "apagar", "apague", "turn off")
 STATUS_TERMS = ("status", "estado", "esta", "operacional")
 LIST_FILES_TERMS = ("listar arquivos", "mostrar arquivos", "ver arquivos", "ls")
+READ_FILE_TERMS = (
+    "ler arquivo",
+    "leia arquivo",
+    "mostrar arquivo",
+    "mostre arquivo",
+    "resumir arquivo",
+    "resuma arquivo",
+    "resumo do arquivo",
+    "ler",
+    "leia",
+    "resumir",
+    "resuma",
+)
+FIND_FILE_TERMS = (
+    "encontrar arquivo",
+    "encontre arquivo",
+    "localizar arquivo",
+    "localize arquivo",
+    "procurar arquivo",
+    "procure arquivo",
+    "buscar arquivo",
+    "busque arquivo",
+)
 WHERE_TERMS = ("onde estou", "onde estamos", "diretorio atual", "pasta atual", "pwd")
 CAPABILITY_TERMS = ("o que voce pode controlar", "o que voce faz", "capacidades", "comandos disponiveis")
 DIAGNOSTICS_TERMS = ("diagnostico", "diagnóstico", "saude do sistema", "saúde do sistema", "dependencias", "dependências")
@@ -187,6 +210,19 @@ def _extract_command(text: str) -> str | None:
     return command or None
 
 
+def _extract_file_target(text: str) -> str | None:
+    match = re.search(
+        r"\b(?:ler|leia|mostrar|mostre|resumir|resuma|resumo|encontrar|encontre|localizar|localize|procurar|procure|buscar|busque)\b"
+        r"\s+(?:\b(?:o|a|os|as)\b\s*)?(?:arquivo|documento|file)?\s*(?:chamado|chamada|nomeado|nomeada)?\s*(.+)",
+        text,
+    )
+    if not match:
+        return None
+    target = _strip_fillers(match.group(1))
+    target = re.sub(r"^(?:arquivo|documento|file)\s+", "", target).strip()
+    return target or None
+
+
 def _extract_checkpoint_id(text: str) -> int | None:
     match = re.search(r"\b(?:checkpoint|passo)\s+(\d+)\b", text)
     if not match:
@@ -356,6 +392,12 @@ def parse_intent(text: str, allow_composite: bool = True):
 
     if _has_any(normalized, OPEN_PROJECT_TERMS):
         return {"intent": "open_project", "text": text}
+
+    if _has_any(normalized, FIND_FILE_TERMS):
+        return {"intent": "find_file", "target": _extract_file_target(normalized), "text": text}
+
+    if _has_any(normalized, READ_FILE_TERMS):
+        return {"intent": "read_file", "target": _extract_file_target(normalized), "text": text}
 
     if _has_any(normalized, LIST_FILES_TERMS):
         return {"intent": "list_files", "text": text}

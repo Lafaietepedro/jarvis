@@ -20,6 +20,8 @@ O nucleo atual ja consegue:
 - consultar politica central de permissoes antes de acoes sensiveis;
 - exibir painel de privacidade por `GET /privacy` ou comando em linguagem natural;
 - coletar contexto local do projeto;
+- localizar arquivos por nome dentro do workspace;
+- ler e resumir arquivos de texto do workspace com limite de tamanho;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -695,6 +697,19 @@ Entregas:
 - `panel`, `checkpoints`, `ui-state` e `chat` passam a se beneficiar do mesmo formatador.
 - Testes cobrem detalhes de checkpoints/eventos e resposta formatada de `multi_action`.
 
+### Fase 3AT - Leitura Segura De Arquivos
+
+Status: concluida.
+
+Entregas:
+- NLU reconhece `encontrar arquivo <nome>` e `ler arquivo <nome>`.
+- `FileSkill` ganhou `find_file` para busca por nome/caminho dentro do workspace.
+- `FileSkill` ganhou `read_file` para ler texto UTF-8, gerar resumo simples e devolver preview limitado.
+- Leitura fica restrita ao workspace, ignora diretorios ocultos/cache e bloqueia arquivos grandes.
+- Leitura de arquivo e busca sao classificadas como acoes locais de baixo risco.
+- Sugestoes passam a incluir leitura de `README.md` quando o projeto possui esse marcador.
+- Testes cobrem NLU, busca, leitura, bloqueio de path traversal e politica de risco.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -712,7 +727,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Iniciar a proxima capacidade local com base no fluxo seguro de checkpoints.
+- Preparar edicao segura de arquivos com diff e checkpoint antes de gravar.
 
 ## Fases Futuras Planejadas
 
@@ -823,13 +838,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-203 tests OK
+209 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 203 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 209 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

@@ -38,6 +38,9 @@ def build_suggestions(
         suggestions.append("rodar make test")
         suggestions.append("comandos do projeto")
 
+    if "README.md" in project.get("markers", []):
+        suggestions.append("ler arquivo README.md")
+
     if capabilities["has_docker_compose"]:
         suggestions.append("subir ambiente com docker compose")
 
