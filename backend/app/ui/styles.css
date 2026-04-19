@@ -56,6 +56,8 @@ button:disabled {
 }
 
 input[type="text"],
+input[type="date"],
+input[type="number"],
 input:not([type]),
 select {
   width: 100%;
@@ -213,6 +215,24 @@ p {
   color: var(--muted);
 }
 
+.audit-controls {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.audit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.audit-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -339,6 +359,7 @@ dd {
   .status-band,
   .command-row,
   .grid,
+  .audit-grid,
   .action-header {
     grid-template-columns: 1fr;
   }

@@ -52,6 +52,7 @@ O nucleo atual ja consegue:
 - expor `GET /history` para consultar comandos recentes;
 - expor `GET /history/audit` para resumir a memoria local com filtros;
 - exibir auditoria da memoria local no contrato de UI e na interface web;
+- filtrar auditoria da memoria local pela interface web;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - cobrir contrato agregado para futuras interfaces locais;
 - manter acoes sensiveis bloqueadas por padrao;
@@ -573,6 +574,18 @@ Entregas:
 - Preview CLI de `ui-state` exibe `[MEMORY AUDIT]` junto do contrato agregado.
 - Testes cobrindo contrato de UI state, API, frontend, CLI e formatador.
 
+### Fase 3AK - Filtros De Auditoria Na UI Local
+
+Status: concluida.
+
+Entregas:
+- Interface web ganhou controles para filtrar auditoria por intent, skill, acao, periodo e limite de amostra.
+- Filtros chamam `GET /history/audit` diretamente sem exportar o historico completo.
+- Refresh automatico preserva filtros ativos enquanto a sessao da pagina estiver aberta.
+- Botao de limpeza restaura a auditoria padrao do contrato de UI.
+- CSS responsivo para os controles de auditoria.
+- Testes cobrindo markup, assets JS/CSS e smoke visual em Chromium.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -591,7 +604,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Criar controles de filtro da auditoria de memoria na interface web.
+- Evoluir memoria local editavel com exclusao seletiva por comando ou filtro.
 
 ## Fases Futuras Planejadas
 

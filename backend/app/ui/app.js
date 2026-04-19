@@ -1,6 +1,7 @@
 const state = {
   loading: false,
   refreshTimer: null,
+  memoryAuditFilters: null,
 };
 
 const nodes = {
@@ -12,6 +13,14 @@ const nodes = {
   checkpointList: document.querySelector("#checkpoint-list"),
   checkpointEvents: document.querySelector("#checkpoint-events"),
   historyList: document.querySelector("#history-list"),
+  memoryAuditForm: document.querySelector("#memory-audit-form"),
+  memoryAuditIntent: document.querySelector("#memory-audit-intent"),
+  memoryAuditSkill: document.querySelector("#memory-audit-skill"),
+  memoryAuditAction: document.querySelector("#memory-audit-action"),
+  memoryAuditSince: document.querySelector("#memory-audit-since"),
+  memoryAuditUntil: document.querySelector("#memory-audit-until"),
+  memoryAuditLimit: document.querySelector("#memory-audit-limit"),
+  memoryAuditClear: document.querySelector("#memory-audit-clear"),
   memoryAuditList: document.querySelector("#memory-audit-list"),
   memoryAuditSample: document.querySelector("#memory-audit-sample"),
   nextActions: document.querySelector("#next-actions"),
@@ -43,6 +52,9 @@ async function loadState() {
   try {
     const payload = await requestJson("/ui/state?history_limit=6");
     renderState(payload);
+    if (state.memoryAuditFilters) {
+      await loadMemoryAudit(state.memoryAuditFilters, false);
+    }
   } catch (error) {
     nodes.lastResponse.textContent = `Nao consegui sincronizar: ${error.message}`;
     nodes.lastResponse.classList.add("error");
@@ -208,6 +220,21 @@ function renderMemoryAudit(audit) {
   }
 }
 
+async function loadMemoryAudit(filters, announce = true) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+  const query = params.toString();
+  const audit = await requestJson(query ? `/history/audit?${query}` : "/history/audit");
+  renderMemoryAudit(audit);
+  if (announce) {
+    nodes.lastResponse.textContent = `Auditoria filtrada: ${audit.matching_count || 0} comando(s).`;
+  }
+}
+
 function renderNextActions(actions) {
   nodes.nextActions.replaceChildren();
   if (!actions.length) {
@@ -269,6 +296,21 @@ function emptyText(text) {
 function formatCounts(items) {
   if (!items.length) return "nenhum";
   return items.slice(0, 3).map((item) => `${item.name || "unknown"}=${item.count || 0}`).join(", ");
+}
+
+function collectMemoryAuditFilters() {
+  return {
+    intent: nodes.memoryAuditIntent.value.trim(),
+    skill: nodes.memoryAuditSkill.value.trim(),
+    action: nodes.memoryAuditAction.value.trim(),
+    since: nodes.memoryAuditSince.value,
+    until: nodes.memoryAuditUntil.value,
+    limit: nodes.memoryAuditLimit.value || "5",
+  };
+}
+
+function hasActiveMemoryAuditFilter(filters) {
+  return Boolean(filters.intent || filters.skill || filters.action || filters.since || filters.until);
 }
 
 async function sendCommand(text, confirmActions = false) {
@@ -352,6 +394,28 @@ function scheduleRefresh() {
 nodes.form.addEventListener("submit", (event) => {
   event.preventDefault();
   sendCommand(nodes.input.value);
+});
+
+nodes.memoryAuditForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const filters = collectMemoryAuditFilters();
+  state.memoryAuditFilters = hasActiveMemoryAuditFilter(filters) ? filters : null;
+  setBusy(true);
+  try {
+    await loadMemoryAudit(filters);
+  } catch (error) {
+    nodes.lastResponse.textContent = `Falha ao filtrar memoria: ${error.message}`;
+    nodes.lastResponse.classList.add("error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+nodes.memoryAuditClear.addEventListener("click", async () => {
+  nodes.memoryAuditForm.reset();
+  nodes.memoryAuditLimit.value = "5";
+  state.memoryAuditFilters = null;
+  await loadState();
 });
 
 nodes.pauseButton.addEventListener("click", () => postSessionAction("/pause"));

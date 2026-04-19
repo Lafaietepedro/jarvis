@@ -72,6 +72,32 @@
 
         <article>
           <h2>Memoria</h2>
+          <form id="memory-audit-form" class="audit-controls">
+            <div class="audit-grid">
+              <label for="memory-audit-intent">Intent
+                <input id="memory-audit-intent" name="intent" autocomplete="off" placeholder="status">
+              </label>
+              <label for="memory-audit-skill">Skill
+                <input id="memory-audit-skill" name="skill" autocomplete="off" placeholder="system">
+              </label>
+              <label for="memory-audit-action">Acao
+                <input id="memory-audit-action" name="action" autocomplete="off" placeholder="status">
+              </label>
+              <label for="memory-audit-limit">Amostra
+                <input id="memory-audit-limit" name="limit" type="number" min="1" max="20" value="5">
+              </label>
+              <label for="memory-audit-since">Desde
+                <input id="memory-audit-since" name="since" type="date">
+              </label>
+              <label for="memory-audit-until">Ate
+                <input id="memory-audit-until" name="until" type="date">
+              </label>
+            </div>
+            <div class="button-row">
+              <button type="submit">Filtrar memoria</button>
+              <button id="memory-audit-clear" type="button">Limpar filtros</button>
+            </div>
+          </form>
           <dl id="memory-audit-list"></dl>
           <h3>Amostra local</h3>
           <ol id="memory-audit-sample" class="history"></ol>
