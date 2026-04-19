@@ -75,6 +75,33 @@ class CheckpointsTest(unittest.TestCase):
         self.assertIn("pedido composto", checkpoint["checkpoint_detail"])
         self.assertIn("etapa 2", checkpoint["checkpoint_detail"])
 
+    def test_multi_action_event_exposes_step_detail(self):
+        state = build_checkpoint_state(
+            {
+                "automation_checkpoints": [],
+                "automation_checkpoint_events": [
+                    {
+                        "checkpoint_id": 1,
+                        "label": "Etapa 2: rodar testes",
+                        "plan": "multi_action",
+                        "source": "multi_action",
+                        "step_index": 2,
+                        "step_label": "rodar testes",
+                        "command": "make test",
+                        "status": "blocked",
+                        "reason": "shell_disabled",
+                    }
+                ],
+            }
+        )
+
+        event = state["events"][0]
+        self.assertEqual(event["source_label"], "pedido composto")
+        self.assertEqual(event["step_index"], 2)
+        self.assertEqual(event["step_label"], "rodar testes")
+        self.assertIn("pedido composto", event["event_detail"])
+        self.assertIn("etapa 2", event["event_detail"])
+
 
 if __name__ == "__main__":
     unittest.main()

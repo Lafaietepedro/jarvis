@@ -290,10 +290,16 @@ def _execute_confirmed_checkpoint(
 
 def _checkpoint_event(checkpoint: dict[str, Any], result: SkillResult) -> dict[str, Any]:
     delegated_action = result.action
+    step = checkpoint.get("step", {})
     return {
         "checkpoint_id": checkpoint["checkpoint_id"],
         "label": checkpoint["label"],
         "plan": checkpoint["plan"],
+        "source": checkpoint.get("source"),
+        "step_index": checkpoint.get("index"),
+        "step_label": step.get("label"),
+        "intent": step.get("intent"),
+        "command": step.get("command"),
         "status": delegated_action.get("status", "unknown"),
         "reason": delegated_action.get("reason"),
         "delegated_skill": delegated_action.get("skill"),

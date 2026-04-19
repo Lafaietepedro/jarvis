@@ -183,13 +183,29 @@ function renderCheckpointEvents(events) {
     const title = document.createElement("strong");
     title.textContent = `${event.label || "Checkpoint"} -> ${event.status || "unknown"}`;
     const detail = document.createElement("p");
-    detail.textContent = event.message || `${event.reason || "sem motivo"} - ${event.created_at || "agora"}`;
+    detail.textContent = event.event_detail || event.message || `${event.reason || "sem motivo"} - ${event.created_at || "agora"}`;
+    const meta = document.createElement("p");
+    meta.className = "checkpoint-meta";
+    meta.textContent = eventMeta(event);
     const next = document.createElement("p");
     next.className = "next-step";
     next.textContent = event.next_step || "Nenhuma acao pendente.";
-    item.append(title, detail, next);
+    item.append(title, detail, meta, next);
     nodes.checkpointEvents.append(item);
   }
+}
+
+function eventMeta(event) {
+  const parts = [event.source_label || event.plan || "evento"];
+  if (event.step_index) {
+    parts.push(`etapa ${event.step_index}`);
+  }
+  if (event.command) {
+    parts.push(`comando: ${event.command}`);
+  } else if (event.step_label) {
+    parts.push(event.step_label);
+  }
+  return parts.join(" | ");
 }
 
 function renderHistory(commands) {

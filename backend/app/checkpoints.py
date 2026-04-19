@@ -61,8 +61,16 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
 def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
     reason = event.get("reason")
     status = event.get("status", "unknown")
+    source = event.get("source") or ("multi_action" if event.get("plan") == "multi_action" else "automation")
+    step_index = event.get("step_index") or event.get("index")
+    step_label = event.get("step_label") or event.get("label")
     return {
         **event,
+        "source": source,
+        "source_label": _source_label(source),
+        "step_index": step_index,
+        "step_label": step_label,
+        "event_detail": _checkpoint_detail(source, step_index, step_label, event),
         "severity": severity_for_event(status, reason),
         "message": _event_message(event),
         "next_step": _event_next_step(event),

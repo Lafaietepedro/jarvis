@@ -238,6 +238,10 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["status"], "blocked")
         self.assertEqual(result["action"]["delegated_action"]["reason"], "shell_disabled")
         self.assertEqual(result["session"]["automation_checkpoints"][0]["checkpoint_id"], 1)
+        event = result["session"]["automation_checkpoint_events"][0]
+        self.assertEqual(event["source"], "multi_action")
+        self.assertEqual(event["step_index"], 2)
+        self.assertEqual(event["command"], "make test")
 
     def test_open_project_is_blocked_by_default(self):
         result = self.core.execute("abrir projeto")

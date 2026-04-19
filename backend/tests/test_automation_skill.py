@@ -113,6 +113,8 @@ class AutomationSkillTest(unittest.TestCase):
         self.assertEqual(snapshot["automation_checkpoints"][0]["checkpoint_id"], 1)
         self.assertEqual(snapshot["automation_checkpoint_events"][0]["status"], "blocked")
         self.assertEqual(snapshot["automation_checkpoint_events"][0]["reason"], "shell_disabled")
+        self.assertEqual(snapshot["automation_checkpoint_events"][0]["step_index"], 3)
+        self.assertEqual(snapshot["automation_checkpoint_events"][0]["command"], "make test")
 
     def test_pending_checkpoints_includes_recent_events(self):
         session = SessionState()
