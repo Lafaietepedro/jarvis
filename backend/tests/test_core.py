@@ -77,6 +77,8 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertIn("+# Projeto Seguro", result["data"]["diff"])
         self.assertEqual(result["data"]["checkpoints"][0]["source"], "file_edit")
         self.assertEqual(result["session"]["automation_checkpoints"][0]["plan"], "file_edit")
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["path"], "README.md")
+        self.assertIn("+# Projeto Seguro", result["session"]["automation_checkpoints"][0]["diff"])
         self.assertIn("# Test Project", (self.project_path / "README.md").read_text(encoding="utf-8"))
         self.assertIn("confirmar checkpoint 1", result["suggestions"])
 
@@ -102,6 +104,8 @@ class JarvisCoreTest(unittest.TestCase):
         event = result["session"]["automation_checkpoint_events"][0]
         self.assertEqual(event["source"], "file_edit")
         self.assertEqual(event["intent"], "apply_file_edit")
+        self.assertEqual(event["path"], "README.md")
+        self.assertIn("+# Projeto Seguro", event["diff"])
 
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")

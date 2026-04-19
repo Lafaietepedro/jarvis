@@ -118,6 +118,37 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["step_label"], "rodar testes")
         self.assertIn("make test", checkpoint["next_step"])
 
+    def test_build_ui_state_exposes_file_edit_diff(self):
+        session = SessionState()
+        session.add_automation_checkpoints(
+            "file_edit",
+            [
+                {
+                    "index": 1,
+                    "label": "Aplicar edicao em README.md",
+                    "reason": "confirmation_required",
+                    "source": "file_edit",
+                    "step": {
+                        "label": "Aplicar edicao em README.md",
+                        "intent": "apply_file_edit",
+                        "path": "README.md",
+                        "diff": "--- a/README.md\n+++ b/README.md\n-old\n+new",
+                        "occurrences": 1,
+                        "risk": "high",
+                        "requires_confirmation": True,
+                    },
+                }
+            ],
+        )
+
+        state = build_ui_state(self.context, session=session.snapshot(), memory_store=self.memory)
+
+        checkpoint = state["checkpoints"]["checkpoints"][0]
+        self.assertEqual(checkpoint["source_label"], "edicao de arquivo")
+        self.assertEqual(checkpoint["path"], "README.md")
+        self.assertTrue(checkpoint["has_diff"])
+        self.assertIn("+new", checkpoint["diff"])
+
 
 if __name__ == "__main__":
     unittest.main()

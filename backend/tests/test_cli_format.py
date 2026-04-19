@@ -211,6 +211,32 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("Context: plano de automacao", output)
         self.assertIn("Next: Ative JARVIS_ENABLE_SHELL", output)
 
+    def test_format_checkpoints_shows_file_edit_diff(self):
+        output = format_checkpoints(
+            {
+                "status": "pending",
+                "summary": {"pending": 1},
+                "checkpoints": [
+                    {
+                        "checkpoint_id": 2,
+                        "label": "Aplicar edicao em README.md",
+                        "plan": "file_edit",
+                        "reason": "confirmation_required",
+                        "source_label": "edicao de arquivo",
+                        "path": "README.md",
+                        "diff": "--- a/README.md\n+++ b/README.md\n-foo\n+bar",
+                        "next_step": "Revisar diff de `README.md` antes de confirmar.",
+                    }
+                ],
+                "events": [],
+            }
+        )
+
+        self.assertIn("Diff:", output)
+        self.assertIn("--- a/README.md", output)
+        self.assertIn("+bar", output)
+        self.assertIn("Context: edicao de arquivo | README.md", output)
+
     def test_format_privacy(self):
         output = format_privacy(self.privacy)
 

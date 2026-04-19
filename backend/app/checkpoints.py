@@ -40,12 +40,19 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
     source = checkpoint.get("source") or ("multi_action" if checkpoint.get("plan") == "multi_action" else "automation")
     step_label = checkpoint.get("step_label") or checkpoint.get("step", {}).get("label") or checkpoint.get("label")
     step_index = checkpoint.get("index")
+    path = _checkpoint_value(checkpoint, "path")
+    diff = _checkpoint_value(checkpoint, "diff")
+    occurrences = _checkpoint_value(checkpoint, "occurrences")
     return {
         **checkpoint,
         "source": source,
         "source_label": _source_label(source),
         "step_index": step_index,
         "step_label": step_label,
+        "path": path,
+        "diff": diff,
+        "has_diff": bool(diff),
+        "occurrences": occurrences,
         "checkpoint_detail": _checkpoint_detail(source, step_index, step_label, checkpoint),
         "risk": profile.risk,
         "requires_confirmation": profile.requires_confirmation,
@@ -64,12 +71,17 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
     source = event.get("source") or ("multi_action" if event.get("plan") == "multi_action" else "automation")
     step_index = event.get("step_index") or event.get("index")
     step_label = event.get("step_label") or event.get("label")
+    path = _checkpoint_value(event, "path")
+    diff = _checkpoint_value(event, "diff")
     return {
         **event,
         "source": source,
         "source_label": _source_label(source),
         "step_index": step_index,
         "step_label": step_label,
+        "path": path,
+        "diff": diff,
+        "has_diff": bool(diff),
         "event_detail": _checkpoint_detail(source, step_index, step_label, event),
         "severity": severity_for_event(status, reason),
         "message": _event_message(event),
@@ -90,6 +102,10 @@ def _checkpoint_next_step(checkpoint: dict[str, Any]) -> str:
     command = checkpoint.get("command")
     if command:
         return f"Revisar comando `{command}` antes de confirmar."
+    if checkpoint.get("source") == "file_edit":
+        path = _checkpoint_value(checkpoint, "path")
+        if path:
+            return f"Revisar diff de `{path}` antes de confirmar."
     return f"Revisar {checkpoint.get('label', 'checkpoint')} antes de confirmar."
 
 
@@ -138,3 +154,9 @@ def _event_next_step(event: dict[str, Any]) -> str:
     if reason:
         return "Revise a permissao ou ajuste a configuracao antes de tentar novamente."
     return "Nenhuma acao pendente."
+
+
+def _checkpoint_value(item: dict[str, Any], key: str) -> Any:
+    if item.get(key) is not None:
+        return item[key]
+    return item.get("step", {}).get(key)

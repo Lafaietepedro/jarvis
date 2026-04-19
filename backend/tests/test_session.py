@@ -81,6 +81,35 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(snapshot["automation_checkpoints"][1]["plan"], "multi_action")
         self.assertEqual(snapshot["automation_checkpoints"][1]["source"], "multi_action")
 
+    def test_file_edit_checkpoint_snapshot_exposes_review_metadata(self):
+        session = SessionState()
+        session.add_automation_checkpoints(
+            "file_edit",
+            [
+                {
+                    "index": 1,
+                    "label": "Aplicar edicao em README.md",
+                    "reason": "confirmation_required",
+                    "source": "file_edit",
+                    "step": {
+                        "intent": "apply_file_edit",
+                        "label": "Aplicar edicao em README.md",
+                        "path": "README.md",
+                        "diff": "--- a/README.md\n+++ b/README.md",
+                        "occurrences": 1,
+                        "risk": "high",
+                        "requires_confirmation": True,
+                    },
+                }
+            ],
+        )
+
+        checkpoint = session.snapshot()["automation_checkpoints"][0]
+
+        self.assertEqual(checkpoint["path"], "README.md")
+        self.assertEqual(checkpoint["diff"], "--- a/README.md\n+++ b/README.md")
+        self.assertEqual(checkpoint["occurrences"], 1)
+
     def test_automation_checkpoint_events_are_recorded_newest_first(self):
         session = SessionState()
 

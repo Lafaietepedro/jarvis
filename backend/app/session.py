@@ -38,23 +38,31 @@ class SessionState:
                 "uptime_seconds": int((now - self._started_at).total_seconds()),
                 "current_task": self._current_task,
                 "automation_checkpoints": [
-                    {
-                        "checkpoint_id": checkpoint["checkpoint_id"],
-                        "index": checkpoint.get("index"),
-                        "label": checkpoint["label"],
-                        "plan": checkpoint["plan"],
-                        "source": checkpoint.get("source"),
-                        "reason": checkpoint["reason"],
-                        "intent": checkpoint.get("step", {}).get("intent"),
-                        "command": checkpoint.get("step", {}).get("command"),
-                        "step_label": checkpoint.get("step", {}).get("label"),
-                        "risk": checkpoint.get("step", {}).get("risk"),
-                        "permission": checkpoint.get("step", {}).get("permission"),
-                    }
+                    self._checkpoint_snapshot(checkpoint)
                     for checkpoint in self._automation_checkpoints
                 ],
                 "automation_checkpoint_events": list(self._automation_checkpoint_events),
             }
+
+    def _checkpoint_snapshot(self, checkpoint: dict[str, Any]) -> dict[str, Any]:
+        step = checkpoint.get("step", {})
+        snapshot = {
+            "checkpoint_id": checkpoint["checkpoint_id"],
+            "index": checkpoint.get("index"),
+            "label": checkpoint["label"],
+            "plan": checkpoint["plan"],
+            "source": checkpoint.get("source"),
+            "reason": checkpoint["reason"],
+            "intent": step.get("intent"),
+            "command": step.get("command"),
+            "step_label": step.get("label"),
+            "risk": step.get("risk"),
+            "permission": step.get("permission"),
+        }
+        for key in ("path", "diff", "occurrences"):
+            if step.get(key) is not None:
+                snapshot[key] = step[key]
+        return snapshot
 
     def set_automation_checkpoints(self, plan_name: str, checkpoints: list[dict[str, Any]]):
         with self._lock:

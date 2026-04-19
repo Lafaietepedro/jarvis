@@ -293,6 +293,22 @@ dd {
   font-size: 0.9rem;
 }
 
+.checkpoint-diff {
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .risk {
   display: inline-block;
   min-height: 24px;

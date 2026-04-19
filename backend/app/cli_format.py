@@ -53,6 +53,9 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
                 lines.append(risk_line)
             if checkpoint.get("command"):
                 lines.append(f"   Command: {checkpoint['command']}")
+            if checkpoint.get("diff"):
+                lines.append("   Diff:")
+                lines.extend(_format_indented_block(checkpoint["diff"], "     "))
             if checkpoint.get("next_step"):
                 lines.append(f"   Next: {checkpoint['next_step']}")
             lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")
@@ -76,6 +79,9 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
                 lines.append(f"  Context: {context}")
             if event.get("command"):
                 lines.append(f"  Command: {event['command']}")
+            if event.get("diff"):
+                lines.append("  Diff:")
+                lines.extend(_format_indented_block(event["diff"], "    ", max_lines=20))
             if event.get("message"):
                 lines.append(f"  {event['message']}")
             if event.get("next_step"):
@@ -330,7 +336,18 @@ def _format_checkpoint_context(item: dict[str, Any]) -> str:
         parts.append(f"step {item['step_index']}")
     if item.get("step_label"):
         parts.append(str(item["step_label"]))
+    if item.get("path"):
+        parts.append(str(item["path"]))
     return " | ".join(parts)
+
+
+def _format_indented_block(text: str, prefix: str, max_lines: int = 40) -> list[str]:
+    lines = text.splitlines()
+    visible = lines[:max_lines]
+    formatted = [f"{prefix}{line}" for line in visible]
+    if len(lines) > max_lines:
+        formatted.append(f"{prefix}... diff truncado ({len(lines) - max_lines} linha(s) restantes)")
+    return formatted
 
 
 def _format_next_actions(actions: list[Any]) -> str:

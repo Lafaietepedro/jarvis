@@ -148,11 +148,16 @@ function renderCheckpoints(checkpoints) {
     const next = document.createElement("p");
     next.textContent = checkpoint.next_step || "Revise antes de confirmar.";
     next.className = "next-step";
+    const diff = renderDiff(checkpoint.diff);
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
     button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
-    item.append(title, risk, detail, meta, next, button);
+    item.append(title, risk, detail, meta);
+    if (diff) {
+      item.append(diff);
+    }
+    item.append(next, button);
     nodes.checkpointList.append(item);
   }
 }
@@ -167,7 +172,20 @@ function checkpointMeta(checkpoint) {
   } else if (checkpoint.step_label) {
     parts.push(checkpoint.step_label);
   }
+  if (checkpoint.path) {
+    parts.push(`arquivo: ${checkpoint.path}`);
+  }
   return parts.join(" | ");
+}
+
+function renderDiff(value) {
+  if (!value) {
+    return null;
+  }
+  const diff = document.createElement("pre");
+  diff.className = "checkpoint-diff";
+  diff.textContent = value;
+  return diff;
 }
 
 function renderCheckpointEvents(events) {

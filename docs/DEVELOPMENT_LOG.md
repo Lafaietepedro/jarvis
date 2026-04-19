@@ -23,6 +23,7 @@ O nucleo atual ja consegue:
 - localizar arquivos por nome dentro do workspace;
 - ler e resumir arquivos de texto do workspace com limite de tamanho;
 - preparar propostas de edicao de arquivo com diff, sem gravar no disco;
+- revisar diffs de edicoes pendentes no CLI e na interface web local antes de confirmar;
 - aplicar propostas de edicao apenas por checkpoint confirmado;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
@@ -738,6 +739,19 @@ Entregas:
 - Aplicar edicao e classificado como alto risco (`file_write`) e exige confirmacao.
 - Testes cobrem criacao do checkpoint, confirmacao, escrita real, remocao do checkpoint e auditoria do evento.
 
+### Fase 3AW - Revisao De Diff Para Edicoes
+
+Status: concluida.
+
+Entregas:
+- Snapshot de sessao agora preserva `path`, `diff` e `occurrences` para checkpoints de edicao.
+- `GET /checkpoints` e `GET /ui/state` enriquecem checkpoints de edicao com `has_diff`, caminho do arquivo e proximo passo especifico.
+- Eventos de checkpoints confirmados preservam diff e caminho do arquivo para auditoria curta da sessao.
+- CLI de checkpoints exibe o diff pendente antes do comando de confirmacao.
+- Interface web local renderiza diffs de edicao em bloco revisavel antes do botao de confirmar.
+- Contexto de checkpoints agora inclui o arquivo afetado quando disponivel.
+- Testes cobrem snapshot de sessao, contrato de checkpoints, formatador CLI, estado da UI, assets frontend e fluxo core de edicao.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -755,7 +769,8 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Expor diff de propostas de edicao no CLI e na UI antes da confirmacao.
+- Melhorar propostas de edicao com preview contextual por trecho/linha e validacao mais explicita antes de aplicar.
+- Evoluir o historico curto de edicoes aplicadas para facilitar auditoria e futura reversao.
 
 ## Fases Futuras Planejadas
 
@@ -866,13 +881,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-216 tests OK
+219 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 216 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 219 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

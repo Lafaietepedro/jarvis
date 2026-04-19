@@ -117,6 +117,8 @@ class CheckpointsTest(unittest.TestCase):
                             "label": "Aplicar edicao em README.md",
                             "intent": "apply_file_edit",
                             "path": "README.md",
+                            "diff": "--- a/README.md\n+++ b/README.md\n-foo\n+bar",
+                            "occurrences": 1,
                             "risk": "high",
                             "requires_confirmation": True,
                         },
@@ -129,6 +131,11 @@ class CheckpointsTest(unittest.TestCase):
         checkpoint = state["checkpoints"][0]
         self.assertEqual(checkpoint["source_label"], "edicao de arquivo")
         self.assertEqual(checkpoint["risk"], "high")
+        self.assertEqual(checkpoint["path"], "README.md")
+        self.assertTrue(checkpoint["has_diff"])
+        self.assertIn("+bar", checkpoint["diff"])
+        self.assertEqual(checkpoint["occurrences"], 1)
+        self.assertIn("Revisar diff", checkpoint["next_step"])
 
 
 if __name__ == "__main__":
