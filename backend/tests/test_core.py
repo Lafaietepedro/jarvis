@@ -63,6 +63,25 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["name"], "read_file")
         self.assertEqual(result["action"]["status"], "not_found")
 
+    def test_propose_file_edit_does_not_write(self):
+        result = self.core.execute("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+
+        self.assertEqual(result["action"]["skill"], "files")
+        self.assertEqual(result["action"]["name"], "propose_file_edit")
+        self.assertEqual(result["action"]["status"], "planned")
+        self.assertEqual(result["action"]["risk"], "low")
+        self.assertFalse(result["data"]["writes_file"])
+        self.assertIn("-# Test Project", result["data"]["diff"])
+        self.assertIn("+# Projeto Seguro", result["data"]["diff"])
+        self.assertIn("# Test Project", (self.project_path / "README.md").read_text(encoding="utf-8"))
+
+    def test_propose_file_edit_requires_existing_text(self):
+        result = self.core.execute("preparar edição arquivo README.md trocar Ausente por Novo")
+
+        self.assertEqual(result["action"]["name"], "propose_file_edit")
+        self.assertEqual(result["action"]["status"], "not_found")
+        self.assertEqual(result["action"]["reason"], "old_text_not_found")
+
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")
 

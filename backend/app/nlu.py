@@ -30,6 +30,16 @@ FIND_FILE_TERMS = (
     "buscar arquivo",
     "busque arquivo",
 )
+EDIT_FILE_TERMS = (
+    "editar arquivo",
+    "edite arquivo",
+    "alterar arquivo",
+    "altere arquivo",
+    "preparar edicao",
+    "preparar edição",
+    "propor edicao",
+    "propor edição",
+)
 WHERE_TERMS = ("onde estou", "onde estamos", "diretorio atual", "pasta atual", "pwd")
 CAPABILITY_TERMS = ("o que voce pode controlar", "o que voce faz", "capacidades", "comandos disponiveis")
 DIAGNOSTICS_TERMS = ("diagnostico", "diagnóstico", "saude do sistema", "saúde do sistema", "dependencias", "dependências")
@@ -223,6 +233,23 @@ def _extract_file_target(text: str) -> str | None:
     return target or None
 
 
+def _extract_file_edit(text: str) -> dict[str, str | None]:
+    match = re.search(
+        r"(?:editar|edite|alterar|altere|preparar\s+edi[cç][aã]o|propor\s+edi[cç][aã]o)"
+        r".*?(?:arquivo|documento|file)\s+(.+?)\s+"
+        r"(?:trocar|substituir|mudar)\s+(.+?)\s+(?:por|para)\s+(.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return {"target": None, "old_text": None, "new_text": None}
+    return {
+        "target": _strip_fillers(match.group(1)),
+        "old_text": match.group(2).strip(),
+        "new_text": match.group(3).strip(),
+    }
+
+
 def _extract_checkpoint_id(text: str) -> int | None:
     match = re.search(r"\b(?:checkpoint|passo)\s+(\d+)\b", text)
     if not match:
@@ -392,6 +419,10 @@ def parse_intent(text: str, allow_composite: bool = True):
 
     if _has_any(normalized, OPEN_PROJECT_TERMS):
         return {"intent": "open_project", "text": text}
+
+    if _has_any(normalized, EDIT_FILE_TERMS):
+        edit = _extract_file_edit(text)
+        return {"intent": "propose_file_edit", **edit, "text": text}
 
     if _has_any(normalized, FIND_FILE_TERMS):
         return {"intent": "find_file", "target": _extract_file_target(normalized), "text": text}

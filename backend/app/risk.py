@@ -75,6 +75,7 @@ READ_ONLY_ACTIONS = {
     ("files", "list_files"),
     ("files", "find_file"),
     ("files", "read_file"),
+    ("files", "propose_file_edit"),
     ("ide", "project_commands"),
     ("ide", "project_state"),
     ("memory", "command_history"),

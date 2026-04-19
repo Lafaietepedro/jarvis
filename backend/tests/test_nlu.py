@@ -67,6 +67,14 @@ class ParseIntentTest(unittest.TestCase):
         self.assertEqual(intent["intent"], "read_file")
         self.assertEqual(intent["target"], "readme.md")
 
+    def test_propose_file_edit(self):
+        intent = parse_intent("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+
+        self.assertEqual(intent["intent"], "propose_file_edit")
+        self.assertEqual(intent["target"], "README.md")
+        self.assertEqual(intent["old_text"], "Test Project")
+        self.assertEqual(intent["new_text"], "Projeto Seguro")
+
     def test_capabilities(self):
         intent = parse_intent("o que voce pode controlar neste computador")
 

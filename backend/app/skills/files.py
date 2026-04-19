@@ -1,3 +1,4 @@
+import difflib
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,7 @@ class FileSkill(BaseSkill):
     name = "files"
 
     def can_handle(self, intent: dict[str, Any]) -> bool:
-        return intent.get("intent") in {"list_files", "where_am_i", "find_file", "read_file"}
+        return intent.get("intent") in {"list_files", "where_am_i", "find_file", "read_file", "propose_file_edit"}
 
     def handle(self, intent: dict[str, Any], context: dict[str, Any], options: dict[str, Any]) -> SkillResult:
         project_path = Path(context["project"]["path"])
@@ -30,6 +31,14 @@ class FileSkill(BaseSkill):
 
         if intent.get("intent") == "read_file":
             return _read_file(project_path, intent.get("target") or "")
+
+        if intent.get("intent") == "propose_file_edit":
+            return _propose_file_edit(
+                project_path,
+                intent.get("target") or "",
+                intent.get("old_text") or "",
+                intent.get("new_text") or "",
+            )
 
         entries = sorted(project_path.iterdir(), key=lambda item: (not item.is_dir(), item.name.lower()))
         visible_entries = [entry.name + ("/" if entry.is_dir() else "") for entry in entries if not entry.name.startswith(".")]
@@ -127,7 +136,96 @@ def _read_file(project_path: Path, target: str) -> SkillResult:
             "truncated": len(content) > MAX_PREVIEW_CHARS,
             "summary": summary,
         },
+        )
+
+
+def _propose_file_edit(project_path: Path, target: str, old_text: str, new_text: str) -> SkillResult:
+    query = target.strip()
+    if not query or not old_text:
+        return SkillResult(
+            response="Para preparar uma edicao, diga o arquivo e o texto a substituir.",
+            action={"skill": "files", "name": "propose_file_edit", "status": "needs_details"},
+        )
+
+    path = _resolve_project_file(project_path, query)
+    if path is None or not path.exists() or not path.is_file():
+        matches = _find_matches(project_path, query)
+        return SkillResult(
+            response=f"Nao encontrei um arquivo legivel chamado `{query}` para preparar edicao.",
+            action={"skill": "files", "name": "propose_file_edit", "status": "not_found", "target": query},
+            suggestions=[f"encontrar arquivo {query}"],
+            data={"matches": matches[:10], "target": query},
+        )
+
+    blocked = _read_text_for_edit(project_path, path)
+    if isinstance(blocked, SkillResult):
+        return blocked
+    content = blocked
+    occurrences = content.count(old_text)
+    relative = _relative_path(project_path, path)
+    if occurrences == 0:
+        return SkillResult(
+            response=f"Nao encontrei o trecho solicitado em `{relative}`. Nenhuma edicao foi preparada.",
+            action={
+                "skill": "files",
+                "name": "propose_file_edit",
+                "status": "not_found",
+                "reason": "old_text_not_found",
+                "path": relative,
+            },
+            suggestions=[f"ler arquivo {relative}"],
+        )
+
+    updated = content.replace(old_text, new_text, 1)
+    diff = _unified_diff(relative, content, updated)
+    return SkillResult(
+        response=f"Preparei uma proposta de edicao para `{relative}`. Nada foi gravado.",
+        action={
+            "skill": "files",
+            "name": "propose_file_edit",
+            "status": "planned",
+            "path": relative,
+            "occurrences": occurrences,
+        },
+        suggestions=[f"ler arquivo {relative}"],
+        data={
+            "path": relative,
+            "old_text": old_text,
+            "new_text": new_text,
+            "occurrences": occurrences,
+            "diff": diff,
+            "writes_file": False,
+        },
     )
+
+
+def _read_text_for_edit(project_path: Path, path: Path) -> str | SkillResult:
+    relative = _relative_path(project_path, path)
+    if path.stat().st_size > MAX_TEXT_BYTES:
+        return SkillResult(
+            response=f"`{relative}` e grande demais para preparar edicao direta agora.",
+            action={
+                "skill": "files",
+                "name": "propose_file_edit",
+                "status": "blocked",
+                "reason": "file_too_large",
+                "path": relative,
+            },
+        )
+
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return SkillResult(
+            response=f"`{relative}` nao parece ser texto UTF-8.",
+            action={
+                "skill": "files",
+                "name": "propose_file_edit",
+                "status": "blocked",
+                "reason": "binary_or_unsupported_encoding",
+                "path": relative,
+            },
+        )
 
 
 def _resolve_project_file(project_path: Path, target: str) -> Path | None:
@@ -183,3 +281,14 @@ def _summarize_text(content: str) -> str:
     if len(first) > 160:
         first = first[:157] + "..."
     return f"Resumo: {len(lines)} linha(s). Primeiro trecho relevante: {first}"
+
+
+def _unified_diff(relative_path: str, before: str, after: str) -> str:
+    diff = difflib.unified_diff(
+        before.splitlines(),
+        after.splitlines(),
+        fromfile=f"a/{relative_path}",
+        tofile=f"b/{relative_path}",
+        lineterm="",
+    )
+    return "\n".join(diff)
