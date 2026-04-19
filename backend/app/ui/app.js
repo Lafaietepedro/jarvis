@@ -21,6 +21,7 @@ const nodes = {
   memoryAuditUntil: document.querySelector("#memory-audit-until"),
   memoryAuditLimit: document.querySelector("#memory-audit-limit"),
   memoryAuditClear: document.querySelector("#memory-audit-clear"),
+  memoryAuditDeleteFiltered: document.querySelector("#memory-audit-delete-filtered"),
   memoryAuditList: document.querySelector("#memory-audit-list"),
   memoryAuditSample: document.querySelector("#memory-audit-sample"),
   nextActions: document.querySelector("#next-actions"),
@@ -214,8 +215,19 @@ function renderMemoryAudit(audit) {
 
   for (const command of sample.slice(0, 5)) {
     const item = document.createElement("li");
+    item.className = "memory-row";
     const action = command.action || {};
-    item.textContent = `${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"} (${action.status || "unknown"})`;
+    const detail = document.createElement("span");
+    detail.textContent = `#${command.id || "?"} ${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"} (${action.status || "unknown"})`;
+    item.append(detail);
+    if (command.id) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "danger-button";
+      button.textContent = "Apagar";
+      button.addEventListener("click", () => deleteMemoryById(command.id));
+      item.append(button);
+    }
     nodes.memoryAuditSample.append(item);
   }
 }
@@ -311,6 +323,38 @@ function collectMemoryAuditFilters() {
 
 function hasActiveMemoryAuditFilter(filters) {
   return Boolean(filters.intent || filters.skill || filters.action || filters.since || filters.until);
+}
+
+async function deleteMemoryById(commandId) {
+  if (!window.confirm(`Apagar o comando ${commandId} da memoria local?`)) return;
+  await deleteMemory({command_ids: [commandId], confirm: true});
+}
+
+async function deleteFilteredMemory() {
+  const filters = collectMemoryAuditFilters();
+  if (!hasActiveMemoryAuditFilter(filters)) {
+    nodes.lastResponse.textContent = "Aplique um filtro antes de apagar memorias em lote.";
+    return;
+  }
+  if (!window.confirm("Apagar as memorias que correspondem ao filtro atual?")) return;
+  await deleteMemory({...filters, confirm: true});
+}
+
+async function deleteMemory(payload) {
+  setBusy(true);
+  try {
+    const result = await requestJson("/history/delete", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    nodes.lastResponse.textContent = `Memoria atualizada: ${result.deleted || 0} comando(s) apagado(s).`;
+    await loadState();
+  } catch (error) {
+    nodes.lastResponse.textContent = `Falha ao apagar memoria: ${error.message}`;
+    nodes.lastResponse.classList.add("error");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function sendCommand(text, confirmActions = false) {
@@ -417,6 +461,8 @@ nodes.memoryAuditClear.addEventListener("click", async () => {
   state.memoryAuditFilters = null;
   await loadState();
 });
+
+nodes.memoryAuditDeleteFiltered.addEventListener("click", deleteFilteredMemory);
 
 nodes.pauseButton.addEventListener("click", () => postSessionAction("/pause"));
 nodes.resumeButton.addEventListener("click", () => postSessionAction("/resume"));

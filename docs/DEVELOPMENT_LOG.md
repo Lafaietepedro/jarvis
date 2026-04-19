@@ -55,6 +55,7 @@ O nucleo atual ja consegue:
 - expor `POST /history/delete` para exclusao seletiva da memoria local;
 - exibir auditoria da memoria local no contrato de UI e na interface web;
 - filtrar auditoria da memoria local pela interface web;
+- apagar memorias locais pela interface web com confirmacao;
 - cobrir contratos da API para presenca, checkpoints, contexto, historico e sessao;
 - cobrir contrato agregado para futuras interfaces locais;
 - manter acoes sensiveis bloqueadas por padrao;
@@ -602,6 +603,19 @@ Entregas:
 - Exclusoes seletivas confirmadas nao sao regravadas no historico local.
 - Testes cobrindo memoria, NLU, core, API, CLI e formatadores.
 
+### Fase 3AM - Exclusao Seletiva De Memoria Na UI
+
+Status: concluida.
+
+Entregas:
+- Interface web ganhou botao para apagar uma memoria especifica exibida na amostra auditavel.
+- Interface web ganhou botao para apagar memorias que correspondem ao filtro atual.
+- Exclusao por filtro exige filtro ativo para evitar apagar memoria em lote por engano.
+- Todas as exclusoes pela UI usam `POST /history/delete` com `confirm: true` apos confirmacao do navegador.
+- A amostra da auditoria mostra o id local do comando antes da acao de apagar.
+- CSS dedicado para acoes destrutivas e layout responsivo da amostra de memoria.
+- Testes cobrindo markup, JS/CSS e smoke visual em Chromium.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -620,7 +634,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Expor exclusao seletiva de memoria na interface web com confirmacao.
+- Melhorar politica de risco por tipo de acao e alvo.
 
 ## Fases Futuras Planejadas
 

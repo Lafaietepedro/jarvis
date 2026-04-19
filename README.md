@@ -21,6 +21,7 @@ Visão rápida
 - Interface web local em `GET /ui`
 - Auditoria de memória visível na interface web local
 - Filtros de auditoria de memória na interface web local
+- Exclusão seletiva de memória na interface web local
 - Manifest local e gerador de atalho desktop
 - Skill inicial de navegador/pesquisa
 - Skill inicial de IDE/projeto

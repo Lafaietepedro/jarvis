@@ -317,6 +317,23 @@ dd {
   color: var(--muted);
 }
 
+.memory-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.danger-button {
+  border-color: var(--red);
+  background: #2d1513;
+}
+
+.danger-button:hover,
+.danger-button:focus-visible {
+  background: #4a1c18;
+}
+
 .chips button {
   border-color: var(--cyan);
   background: #0d2525;
@@ -358,6 +375,7 @@ dd {
 
   .status-band,
   .command-row,
+  .memory-row,
   .grid,
   .audit-grid,
   .action-header {

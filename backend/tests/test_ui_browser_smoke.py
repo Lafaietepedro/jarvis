@@ -62,6 +62,7 @@ class UIBrowserSmokeTest(unittest.TestCase):
         self.assertIn("Privacidade", result.stdout)
         self.assertIn("Memoria", result.stdout)
         self.assertIn("Filtrar memoria", result.stdout)
+        self.assertIn("Apagar filtro", result.stdout)
 
     def test_ui_captures_desktop_and_mobile_screenshots(self):
         self._start_server()
