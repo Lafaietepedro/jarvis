@@ -33,6 +33,7 @@ class UIFrontendTest(unittest.TestCase):
         self.assertIn("renderCheckpointEvents", script[0])
         self.assertIn("normalizeAction", script[0])
         self.assertIn("requires_confirmation", script[0])
+        self.assertIn("next_step", script[0])
         self.assertIn("jarvis.refreshInterval", script[0])
         self.assertIn('"start_url": "/ui"', manifest[0])
         self.assertIsNone(missing)

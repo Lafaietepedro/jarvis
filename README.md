@@ -27,6 +27,7 @@ Visão rápida
 - Confirmação rápida de checkpoints pelo CLI/chat
 - Histórico curto de eventos de checkpoints na sessão
 - Endpoint dedicado para checkpoints e eventos
+- Resumo de checkpoints com severidade, mensagens e próximos passos
 - Contrato agregado para UI desktop em `GET /ui/state`
 - Preview CLI do contrato de UI desktop
 - Skill inicial de mídia/volume
@@ -275,6 +276,7 @@ make confirm-checkpoint ID=1
 ```
 
 O painel de checkpoints também mostra eventos recentes da sessão, como confirmações bloqueadas por permissão ou execuções concluídas.
+Os relatórios incluem severidade, mensagem legível e próximo passo sugerido.
 
 Contrato para UI desktop:
 

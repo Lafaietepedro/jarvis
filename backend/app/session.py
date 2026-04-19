@@ -43,6 +43,10 @@ class SessionState:
                         "label": checkpoint["label"],
                         "plan": checkpoint["plan"],
                         "reason": checkpoint["reason"],
+                        "intent": checkpoint.get("step", {}).get("intent"),
+                        "command": checkpoint.get("step", {}).get("command"),
+                        "risk": checkpoint.get("step", {}).get("risk"),
+                        "permission": checkpoint.get("step", {}).get("permission"),
                     }
                     for checkpoint in self._automation_checkpoints
                 ],

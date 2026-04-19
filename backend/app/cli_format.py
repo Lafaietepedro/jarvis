@@ -25,7 +25,14 @@ def format_presence(payload: dict[str, Any]) -> str:
 def format_checkpoints(payload: dict[str, Any]) -> str:
     checkpoints = _extract_checkpoints(payload)
     checkpoint_events = _extract_checkpoint_events(payload)
+    summary = payload.get("summary", {})
     lines = ["[CHECKPOINTS]"]
+    if summary:
+        lines.append(
+            f"Summary: pending={summary.get('pending', 0)} blocked_events={summary.get('blocked_events', 0)}"
+        )
+        if summary.get("next_step"):
+            lines.append(f"Next: {summary['next_step']}")
     if checkpoints:
         for checkpoint in checkpoints:
             checkpoint_id = checkpoint.get("checkpoint_id", "?")
@@ -34,6 +41,10 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             reason = checkpoint.get("reason", "unknown")
             lines.append(f"{checkpoint_id}. {label} [{plan}]")
             lines.append(f"   Reason: {reason}")
+            if checkpoint.get("command"):
+                lines.append(f"   Command: {checkpoint['command']}")
+            if checkpoint.get("next_step"):
+                lines.append(f"   Next: {checkpoint['next_step']}")
             lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")
     else:
         lines.append("No pending checkpoints.")
@@ -48,6 +59,8 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             reason = event.get("reason")
             suffix = f" ({reason})" if reason else ""
             lines.append(f"- checkpoint {checkpoint_id}: {label} -> {status}{suffix}")
+            if event.get("message"):
+                lines.append(f"  {event['message']}")
     return "\n".join(lines)
 
 

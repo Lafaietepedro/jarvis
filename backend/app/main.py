@@ -190,6 +190,7 @@ class CheckpointsResponse(BaseModel):
     status: str
     pending_count: int
     event_count: int
+    summary: dict[str, Any]
     checkpoints: list[dict[str, Any]]
     events: list[dict[str, Any]]
 

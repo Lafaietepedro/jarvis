@@ -96,6 +96,7 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(payload["status"], "empty")
         self.assertEqual(payload["pending_count"], 0)
         self.assertEqual(payload["event_count"], 0)
+        self.assertEqual(payload["summary"]["pending"], 0)
         self.assertEqual(payload["checkpoints"], [])
         self.assertEqual(payload["events"], [])
 
@@ -118,6 +119,8 @@ class ApiContractTest(unittest.TestCase):
         checkpoints = asyncio.run(main.checkpoints())
         self.assertEqual(checkpoints["event_count"], 1)
         self.assertEqual(checkpoints["events"][0]["reason"], "shell_disabled")
+        self.assertEqual(checkpoints["summary"]["blocked_events"], 1)
+        self.assertIn("JARVIS_ENABLE_SHELL", checkpoints["events"][0]["next_step"])
 
     def test_ui_state_contract(self):
         command = main.CommandRequest(text="qual o status")

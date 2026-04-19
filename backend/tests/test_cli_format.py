@@ -82,12 +82,19 @@ class CliFormatTest(unittest.TestCase):
             "status": "pending",
             "pending_count": 1,
             "event_count": 1,
+            "summary": {
+                "pending": 1,
+                "blocked_events": 1,
+                "next_step": "Revisar e confirmar checkpoint 1.",
+            },
             "checkpoints": [
                 {
                     "checkpoint_id": 1,
                     "label": "Rodar testes do projeto",
                     "plan": "project_checkup",
                     "reason": "confirmation_required",
+                    "command": "make test",
+                    "next_step": "Revisar comando `make test` antes de confirmar.",
                 }
             ],
             "events": [
@@ -97,6 +104,7 @@ class CliFormatTest(unittest.TestCase):
                     "plan": "project_checkup",
                     "status": "blocked",
                     "reason": "shell_disabled",
+                    "message": "Rodar testes do projeto foi bloqueado: shell_disabled.",
                 }
             ],
         }
@@ -144,6 +152,8 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("Rodar testes do projeto", output)
         self.assertIn("shell_disabled", output)
+        self.assertIn("Summary: pending=1", output)
+        self.assertIn("Command: make test", output)
 
     def test_format_privacy(self):
         output = format_privacy(self.privacy)

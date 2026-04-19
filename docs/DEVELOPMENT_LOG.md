@@ -28,6 +28,7 @@ O nucleo atual ja consegue:
 - confirmar checkpoints por id no CLI e no chat;
 - registrar eventos recentes de checkpoints confirmados na sessao;
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
+- resumir checkpoints com severidade, mensagens e proximos passos;
 - expor estado agregado para UI desktop por `GET /ui/state`;
 - visualizar o contrato de UI desktop por CLI e chat;
 - servir uma interface web local por `GET /ui`;
@@ -490,6 +491,18 @@ Entregas:
 - Preview CLI de UI state exibe risco e necessidade de confirmacao.
 - Testes cobrindo contrato agregado, API, frontend e formatador CLI.
 
+### Fase 3AE - Relatorios De Checkpoints Com Proximo Passo
+
+Status: concluida.
+
+Entregas:
+- `GET /checkpoints` agora inclui `summary` com pendencias, eventos bloqueados/concluidos, ultimo status e proximo passo.
+- Checkpoints passam a expor `intent`, `command`, `risk`, `permission`, `severity` e `next_step`.
+- Eventos recentes recebem `severity`, `message` e `next_step` legiveis.
+- Interface web mostra o proximo passo no painel de presenca, checkpoints e eventos recentes.
+- CLI de checkpoints exibe resumo, comando relacionado e mensagens dos eventos.
+- Testes cobrindo sessao, endpoint dedicado, formatador CLI e frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -509,7 +522,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar relatorios de resultado dos checkpoints e exibir detalhes de execucao/bloqueio na interface.
+- Evoluir integracoes de IDE mais profundas e expor capacidades permitidas/bloqueadas no contrato de UI.
 
 ## Fases Futuras Planejadas
 

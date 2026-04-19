@@ -38,6 +38,8 @@ class SessionStateTest(unittest.TestCase):
         snapshot = session.snapshot()
         self.assertEqual(snapshot["automation_checkpoints"][0]["checkpoint_id"], 1)
         self.assertEqual(snapshot["automation_checkpoints"][0]["plan"], "project_checkup")
+        self.assertEqual(snapshot["automation_checkpoints"][0]["command"], "make test")
+        self.assertEqual(snapshot["automation_checkpoints"][0]["intent"], "run_command")
 
         checkpoint = session.get_automation_checkpoint(1)
         self.assertEqual(checkpoint["step"]["command"], "make test")

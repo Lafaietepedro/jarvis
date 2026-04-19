@@ -58,6 +58,7 @@ function renderState(payload) {
   const privacy = payload.privacy || {};
   const permissions = privacy.permissions || {};
   const memory = privacy.memory || {};
+  const summary = checkpoints.summary || {};
 
   nodes.title.textContent = `${presence.name || "JARVIS"} - ${presence.status || "unknown"}`;
   nodes.greeting.textContent = presence.greeting || "Estado local indisponivel.";
@@ -71,6 +72,7 @@ function renderState(payload) {
     ["Tarefa", presence.current_task || "nenhuma"],
     ["Uptime", `${presence.uptime_seconds || 0}s`],
     ["Checkpoints", String(checkpoints.pending_count || 0)],
+    ["Proximo passo", summary.next_step || "nenhum"],
   ]);
 
   renderDefinitionList(nodes.privacyList, [
@@ -116,11 +118,14 @@ function renderCheckpoints(checkpoints) {
     risk.textContent = riskLabel(checkpoint.reason);
     const detail = document.createElement("p");
     detail.textContent = `${checkpoint.plan || "plano"} - ${checkpoint.reason || "revisao"}`;
+    const next = document.createElement("p");
+    next.textContent = checkpoint.next_step || "Revise antes de confirmar.";
+    next.className = "next-step";
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
     button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
-    item.append(title, risk, detail, button);
+    item.append(title, risk, detail, next, button);
     nodes.checkpointList.append(item);
   }
 }
@@ -138,8 +143,11 @@ function renderCheckpointEvents(events) {
     const title = document.createElement("strong");
     title.textContent = `${event.label || "Checkpoint"} -> ${event.status || "unknown"}`;
     const detail = document.createElement("p");
-    detail.textContent = `${event.reason || "sem motivo"} - ${event.created_at || "agora"}`;
-    item.append(title, detail);
+    detail.textContent = event.message || `${event.reason || "sem motivo"} - ${event.created_at || "agora"}`;
+    const next = document.createElement("p");
+    next.className = "next-step";
+    next.textContent = event.next_step || "Nenhuma acao pendente.";
+    item.append(title, detail, next);
     nodes.checkpointEvents.append(item);
   }
 }

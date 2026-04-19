@@ -262,6 +262,11 @@ dd {
   padding-left: 12px;
 }
 
+.next-step {
+  margin-top: 6px;
+  color: var(--cyan);
+}
+
 .risk {
   display: inline-block;
   min-height: 24px;
