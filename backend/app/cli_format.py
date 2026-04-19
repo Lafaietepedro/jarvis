@@ -40,7 +40,17 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             label = checkpoint.get("label", "unknown")
             reason = checkpoint.get("reason", "unknown")
             lines.append(f"{checkpoint_id}. {label} [{plan}]")
+            if checkpoint.get("checkpoint_detail"):
+                lines.append(f"   Detail: {checkpoint['checkpoint_detail']}")
+            context = _format_checkpoint_context(checkpoint)
+            if context:
+                lines.append(f"   Context: {context}")
             lines.append(f"   Reason: {reason}")
+            if checkpoint.get("risk"):
+                risk_line = f"   Risk: {checkpoint['risk']}"
+                if checkpoint.get("permission"):
+                    risk_line += f" ({checkpoint['permission']})"
+                lines.append(risk_line)
             if checkpoint.get("command"):
                 lines.append(f"   Command: {checkpoint['command']}")
             if checkpoint.get("next_step"):
@@ -59,8 +69,17 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             reason = event.get("reason")
             suffix = f" ({reason})" if reason else ""
             lines.append(f"- checkpoint {checkpoint_id}: {label} -> {status}{suffix}")
+            if event.get("event_detail"):
+                lines.append(f"  Detail: {event['event_detail']}")
+            context = _format_checkpoint_context(event)
+            if context:
+                lines.append(f"  Context: {context}")
+            if event.get("command"):
+                lines.append(f"  Command: {event['command']}")
             if event.get("message"):
                 lines.append(f"  {event['message']}")
+            if event.get("next_step"):
+                lines.append(f"  Next: {event['next_step']}")
     return "\n".join(lines)
 
 
@@ -187,6 +206,16 @@ def format_command_result(payload: dict[str, Any]) -> str:
     ]
     if action.get("reason"):
         lines.append(f"Reason: {action['reason']}")
+    if action.get("name") == "multi_action":
+        lines.append(
+            "Steps: "
+            f"done={action.get('done', 0)} "
+            f"needs_confirmation={action.get('needs_confirmation', 0)} "
+            f"blocked={action.get('blocked', 0)}"
+        )
+        checkpoint_ids = action.get("checkpoint_ids") or []
+        if checkpoint_ids:
+            lines.append(f"Checkpoints: {', '.join(str(checkpoint_id) for checkpoint_id in checkpoint_ids)}")
     if suggestions:
         lines.append("")
         lines.append("Suggestions:")
@@ -290,6 +319,18 @@ def _format_proactive(payload: dict[str, Any]) -> str:
 
 def _format_counts(items: list[dict[str, Any]]) -> str:
     return ", ".join(f"{item.get('name', 'unknown')}={item.get('count', 0)}" for item in items[:5])
+
+
+def _format_checkpoint_context(item: dict[str, Any]) -> str:
+    parts = []
+    source = item.get("source_label") or item.get("source")
+    if source:
+        parts.append(source)
+    if item.get("step_index"):
+        parts.append(f"step {item['step_index']}")
+    if item.get("step_label"):
+        parts.append(str(item["step_label"]))
+    return " | ".join(parts)
 
 
 def _format_next_actions(actions: list[Any]) -> str:

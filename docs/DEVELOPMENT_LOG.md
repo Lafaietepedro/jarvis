@@ -33,6 +33,7 @@ O nucleo atual ja consegue:
 - lembrar checkpoints pendentes na sessao e aceitar confirmacao por comando natural;
 - listar checkpoints pendentes por comando natural, CLI, chat e painel local;
 - confirmar checkpoints por id no CLI e no chat;
+- revisar checkpoints no CLI com origem, etapa, risco, comando e proximos passos;
 - registrar eventos recentes de checkpoints confirmados na sessao;
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - resumir checkpoints com severidade, mensagens e proximos passos;
@@ -683,6 +684,17 @@ Entregas:
 - Eventos bloqueados continuam sugerindo a permissao correta sem perder o contexto do pedido original.
 - Testes cobrem eventos de automacao, eventos de comandos compostos, contratos de checkpoints e assets frontend.
 
+### Fase 3AS - Revisao De Checkpoints No CLI
+
+Status: concluida.
+
+Entregas:
+- `format_checkpoints` agora mostra detalhe, contexto, risco, permissao, comando e proximo passo dos checkpoints.
+- Eventos recentes no CLI agora exibem `event_detail`, contexto, comando e proximo passo quando disponiveis.
+- Resultado de comando composto no CLI mostra resumo de etapas concluidas, etapas aguardando confirmacao e checkpoints criados.
+- `panel`, `checkpoints`, `ui-state` e `chat` passam a se beneficiar do mesmo formatador.
+- Testes cobrem detalhes de checkpoints/eventos e resposta formatada de `multi_action`.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -700,7 +712,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Revisar a experiencia completa de checkpoints na UI e no CLI antes de avançar para novas capacidades.
+- Iniciar a proxima capacidade local com base no fluxo seguro de checkpoints.
 
 ## Fases Futuras Planejadas
 
@@ -811,13 +823,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-202 tests OK
+203 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 202 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 203 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

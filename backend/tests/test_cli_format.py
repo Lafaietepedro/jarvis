@@ -97,6 +97,10 @@ class CliFormatTest(unittest.TestCase):
                     "plan": "project_checkup",
                     "reason": "confirmation_required",
                     "command": "make test",
+                    "risk": "medium",
+                    "permission": "JARVIS_ENABLE_SHELL",
+                    "source_label": "plano de automacao",
+                    "checkpoint_detail": "plano de automacao - Rodar testes do projeto - confirmation_required",
                     "next_step": "Revisar comando `make test` antes de confirmar.",
                 }
             ],
@@ -107,7 +111,11 @@ class CliFormatTest(unittest.TestCase):
                     "plan": "project_checkup",
                     "status": "blocked",
                     "reason": "shell_disabled",
+                    "command": "make test",
+                    "source_label": "plano de automacao",
+                    "event_detail": "plano de automacao - Rodar testes do projeto - shell_disabled",
                     "message": "Rodar testes do projeto foi bloqueado: shell_disabled.",
+                    "next_step": "Ative JARVIS_ENABLE_SHELL=1 apenas se quiser permitir esse tipo de acao.",
                 }
             ],
         }
@@ -198,6 +206,10 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("shell_disabled", output)
         self.assertIn("Summary: pending=1", output)
         self.assertIn("Command: make test", output)
+        self.assertIn("Detail: plano de automacao", output)
+        self.assertIn("Risk: medium (JARVIS_ENABLE_SHELL)", output)
+        self.assertIn("Context: plano de automacao", output)
+        self.assertIn("Next: Ative JARVIS_ENABLE_SHELL", output)
 
     def test_format_privacy(self):
         output = format_privacy(self.privacy)
@@ -284,6 +296,28 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[COMMAND]", output)
         self.assertIn("listar arquivos", output)
+
+    def test_format_multi_action_command_result(self):
+        output = format_command_result(
+            {
+                "response": "Preparei o pedido composto.",
+                "intent": {"intent": "multi_action"},
+                "action": {
+                    "skill": "core",
+                    "name": "multi_action",
+                    "status": "needs_review",
+                    "done": 1,
+                    "needs_confirmation": 1,
+                    "blocked": 0,
+                    "checkpoint_ids": [2],
+                },
+                "suggestions": ["confirmar checkpoint 2"],
+            }
+        )
+
+        self.assertIn("Steps: done=1 needs_confirmation=1 blocked=0", output)
+        self.assertIn("Checkpoints: 2", output)
+        self.assertIn("confirmar checkpoint 2", output)
 
     def test_format_diagnostics(self):
         output = format_diagnostics(self.diagnostics)
