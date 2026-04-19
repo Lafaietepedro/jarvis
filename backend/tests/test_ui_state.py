@@ -88,6 +88,36 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["proactive"]["suggestions"][0]["command"], "estado do projeto")
         self.assertIn("capabilities", state)
 
+    def test_build_ui_state_exposes_composite_checkpoint_detail(self):
+        session = SessionState()
+        session.add_automation_checkpoints(
+            "multi_action",
+            [
+                {
+                    "index": 2,
+                    "label": "Etapa 2: rodar testes",
+                    "reason": "confirmation_required",
+                    "source": "multi_action",
+                    "step": {
+                        "label": "rodar testes",
+                        "intent": "run_command",
+                        "command": "make test",
+                        "risk": "medium",
+                        "requires_confirmation": True,
+                        "permission": "JARVIS_ENABLE_SHELL",
+                    },
+                }
+            ],
+        )
+
+        state = build_ui_state(self.context, session=session.snapshot(), memory_store=self.memory)
+
+        checkpoint = state["checkpoints"]["checkpoints"][0]
+        self.assertEqual(checkpoint["source_label"], "pedido composto")
+        self.assertEqual(checkpoint["step_index"], 2)
+        self.assertEqual(checkpoint["step_label"], "rodar testes")
+        self.assertIn("make test", checkpoint["next_step"])
+
 
 if __name__ == "__main__":
     unittest.main()

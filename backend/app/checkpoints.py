@@ -37,8 +37,16 @@ def _build_summary(checkpoints: list[dict[str, Any]], events: list[dict[str, Any
 
 def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
     profile = classify_checkpoint(checkpoint)
+    source = checkpoint.get("source") or ("multi_action" if checkpoint.get("plan") == "multi_action" else "automation")
+    step_label = checkpoint.get("step_label") or checkpoint.get("step", {}).get("label") or checkpoint.get("label")
+    step_index = checkpoint.get("index")
     return {
         **checkpoint,
+        "source": source,
+        "source_label": _source_label(source),
+        "step_index": step_index,
+        "step_label": step_label,
+        "checkpoint_detail": _checkpoint_detail(source, step_index, step_label, checkpoint),
         "risk": profile.risk,
         "requires_confirmation": profile.requires_confirmation,
         "permission": profile.permission,
@@ -75,6 +83,30 @@ def _checkpoint_next_step(checkpoint: dict[str, Any]) -> str:
     if command:
         return f"Revisar comando `{command}` antes de confirmar."
     return f"Revisar {checkpoint.get('label', 'checkpoint')} antes de confirmar."
+
+
+def _source_label(source: str) -> str:
+    if source == "multi_action":
+        return "pedido composto"
+    return "plano de automacao"
+
+
+def _checkpoint_detail(
+    source: str,
+    step_index: int | None,
+    step_label: str | None,
+    checkpoint: dict[str, Any],
+) -> str:
+    label = _source_label(source)
+    parts = [label]
+    if step_index:
+        parts.append(f"etapa {step_index}")
+    if step_label:
+        parts.append(step_label)
+    reason = checkpoint.get("reason")
+    if reason:
+        parts.append(reason)
+    return " - ".join(parts)
 
 
 def _event_message(event: dict[str, Any]) -> str:

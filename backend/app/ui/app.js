@@ -141,7 +141,10 @@ function renderCheckpoints(checkpoints) {
     risk.className = `risk ${riskClass(checkpoint.reason)}`;
     risk.textContent = riskLabel(checkpoint.reason);
     const detail = document.createElement("p");
-    detail.textContent = `${checkpoint.plan || "plano"} - ${checkpoint.reason || "revisao"}`;
+    detail.textContent = checkpoint.checkpoint_detail || `${checkpoint.plan || "plano"} - ${checkpoint.reason || "revisao"}`;
+    const meta = document.createElement("p");
+    meta.className = "checkpoint-meta";
+    meta.textContent = checkpointMeta(checkpoint);
     const next = document.createElement("p");
     next.textContent = checkpoint.next_step || "Revise antes de confirmar.";
     next.className = "next-step";
@@ -149,9 +152,22 @@ function renderCheckpoints(checkpoints) {
     button.type = "button";
     button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
     button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
-    item.append(title, risk, detail, next, button);
+    item.append(title, risk, detail, meta, next, button);
     nodes.checkpointList.append(item);
   }
+}
+
+function checkpointMeta(checkpoint) {
+  const parts = [checkpoint.source_label || checkpoint.plan || "plano"];
+  if (checkpoint.step_index) {
+    parts.push(`etapa ${checkpoint.step_index}`);
+  }
+  if (checkpoint.command) {
+    parts.push(`comando: ${checkpoint.command}`);
+  } else if (checkpoint.step_label) {
+    parts.push(checkpoint.step_label);
+  }
+  return parts.join(" | ");
 }
 
 function renderCheckpointEvents(events) {

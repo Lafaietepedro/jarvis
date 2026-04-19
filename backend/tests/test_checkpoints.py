@@ -46,6 +46,35 @@ class CheckpointsTest(unittest.TestCase):
         self.assertEqual(state["events"], [])
         self.assertEqual(state["summary"]["next_step"], "Nenhuma acao pendente.")
 
+    def test_multi_action_checkpoint_exposes_step_detail(self):
+        state = build_checkpoint_state(
+            {
+                "automation_checkpoints": [
+                    {
+                        "checkpoint_id": 1,
+                        "index": 2,
+                        "label": "Etapa 2: rodar testes",
+                        "plan": "multi_action",
+                        "source": "multi_action",
+                        "reason": "confirmation_required",
+                        "intent": "run_command",
+                        "command": "make test",
+                        "step_label": "rodar testes",
+                        "risk": "medium",
+                        "permission": "JARVIS_ENABLE_SHELL",
+                    }
+                ],
+                "automation_checkpoint_events": [],
+            }
+        )
+
+        checkpoint = state["checkpoints"][0]
+        self.assertEqual(checkpoint["source_label"], "pedido composto")
+        self.assertEqual(checkpoint["step_index"], 2)
+        self.assertEqual(checkpoint["step_label"], "rodar testes")
+        self.assertIn("pedido composto", checkpoint["checkpoint_detail"])
+        self.assertIn("etapa 2", checkpoint["checkpoint_detail"])
+
 
 if __name__ == "__main__":
     unittest.main()

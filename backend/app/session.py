@@ -40,11 +40,14 @@ class SessionState:
                 "automation_checkpoints": [
                     {
                         "checkpoint_id": checkpoint["checkpoint_id"],
+                        "index": checkpoint.get("index"),
                         "label": checkpoint["label"],
                         "plan": checkpoint["plan"],
+                        "source": checkpoint.get("source"),
                         "reason": checkpoint["reason"],
                         "intent": checkpoint.get("step", {}).get("intent"),
                         "command": checkpoint.get("step", {}).get("command"),
+                        "step_label": checkpoint.get("step", {}).get("label"),
                         "risk": checkpoint.get("step", {}).get("risk"),
                         "permission": checkpoint.get("step", {}).get("permission"),
                     }

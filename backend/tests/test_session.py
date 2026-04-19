@@ -40,6 +40,7 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(snapshot["automation_checkpoints"][0]["plan"], "project_checkup")
         self.assertEqual(snapshot["automation_checkpoints"][0]["command"], "make test")
         self.assertEqual(snapshot["automation_checkpoints"][0]["intent"], "run_command")
+        self.assertEqual(snapshot["automation_checkpoints"][0]["index"], 3)
 
         checkpoint = session.get_automation_checkpoint(1)
         self.assertEqual(checkpoint["step"]["command"], "make test")
@@ -68,6 +69,7 @@ class SessionStateTest(unittest.TestCase):
                     "index": 2,
                     "label": "Etapa 2: abrir projeto",
                     "reason": "permission_required",
+                    "source": "multi_action",
                     "step": {"intent": "open_project"},
                 }
             ],
@@ -77,6 +79,7 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(stored[0]["checkpoint_id"], 2)
         self.assertEqual(len(snapshot["automation_checkpoints"]), 2)
         self.assertEqual(snapshot["automation_checkpoints"][1]["plan"], "multi_action")
+        self.assertEqual(snapshot["automation_checkpoints"][1]["source"], "multi_action")
 
     def test_automation_checkpoint_events_are_recorded_newest_first(self):
         session = SessionState()
