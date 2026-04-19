@@ -184,10 +184,26 @@ def format_ui_state(payload: dict[str, Any]) -> str:
         format_presence(payload.get("presence", {})),
         format_checkpoints(payload.get("checkpoints", {})),
         format_privacy({"data": payload.get("privacy", {})}),
+        _format_capabilities(payload.get("capabilities", {})),
         format_history(payload.get("history", {})),
         _format_next_actions(payload.get("actions") or payload.get("next_actions", [])),
     ]
     return "\n\n".join(sections)
+
+
+def _format_capabilities(payload: dict[str, Any]) -> str:
+    actions = payload.get("actions", [])
+    commands = payload.get("commands", {})
+    lines = [
+        "[CAPABILITIES]",
+        f"Project commands: {commands.get('count', 0)}",
+        f"Enabled actions: {payload.get('enabled_count', 0)}",
+        f"Blocked actions: {payload.get('blocked_count', 0)}",
+    ]
+    for action in actions[:5]:
+        status = "enabled" if action.get("enabled") else f"blocked ({action.get('env_var')})"
+        lines.append(f"- {action.get('label', action.get('id', 'unknown'))}: {status}")
+    return "\n".join(lines)
 
 
 def _format_next_actions(actions: list[Any]) -> str:

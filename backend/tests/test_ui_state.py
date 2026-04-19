@@ -13,6 +13,7 @@ class UIStateTest(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.project_path = Path(self.tempdir.name)
         (self.project_path / "README.md").write_text("# UI State Test\n", encoding="utf-8")
+        (self.project_path / "Makefile").write_text("test:\n\tpython -m unittest\n", encoding="utf-8")
         self.context = LocalContextProvider(workspace=str(self.project_path)).get_context()
         self.memory = MemoryStore(db_path=str(self.project_path / "memory.sqlite"))
 
@@ -58,6 +59,9 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["actions"][0]["risk"], "medium")
         self.assertTrue(state["actions"][0]["requires_confirmation"])
         self.assertEqual(state["actions"][1]["kind"], "suggestion")
+        self.assertEqual(state["capabilities"]["commands"]["count"], 1)
+        self.assertEqual(state["capabilities"]["blocked_count"], 5)
+        self.assertEqual(state["capabilities"]["actions"][0]["env_var"], "JARVIS_ENABLE_SHELL")
 
     def test_build_ui_state_without_memory_store(self):
         session = SessionState().snapshot()
@@ -67,6 +71,7 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(state["history"]["commands"], [])
         self.assertFalse(state["privacy"]["memory"]["enabled"])
         self.assertEqual(state["actions"][0]["risk"], "low")
+        self.assertIn("capabilities", state)
 
 
 if __name__ == "__main__":

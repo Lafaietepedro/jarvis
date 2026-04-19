@@ -59,6 +59,7 @@ function renderState(payload) {
   const permissions = privacy.permissions || {};
   const memory = privacy.memory || {};
   const summary = checkpoints.summary || {};
+  const capabilities = payload.capabilities || {};
 
   nodes.title.textContent = `${presence.name || "JARVIS"} - ${presence.status || "unknown"}`;
   nodes.greeting.textContent = presence.greeting || "Estado local indisponivel.";
@@ -82,6 +83,8 @@ function renderState(payload) {
     ["Shell", permissions.shell_enabled ? "permitido" : "bloqueado"],
     ["IDE", permissions.ide_actions_enabled ? "permitida" : "bloqueada"],
     ["Midia", permissions.media_actions_enabled ? "permitida" : "bloqueada"],
+    ["Comandos", String((capabilities.commands || {}).count || 0)],
+    ["Ações bloqueadas", String(capabilities.blocked_count || 0)],
   ]);
 
   renderCheckpoints(checkpoints.checkpoints || []);

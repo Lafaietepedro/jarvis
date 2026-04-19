@@ -30,6 +30,7 @@ O nucleo atual ja consegue:
 - expor checkpoints e eventos por endpoint dedicado `GET /checkpoints`;
 - resumir checkpoints com severidade, mensagens e proximos passos;
 - expor estado agregado para UI desktop por `GET /ui/state`;
+- expor capacidades do projeto e permissoes operacionais no contrato de UI;
 - visualizar o contrato de UI desktop por CLI e chat;
 - servir uma interface web local por `GET /ui`;
 - controlar comandos, pausa/retomada e checkpoints pela interface web local;
@@ -503,6 +504,18 @@ Entregas:
 - CLI de checkpoints exibe resumo, comando relacionado e mensagens dos eventos.
 - Testes cobrindo sessao, endpoint dedicado, formatador CLI e frontend.
 
+### Fase 3AF - Capacidades Do Projeto No Contrato De UI
+
+Status: concluida.
+
+Entregas:
+- `GET /ui/state` agora inclui `capabilities` com comandos detectados do projeto e acoes operacionais.
+- Capacidades operacionais indicam status habilitado/bloqueado e variavel de ambiente necessaria.
+- O contrato informa contagem de acoes habilitadas e bloqueadas.
+- Preview CLI de UI state ganhou secao `[CAPABILITIES]`.
+- Interface web mostra quantidade de comandos detectados e acoes bloqueadas no painel de privacidade.
+- Testes cobrindo contrato agregado, API, frontend e formatador CLI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -522,7 +535,7 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Evoluir integracoes de IDE mais profundas e expor capacidades permitidas/bloqueadas no contrato de UI.
+- Evoluir integracoes de IDE com leitura mais detalhada de comandos, arquivos e estado do projeto.
 
 ## Fases Futuras Planejadas
 

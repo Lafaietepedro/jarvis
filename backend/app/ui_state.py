@@ -1,7 +1,9 @@
+from pathlib import Path
 from typing import Any
 
 from .checkpoints import build_checkpoint_state
 from .presence import build_presence
+from .skills.ide import detect_project_commands
 
 
 def build_ui_state(
@@ -24,6 +26,7 @@ def build_ui_state(
         "checkpoints": checkpoints,
         "history": history,
         "privacy": privacy,
+        "capabilities": _build_capabilities(context),
         "actions": _build_actions(presence, checkpoints),
         "next_actions": _build_next_actions(presence, checkpoints),
     }
@@ -123,3 +126,35 @@ def _dedupe_actions(actions: list[dict[str, Any]]) -> list[dict[str, Any]]:
         seen.add(command)
         unique.append(action)
     return unique
+
+
+def _build_capabilities(context: dict[str, Any]) -> dict[str, Any]:
+    privacy = context["privacy"]
+    commands = detect_project_commands(Path(context["project"]["path"]))
+    actions = [
+        _capability("shell.run_command", "Executar comandos de shell", privacy["shell_enabled"], "JARVIS_ENABLE_SHELL"),
+        _capability("ide.open_project", "Abrir projeto na IDE", privacy.get("ide_actions_enabled", False), "JARVIS_ENABLE_IDE_ACTIONS"),
+        _capability("browser.open_url", "Abrir navegador", privacy.get("browser_actions_enabled", False), "JARVIS_ENABLE_BROWSER_ACTIONS"),
+        _capability("media.control", "Controlar midia e volume", privacy.get("media_actions_enabled", False), "JARVIS_ENABLE_MEDIA_ACTIONS"),
+        _capability("desktop.open_app", "Abrir aplicativos", privacy["desktop_actions_enabled"], "JARVIS_ENABLE_DESKTOP_ACTIONS"),
+    ]
+    return {
+        "project": context["project"]["capabilities"],
+        "commands": {
+            "count": len(commands),
+            "items": commands[:10],
+        },
+        "actions": actions,
+        "enabled_count": len([action for action in actions if action["enabled"]]),
+        "blocked_count": len([action for action in actions if not action["enabled"]]),
+    }
+
+
+def _capability(capability_id: str, label: str, enabled: bool, env_var: str) -> dict[str, Any]:
+    return {
+        "id": capability_id,
+        "label": label,
+        "enabled": enabled,
+        "status": "enabled" if enabled else "blocked",
+        "env_var": env_var,
+    }

@@ -114,6 +114,19 @@ class CliFormatTest(unittest.TestCase):
             "checkpoints": self.checkpoints,
             "history": self.history,
             "privacy": self.privacy["data"],
+            "capabilities": {
+                "commands": {"count": 2, "items": []},
+                "enabled_count": 0,
+                "blocked_count": 5,
+                "actions": [
+                    {
+                        "id": "shell.run_command",
+                        "label": "Executar comandos de shell",
+                        "enabled": False,
+                        "env_var": "JARVIS_ENABLE_SHELL",
+                    }
+                ],
+            },
             "actions": [
                 {
                     "label": "Confirmar checkpoint 1",
@@ -221,6 +234,8 @@ class CliFormatTest(unittest.TestCase):
 
         self.assertIn("[UI STATE]", output)
         self.assertIn("Schema: 1", output)
+        self.assertIn("[CAPABILITIES]", output)
+        self.assertIn("JARVIS_ENABLE_SHELL", output)
         self.assertIn("[NEXT ACTIONS]", output)
         self.assertIn("Confirmar checkpoint 1 [medium confirm]", output)
 
