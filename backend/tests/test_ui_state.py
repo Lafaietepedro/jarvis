@@ -190,6 +190,7 @@ class UIStateTest(unittest.TestCase):
         command = state["history"]["commands"][0]
         self.assertEqual(command["action"]["edit_audit"]["path"], "README.md")
         self.assertIn("trocar Projeto Seguro por Test Project", command["action"]["edit_audit"]["revert_command"])
+        self.assertIn("desfazer ultima edicao", state["next_actions"])
 
 
 if __name__ == "__main__":

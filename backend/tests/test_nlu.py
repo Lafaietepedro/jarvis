@@ -156,6 +156,19 @@ class ParseIntentTest(unittest.TestCase):
         self.assertEqual(intent["intent"], "delete_memory")
         self.assertEqual(intent["command_id"], 3)
 
+    def test_revert_latest_file_edit(self):
+        intent = parse_intent("desfazer ultima edição")
+
+        self.assertEqual(intent["intent"], "revert_file_edit")
+        self.assertEqual(intent["selector"], "latest")
+        self.assertIsNone(intent["command_id"])
+
+    def test_revert_file_edit_by_command_id(self):
+        intent = parse_intent("reverter comando 3")
+
+        self.assertEqual(intent["intent"], "revert_file_edit")
+        self.assertEqual(intent["command_id"], 3)
+
     def test_export_history(self):
         intent = parse_intent("exportar historico")
 

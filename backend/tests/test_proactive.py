@@ -48,6 +48,25 @@ class ProactiveSuggestionsTest(unittest.TestCase):
         self.assertIn("estado do projeto", commands)
         self.assertIn("checkup do projeto", commands)
 
+    def test_suggests_revert_after_audited_file_edit(self):
+        history = [
+            {
+                "intent": {"intent": "confirm_checkpoint"},
+                "text": "confirmar checkpoint 1",
+                "action": {
+                    "skill": "automation",
+                    "name": "confirm_checkpoint",
+                    "status": "done",
+                    "edit_audit": {"path": "README.md", "summary": "README.md | linha 1"},
+                },
+            }
+        ]
+
+        suggestions = build_proactive_suggestions(self.context, history=history, project_state=self.project_state)
+
+        commands = [suggestion["command"] for suggestion in suggestions]
+        self.assertIn("desfazer ultima edicao", commands)
+
 
 if __name__ == "__main__":
     unittest.main()

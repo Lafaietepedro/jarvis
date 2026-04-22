@@ -126,10 +126,44 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(result["action"]["edit_audit"]["path"], "README.md")
         self.assertIn("README.md", result["action"]["edit_audit"]["summary"])
         self.assertIn("trocar Projeto Seguro por Test Project", result["action"]["edit_audit"]["revert_command"])
+        self.assertIn("preparar edicao arquivo README.md trocar Projeto Seguro por Test Project", result["suggestions"])
 
         history_entry = self.memory.recent_commands()[0]
         self.assertEqual(history_entry["text"], "confirmar checkpoint 1")
         self.assertEqual(history_entry["action"]["edit_audit"]["path"], "README.md")
+
+    def test_revert_latest_edit_prepares_reverse_checkpoint(self):
+        self.core.execute("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+        self.core.execute("confirmar checkpoint 1")
+
+        result = self.core.execute("desfazer ultima edição")
+
+        self.assertEqual(result["action"]["skill"], "files")
+        self.assertEqual(result["action"]["name"], "propose_file_edit")
+        self.assertEqual(result["action"]["status"], "planned")
+        self.assertEqual(result["action"]["revert_source_command_id"], 2)
+        self.assertIn("reversao da edicao registrada no comando 2", result["response"])
+        self.assertIn("+# Test Project", result["data"]["diff"])
+        self.assertEqual(result["data"]["revert_source_command_id"], 2)
+        self.assertEqual(result["data"]["source_command"]["action"]["edit_audit"]["path"], "README.md")
+        self.assertIn("# Projeto Seguro", (self.project_path / "README.md").read_text(encoding="utf-8"))
+        self.assertEqual(result["session"]["automation_checkpoints"][0]["path"], "README.md")
+
+    def test_revert_edit_by_command_id_prepares_reverse_checkpoint(self):
+        self.core.execute("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+        self.core.execute("confirmar checkpoint 1")
+
+        result = self.core.execute("reverter comando 2")
+
+        self.assertEqual(result["action"]["name"], "propose_file_edit")
+        self.assertEqual(result["action"]["revert_source_command_id"], 2)
+
+    def test_revert_latest_edit_handles_missing_history(self):
+        result = self.core.execute("desfazer ultima edição")
+
+        self.assertEqual(result["action"]["skill"], "memory")
+        self.assertEqual(result["action"]["name"], "revert_file_edit")
+        self.assertEqual(result["action"]["status"], "not_found")
 
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")

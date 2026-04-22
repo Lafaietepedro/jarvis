@@ -54,17 +54,7 @@ class MemoryStore:
                 (limit,),
             ).fetchall()
 
-        return [
-            {
-                "id": row["id"],
-                "created_at": row["created_at"],
-                "text": row["text"],
-                "intent": json.loads(row["intent"]),
-                "action": json.loads(row["action"]),
-                "response": row["response"],
-            }
-            for row in rows
-        ]
+        return self._rows_to_commands(rows)
 
     def export_history(self, limit: int | None = None) -> dict[str, Any]:
         query = """
@@ -81,17 +71,7 @@ class MemoryStore:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(query, params).fetchall()
 
-        commands = [
-            {
-                "id": row["id"],
-                "created_at": row["created_at"],
-                "text": row["text"],
-                "intent": json.loads(row["intent"]),
-                "action": json.loads(row["action"]),
-                "response": row["response"],
-            }
-            for row in rows
-        ]
+        commands = self._rows_to_commands(rows)
 
         return {
             "exported_at": datetime.now(timezone.utc).isoformat(),
@@ -224,17 +204,26 @@ class MemoryStore:
                 tuple(ids),
             ).fetchall()
 
-        return [
-            {
-                "id": row["id"],
-                "created_at": row["created_at"],
-                "text": row["text"],
-                "intent": json.loads(row["intent"]),
-                "action": json.loads(row["action"]),
-                "response": row["response"],
-            }
-            for row in rows
-        ]
+        return self._rows_to_commands(rows)
+
+    def command_by_id(self, command_id: int) -> dict[str, Any] | None:
+        commands = self.commands_by_ids([command_id])
+        return commands[0] if commands else None
+
+    def latest_edit_command(self) -> dict[str, Any] | None:
+        with closing(sqlite3.connect(self.db_path)) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                """
+                SELECT id, created_at, text, intent, action, response
+                FROM command_history
+                WHERE action LIKE '%"edit_audit"%'
+                ORDER BY id DESC
+                LIMIT 1
+                """
+            ).fetchall()
+        commands = self._rows_to_commands(rows)
+        return commands[0] if commands else None
 
     def clear_history(self) -> int:
         with closing(sqlite3.connect(self.db_path)) as conn:
@@ -305,6 +294,19 @@ class MemoryStore:
                 continue
             filtered.append(command)
         return filtered
+
+    def _rows_to_commands(self, rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": row["id"],
+                "created_at": row["created_at"],
+                "text": row["text"],
+                "intent": json.loads(row["intent"]),
+                "action": json.loads(row["action"]),
+                "response": row["response"],
+            }
+            for row in rows
+        ]
 
 
 def _count_by(commands: list[dict[str, Any]], key_func) -> list[dict[str, Any]]:

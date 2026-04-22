@@ -27,6 +27,7 @@ O nucleo atual ja consegue:
 - revisar diffs de edicoes pendentes no CLI e na interface web local antes de confirmar;
 - aplicar propostas de edicao apenas por checkpoint confirmado;
 - auditar edicoes aplicadas no historico local com resumo e pista de reversao;
+- preparar reversao assistida de edicoes a partir da auditoria local registrada;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -779,6 +780,18 @@ Entregas:
 - Interface web local mostra metadados de edicao tambem na lista de historico e na amostra da auditoria.
 - Testes cobrem preservacao da auditoria em memoria, core, contrato da API, CLI, UI state e assets frontend.
 
+### Fase 3AZ - Reversao Assistida De Edicoes
+
+Status: concluida.
+
+Entregas:
+- NLU reconhece pedidos como `desfazer ultima edicao` e `reverter comando <id>`.
+- `MemorySkill` agora localiza a edicao auditada mais recente ou um comando especifico e monta uma reversao segura.
+- Reversao nunca grava direto: ela reutiliza `propose_file_edit`, gera novo diff e exige checkpoint de confirmacao.
+- Resultado da reversao preserva o comando de origem no `data`, incluindo `revert_source_command_id`.
+- Sugestoes proativas agora incluem `desfazer ultima edicao` depois de uma edicao confirmada com auditoria.
+- Testes cobrem NLU, memoria, core, contrato da API, proactive e estado agregado da UI.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -798,7 +811,8 @@ Prioridades atuais:
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
 - Associar checkpoints de edicao ao historico local para rastrear o pedido original que gerou cada mudanca.
-- Preparar uma acao segura de reversao assistida usando a auditoria de edicao ja registrada no historico local.
+- Expor relacao direta entre checkpoint de edicao e comando historico de origem na UI de checkpoints.
+- Permitir reversao assistida por selecao visual no historico local, sem depender de lembrar ou digitar o id do comando.
 
 ## Fases Futuras Planejadas
 
@@ -909,13 +923,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-225 tests OK
+233 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 225 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 233 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

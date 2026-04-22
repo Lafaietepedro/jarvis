@@ -86,6 +86,17 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(history_entry["action"]["edit_audit"]["path"], "README.md")
         self.assertIn("trocar Projeto Seguro por API Contract Test", history_entry["action"]["edit_audit"]["revert_command"])
 
+    def test_revert_latest_edit_contract(self):
+        asyncio.run(main.command(main.CommandRequest(text="preparar edição arquivo README.md trocar API Contract Test por Projeto Seguro")))
+        asyncio.run(main.command(main.CommandRequest(text="confirmar checkpoint 1", confirm_actions=True)))
+
+        payload = asyncio.run(main.command(main.CommandRequest(text="desfazer ultima edição")))
+
+        self.assertEqual(payload["action"]["name"], "propose_file_edit")
+        self.assertEqual(payload["action"]["revert_source_command_id"], 2)
+        self.assertEqual(payload["data"]["revert_source_command_id"], 2)
+        self.assertEqual(payload["session"]["automation_checkpoints"][0]["path"], "README.md")
+
     def test_history_audit_contract(self):
         command = main.CommandRequest(text="qual o status")
         asyncio.run(main.command(command))

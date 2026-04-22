@@ -114,6 +114,22 @@ DELETE_MEMORY_TERMS = (
     "remover memoria",
     "remover memória",
 )
+REVERT_EDIT_TERMS = (
+    "desfazer ultima edicao",
+    "desfazer ultima edição",
+    "desfazer ultima alteracao",
+    "desfazer ultima alteração",
+    "reverter ultima edicao",
+    "reverter ultima edição",
+    "reverter ultima alteracao",
+    "reverter ultima alteração",
+    "desfazer comando",
+    "reverter comando",
+    "desfazer edicao",
+    "desfazer edição",
+    "reverter edicao",
+    "reverter edição",
+)
 CONFIRM_CHECKPOINT_TERMS = (
     "confirmar checkpoint",
     "confirmar passo",
@@ -264,6 +280,28 @@ def _extract_memory_command_id(text: str) -> int | None:
     return int(match.group(1))
 
 
+def _extract_revert_command_id(text: str) -> int | None:
+    match = re.search(r"\b(?:comando|edicao|edição|alteracao|alteração)\s+(\d+)\b", text)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def _mentions_latest_edit(text: str) -> bool:
+    return _has_any(
+        text,
+        (
+            "ultima edicao",
+            "ultima edição",
+            "ultima alteracao",
+            "ultima alteração",
+            "ultimo ajuste",
+            "ultima mudanca",
+            "ultima mudança",
+        ),
+    )
+
+
 def _extract_web_query(text: str) -> str | None:
     match = re.search(r"\b(?:pesquisar|pesquise|buscar|busque|procurar|procure|search)\b\s+(?:por|sobre|for)?\s*(.+)", text)
     if not match:
@@ -344,6 +382,16 @@ def parse_intent(text: str, allow_composite: bool = True):
 
     if _has_any(normalized, DELETE_MEMORY_TERMS):
         return {"intent": "delete_memory", "command_id": _extract_memory_command_id(normalized), "text": text}
+
+    if _has_any(normalized, REVERT_EDIT_TERMS):
+        command_id = _extract_revert_command_id(normalized)
+        selector = "latest" if command_id is None and _mentions_latest_edit(normalized) else None
+        return {
+            "intent": "revert_file_edit",
+            "command_id": command_id,
+            "selector": selector,
+            "text": text,
+        }
 
     if _has_any(normalized, MEMORY_AUDIT_TERMS):
         return {"intent": "memory_audit", "text": text}

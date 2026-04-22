@@ -30,6 +30,8 @@ def build_proactive_suggestions(
         _add(suggestions, command, "after_project_commands")
     elif latest_intent == "project_state":
         _add(suggestions, "checkup do projeto", "after_project_snapshot")
+    elif latest_intent == "confirm_checkpoint" and _latest_edit_audit(history):
+        _add(suggestions, "desfazer ultima edicao", "after_file_edit")
     elif latest_intent == "command_history":
         _add(suggestions, "exportar historico", "after_history_review")
 
@@ -85,6 +87,21 @@ def _latest_intent(history: list[dict[str, Any]]) -> str | None:
 
 def _intent_count(history: list[dict[str, Any]], name: str) -> int:
     return sum(1 for command in history if command.get("intent", {}).get("intent") == name)
+
+
+def _latest_edit_audit(history: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not history:
+        return None
+    action = history[0].get("action", {})
+    edit_audit = action.get("edit_audit")
+    if isinstance(edit_audit, dict):
+        return edit_audit
+    delegated = action.get("delegated_action")
+    if isinstance(delegated, dict):
+        delegated_audit = delegated.get("edit_audit")
+        if isinstance(delegated_audit, dict):
+            return delegated_audit
+    return None
 
 
 def _dedupe_actions(actions: list[dict[str, Any]]) -> list[dict[str, Any]]:
