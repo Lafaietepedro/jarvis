@@ -31,6 +31,7 @@ O nucleo atual ja consegue:
 - rastrear a origem historica de checkpoints de edicao diretamente na sessao e na UI;
 - permitir reversao segura por acao visual direta no historico local e na auditoria;
 - navegar visualmente do checkpoint para a origem historica e preparar reversao do evento aplicado;
+- localizar automaticamente a origem de um checkpoint na memoria local quando ela nao estiver visivel no historico curto;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -830,6 +831,17 @@ Entregas:
 - UI destaca a entrada localizada no historico para facilitar o rastreamento da trilha completa do pedido.
 - Testes de assets frontend cobrem funcoes de navegacao, botoes de origem e estilos de destaque.
 
+### Fase 3BD - Localizacao Automatizada Da Origem Na Memoria
+
+Status: concluida.
+
+Entregas:
+- `GET /history/audit` e `MemoryStore.audit_summary` agora aceitam filtro direto por `command_id`.
+- Quando a origem nao esta visivel no historico curto, a interface web busca a entrada exata na memoria local auditavel.
+- A amostra de memoria passa a destacar automaticamente a origem localizada para manter a navegacao causal entre checkpoint e historico.
+- A UI informa explicitamente quando a origem foi encontrada ou quando ela nao existe mais na memoria local.
+- Testes cobrem o filtro por `command_id` na memoria, no contrato da API e nos assets frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -848,8 +860,8 @@ Prioridades atuais:
 
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
-- Expor relacao direta entre checkpoint de edicao e comando historico de origem na UI de checkpoints.
-- Quando a origem nao estiver visivel, oferecer um fluxo guiado para localizar automaticamente o comando no painel de memoria.
+- Permitir preparar reversao segura direto do proprio bloco de checkpoint pendente, sem depender apenas do historico e dos eventos.
+- Expandir a navegacao visual entre historico curto e memoria auditavel com preservacao dos filtros ativos do usuario.
 
 ## Fases Futuras Planejadas
 

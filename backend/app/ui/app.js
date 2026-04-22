@@ -418,7 +418,7 @@ function resolveEditAudit(command) {
 async function loadMemoryAudit(filters, announce = true) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
-    if (value) {
+    if (value !== null && value !== undefined && value !== "") {
       params.set(key, value);
     }
   }
@@ -483,12 +483,33 @@ function resolveEventEditAudit(event) {
   return null;
 }
 
-function jumpToHistoryCommand(commandId) {
-  const target = document.querySelector(`[data-history-command-id="${commandId}"]`);
+async function jumpToHistoryCommand(commandId) {
+  let target = findHistoryCommandNode(commandId);
   if (!target) {
-    nodes.lastResponse.textContent = `A origem #${commandId} nao esta visivel no historico atual.`;
+    target = await locateHistoryCommand(commandId);
+  }
+  if (!target) {
+    nodes.lastResponse.textContent = `Nao encontrei a origem #${commandId} na memoria local.`;
     return;
   }
+  highlightHistoryTarget(target);
+}
+
+function findHistoryCommandNode(commandId) {
+  return document.querySelector(`[data-history-command-id="${commandId}"]`);
+}
+
+async function locateHistoryCommand(commandId) {
+  const audit = await requestJson(`/history/audit?command_id=${encodeURIComponent(commandId)}&limit=1`);
+  renderMemoryAudit(audit);
+  if (!(audit.sample || []).length) {
+    return null;
+  }
+  nodes.lastResponse.textContent = `Origem #${commandId} localizada na memoria auditavel.`;
+  return findHistoryCommandNode(commandId);
+}
+
+function highlightHistoryTarget(target) {
   target.scrollIntoView({behavior: "smooth", block: "center"});
   target.classList.add("highlighted");
   window.setTimeout(() => target.classList.remove("highlighted"), 1800);

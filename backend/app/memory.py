@@ -156,6 +156,7 @@ class MemoryStore:
         intent: str | None = None,
         skill: str | None = None,
         action: str | None = None,
+        command_id: int | None = None,
         since: str | None = None,
         until: str | None = None,
         limit: int = 5,
@@ -164,6 +165,7 @@ class MemoryStore:
             intent=intent,
             skill=skill,
             action=action,
+            command_id=command_id,
             since=since,
             until=until,
         )
@@ -173,6 +175,7 @@ class MemoryStore:
                 "intent": intent,
                 "skill": skill,
                 "action": action,
+                "command_id": command_id,
                 "since": since,
                 "until": until,
                 "limit": limit,
@@ -274,6 +277,7 @@ class MemoryStore:
         intent: str | None = None,
         skill: str | None = None,
         action: str | None = None,
+        command_id: int | None = None,
         since: str | None = None,
         until: str | None = None,
     ) -> list[dict[str, Any]]:
@@ -292,6 +296,8 @@ class MemoryStore:
             if skill and command.get("action", {}).get("skill") != skill:
                 continue
             if action and command.get("action", {}).get("name") != action:
+                continue
+            if command_id and command.get("id") != command_id:
                 continue
             filtered.append(command)
         return filtered

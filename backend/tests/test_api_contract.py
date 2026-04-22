@@ -204,6 +204,20 @@ class ApiContractTest(unittest.TestCase):
         self.assertFalse(payload["actions"][0]["requires_confirmation"])
         self.assertIn("next_actions", payload)
 
+    def test_history_audit_accepts_command_id_filter(self):
+        first = main.CommandRequest(text="qual o status")
+        second = main.CommandRequest(text="painel de privacidade")
+        first_result = asyncio.run(main.command(first))
+        asyncio.run(main.command(second))
+
+        command_id = first_result["data"]["memory"]["command_id"]
+        payload = asyncio.run(main.audit_history(command_id=command_id, limit=1))
+
+        self.assertEqual(payload["matching_count"], 1)
+        self.assertEqual(payload["filters"]["command_id"], command_id)
+        self.assertEqual(payload["sample"][0]["id"], command_id)
+        self.assertEqual(payload["sample"][0]["text"], "qual o status")
+
     def test_ui_frontend_contract(self):
         page = asyncio.run(main.ui())
         script = asyncio.run(main.ui_asset("app.js"))

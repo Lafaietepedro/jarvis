@@ -136,6 +136,27 @@ class MemoryStoreTest(unittest.TestCase):
         self.assertEqual(audit["by_skill"][0], {"name": "system", "count": 1})
         self.assertEqual(audit["sample"][0]["text"], "qual o status")
 
+    def test_audit_summary_filters_by_command_id(self):
+        first_id = self.memory.record_command(
+            text="qual o status",
+            intent={"intent": "status"},
+            action={"skill": "system", "name": "status", "status": "done"},
+            response="ok",
+        )
+        self.memory.record_command(
+            text="ultimos comandos",
+            intent={"intent": "command_history"},
+            action={"skill": "memory", "name": "command_history", "status": "done"},
+            response="ok",
+        )
+
+        audit = self.memory.audit_summary(command_id=first_id)
+
+        self.assertEqual(audit["matching_count"], 1)
+        self.assertEqual(audit["filters"]["command_id"], first_id)
+        self.assertEqual(audit["sample"][0]["id"], first_id)
+        self.assertEqual(audit["sample"][0]["text"], "qual o status")
+
     def test_deletes_commands_by_id(self):
         self.memory.record_command(
             text="qual o status",
