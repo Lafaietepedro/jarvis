@@ -116,6 +116,27 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
         self.assertIn("before", checkpoint["edit_preview"])
 
+    def test_attach_command_source_updates_checkpoint_snapshot(self):
+        session = SessionState()
+        session.add_automation_checkpoints(
+            "file_edit",
+            [
+                {
+                    "index": 1,
+                    "label": "Aplicar edicao em README.md",
+                    "reason": "confirmation_required",
+                    "source": "file_edit",
+                    "step": {"intent": "apply_file_edit", "path": "README.md"},
+                }
+            ],
+        )
+
+        session.attach_command_source([1], 7, "preparar edição arquivo README.md trocar A por B")
+
+        checkpoint = session.snapshot()["automation_checkpoints"][0]
+        self.assertEqual(checkpoint["source_command_id"], 7)
+        self.assertEqual(checkpoint["source_command_text"], "preparar edição arquivo README.md trocar A por B")
+
     def test_automation_checkpoint_events_are_recorded_newest_first(self):
         session = SessionState()
 

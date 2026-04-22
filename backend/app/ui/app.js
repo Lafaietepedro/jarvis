@@ -182,6 +182,9 @@ function checkpointMeta(checkpoint) {
   if (checkpoint.occurrences > 1) {
     parts.push(`ocorrencias: ${checkpoint.occurrences}`);
   }
+  if (checkpoint.source_command_id) {
+    parts.push(`origem: #${checkpoint.source_command_id}`);
+  }
   return parts.join(" | ");
 }
 
@@ -278,6 +281,9 @@ function eventMeta(event) {
     parts.push(`comando: ${event.command}`);
   } else if (event.step_label) {
     parts.push(event.step_label);
+  }
+  if (event.source_command_id) {
+    parts.push(`origem: #${event.source_command_id}`);
   }
   return parts.join(" | ");
 }

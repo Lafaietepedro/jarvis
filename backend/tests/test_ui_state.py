@@ -132,6 +132,8 @@ class UIStateTest(unittest.TestCase):
                         "label": "Aplicar edicao em README.md",
                         "intent": "apply_file_edit",
                         "path": "README.md",
+                        "source_command_id": 4,
+                        "source_command_text": "preparar edição arquivo README.md trocar old por new",
                         "diff": "--- a/README.md\n+++ b/README.md\n-old\n+new",
                         "occurrences": 1,
                         "edit_preview": {
@@ -165,6 +167,8 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["path"], "README.md")
         self.assertTrue(checkpoint["has_diff"])
         self.assertIn("+new", checkpoint["diff"])
+        self.assertEqual(checkpoint["source_command_id"], 4)
+        self.assertIn("trocar old por new", checkpoint["source_command_text"])
         self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
         self.assertIn("new", checkpoint["edit_preview"]["after"]["text"])
 

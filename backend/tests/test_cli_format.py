@@ -224,6 +224,8 @@ class CliFormatTest(unittest.TestCase):
                         "reason": "confirmation_required",
                         "source_label": "edicao de arquivo",
                         "path": "README.md",
+                        "source_command_id": 9,
+                        "source_command_text": "preparar edição arquivo README.md trocar foo por bar",
                         "occurrences": 2,
                         "replacement_strategy": "first_occurrence",
                         "edit_preview": {
@@ -253,6 +255,7 @@ class CliFormatTest(unittest.TestCase):
         )
 
         self.assertIn("Scope: primeira ocorrencia de 2 encontrada(s)", output)
+        self.assertIn("Origin: #9 preparar edição arquivo README.md trocar foo por bar", output)
         self.assertIn("Preview before: linhas 1-2 (alvo 1)", output)
         self.assertIn("Preview after: linhas 1-2 (alvo 1)", output)
         self.assertIn("Diff:", output)

@@ -20,12 +20,12 @@ class MemoryStore:
         action: dict[str, Any],
         response: str,
         private: bool = False,
-    ):
+    ) -> int | None:
         if private or os.environ.get("JARVIS_DISABLE_MEMORY") == "1":
-            return
+            return None
 
         with closing(sqlite3.connect(self.db_path)) as conn:
-            conn.execute(
+            cursor = conn.execute(
                 """
                 INSERT INTO command_history
                     (created_at, text, intent, action, response)
@@ -40,6 +40,7 @@ class MemoryStore:
                 ),
             )
             conn.commit()
+            return int(cursor.lastrowid)
 
     def recent_commands(self, limit: int = 10) -> list[dict[str, Any]]:
         with closing(sqlite3.connect(self.db_path)) as conn:

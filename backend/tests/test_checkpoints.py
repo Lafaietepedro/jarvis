@@ -117,6 +117,8 @@ class CheckpointsTest(unittest.TestCase):
                             "label": "Aplicar edicao em README.md",
                             "intent": "apply_file_edit",
                             "path": "README.md",
+                            "source_command_id": 9,
+                            "source_command_text": "preparar edição arquivo README.md trocar foo por bar",
                             "diff": "--- a/README.md\n+++ b/README.md\n-foo\n+bar",
                             "occurrences": 1,
                             "edit_preview": {
@@ -153,6 +155,8 @@ class CheckpointsTest(unittest.TestCase):
         self.assertIn("+bar", checkpoint["diff"])
         self.assertEqual(checkpoint["occurrences"], 1)
         self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
+        self.assertEqual(checkpoint["source_command_id"], 9)
+        self.assertIn("preparar edição arquivo", checkpoint["source_command_text"])
         self.assertIn("bar", checkpoint["edit_preview"]["after"]["text"])
         self.assertIn("Revisar diff", checkpoint["next_step"])
 

@@ -51,6 +51,9 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
                 if checkpoint.get("permission"):
                     risk_line += f" ({checkpoint['permission']})"
                 lines.append(risk_line)
+            origin = _format_checkpoint_origin(checkpoint)
+            if origin:
+                lines.append(f"   Origin: {origin}")
             if checkpoint.get("command"):
                 lines.append(f"   Command: {checkpoint['command']}")
             if checkpoint.get("replacement_strategy") == "first_occurrence" and checkpoint.get("occurrences", 0) > 1:
@@ -83,6 +86,9 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             context = _format_checkpoint_context(event)
             if context:
                 lines.append(f"  Context: {context}")
+            origin = _format_checkpoint_origin(event)
+            if origin:
+                lines.append(f"  Origin: {origin}")
             if event.get("command"):
                 lines.append(f"  Command: {event['command']}")
             if event.get("edit_preview"):
@@ -356,6 +362,16 @@ def _format_checkpoint_context(item: dict[str, Any]) -> str:
     if item.get("path"):
         parts.append(str(item["path"]))
     return " | ".join(parts)
+
+
+def _format_checkpoint_origin(item: dict[str, Any]) -> str | None:
+    command_id = item.get("source_command_id")
+    command_text = item.get("source_command_text")
+    if not command_id:
+        return None
+    if command_text:
+        return f"#{command_id} {command_text}"
+    return f"#{command_id}"
 
 
 def _format_indented_block(text: str, prefix: str, max_lines: int = 40) -> list[str]:

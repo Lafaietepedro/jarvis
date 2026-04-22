@@ -97,6 +97,15 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(payload["data"]["revert_source_command_id"], 2)
         self.assertEqual(payload["session"]["automation_checkpoints"][0]["path"], "README.md")
 
+    def test_checkpoints_contract_includes_source_command_for_file_edit(self):
+        asyncio.run(main.command(main.CommandRequest(text="preparar edição arquivo README.md trocar API Contract Test por Projeto Seguro")))
+
+        checkpoints = asyncio.run(main.checkpoints())
+
+        checkpoint = checkpoints["checkpoints"][0]
+        self.assertEqual(checkpoint["source_command_id"], 1)
+        self.assertEqual(checkpoint["source_command_text"], "preparar edição arquivo README.md trocar API Contract Test por Projeto Seguro")
+
     def test_history_audit_contract(self):
         command = main.CommandRequest(text="qual o status")
         asyncio.run(main.command(command))

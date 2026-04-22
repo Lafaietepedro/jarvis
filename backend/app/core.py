@@ -83,7 +83,28 @@ class JarvisCore:
             history=history,
             project_state=project_state,
         )
-        response = {
+        command_id = None
+        skip_memory_record = (
+            result.action.get("skill") == "memory"
+            and result.action.get("name") in {"clear_history", "delete_memory"}
+            and result.action.get("status") == "done"
+        )
+        if not skip_memory_record:
+            command_id = self.memory_store.record_command(
+                text=text,
+                intent=intent,
+                action=result.action,
+                response=result.response,
+                private=options.get("private", False),
+            )
+            if command_id:
+                self._attach_checkpoint_sources(result, command_id, text)
+
+        if options.get("source") == "voice":
+            self.session_state.set_listening()
+        else:
+            self.session_state.set_active()
+        return {
             "text": text,
             "intent": intent,
             "response": result.response,
@@ -96,27 +117,6 @@ class JarvisCore:
             "data": result.data,
             "session": self.session_state.snapshot(),
         }
-
-        skip_memory_record = (
-            result.action.get("skill") == "memory"
-            and result.action.get("name") in {"clear_history", "delete_memory"}
-            and result.action.get("status") == "done"
-        )
-        if not skip_memory_record:
-            self.memory_store.record_command(
-                text=text,
-                intent=intent,
-                action=result.action,
-                response=result.response,
-                private=options.get("private", False),
-            )
-
-        if options.get("source") == "voice":
-            self.session_state.set_listening()
-        else:
-            self.session_state.set_active()
-        response["session"] = self.session_state.snapshot()
-        return response
 
     def _handle_single_intent(
         self,
@@ -212,6 +212,21 @@ class JarvisCore:
             if skill.can_handle(intent):
                 return skill
         return None
+
+    def _attach_checkpoint_sources(self, result: SkillResult, command_id: int, text: str):
+        checkpoint_ids = result.action.get("checkpoint_ids") or []
+        if not checkpoint_ids:
+            return
+        updated = self.session_state.attach_command_source(checkpoint_ids, command_id, text)
+        if not updated:
+            return
+        result.action["source_command_id"] = command_id
+        result.action["source_command_text"] = text
+        if isinstance(result.data, dict):
+            result.data["source_command_id"] = command_id
+            result.data["source_command_text"] = text
+            if result.data.get("checkpoints"):
+                result.data["checkpoints"] = updated
 
 
 def _checkpoints_from_multi_action(step_results: list[dict[str, Any]]) -> list[dict[str, Any]]:

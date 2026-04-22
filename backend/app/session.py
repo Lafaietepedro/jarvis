@@ -59,9 +59,20 @@ class SessionState:
             "risk": step.get("risk"),
             "permission": step.get("permission"),
         }
-        for key in ("path", "diff", "occurrences", "edit_preview", "replacement_strategy"):
-            if step.get(key) is not None:
-                snapshot[key] = step[key]
+        for key in (
+            "path",
+            "diff",
+            "occurrences",
+            "edit_preview",
+            "replacement_strategy",
+            "source_command_id",
+            "source_command_text",
+        ):
+            value = checkpoint.get(key)
+            if value is None:
+                value = step.get(key)
+            if value is not None:
+                snapshot[key] = value
         return snapshot
 
     def set_automation_checkpoints(self, plan_name: str, checkpoints: list[dict[str, Any]]):
@@ -91,6 +102,26 @@ class SessionState:
             ]
             self._automation_checkpoints.extend(stored)
             return list(stored)
+
+    def attach_command_source(
+        self,
+        checkpoint_ids: list[int],
+        command_id: int,
+        command_text: str,
+    ) -> list[dict[str, Any]]:
+        updated = []
+        with self._lock:
+            checkpoint_set = set(checkpoint_ids)
+            for checkpoint in self._automation_checkpoints:
+                if checkpoint["checkpoint_id"] not in checkpoint_set:
+                    continue
+                checkpoint["source_command_id"] = command_id
+                checkpoint["source_command_text"] = command_text
+                checkpoint.setdefault("step", {})
+                checkpoint["step"]["source_command_id"] = command_id
+                checkpoint["step"]["source_command_text"] = command_text
+                updated.append(dict(checkpoint))
+        return updated
 
     def get_automation_checkpoint(self, checkpoint_id: int | None = None) -> dict[str, Any] | None:
         with self._lock:

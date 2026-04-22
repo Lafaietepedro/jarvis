@@ -317,6 +317,8 @@ def _checkpoint_event(checkpoint: dict[str, Any], result: SkillResult) -> dict[s
         "step_label": step.get("label"),
         "intent": step.get("intent"),
         "command": step.get("command"),
+        "source_command_id": checkpoint.get("source_command_id") or step.get("source_command_id"),
+        "source_command_text": checkpoint.get("source_command_text") or step.get("source_command_text"),
         "path": step.get("path"),
         "diff": step.get("diff"),
         "occurrences": step.get("occurrences"),

@@ -46,6 +46,7 @@ class UIFrontendTest(unittest.TestCase):
         self.assertIn("renderEditPreview", script[0])
         self.assertIn("lineSpanLabel", script[0])
         self.assertIn("edit_preview", script[0])
+        self.assertIn("source_command_id", script[0])
         self.assertIn("resolveEditAudit", script[0])
         self.assertIn("historyMeta", script[0])
         self.assertIn("checkpoint.diff", script[0])

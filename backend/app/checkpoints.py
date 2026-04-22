@@ -45,6 +45,8 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
     occurrences = _checkpoint_value(checkpoint, "occurrences")
     edit_preview = _checkpoint_value(checkpoint, "edit_preview")
     replacement_strategy = _checkpoint_value(checkpoint, "replacement_strategy")
+    source_command_id = _checkpoint_value(checkpoint, "source_command_id")
+    source_command_text = _checkpoint_value(checkpoint, "source_command_text")
     return {
         **checkpoint,
         "source": source,
@@ -57,6 +59,8 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
         "occurrences": occurrences,
         "edit_preview": edit_preview,
         "replacement_strategy": replacement_strategy,
+        "source_command_id": source_command_id,
+        "source_command_text": source_command_text,
         "checkpoint_detail": _checkpoint_detail(source, step_index, step_label, checkpoint),
         "risk": profile.risk,
         "requires_confirmation": profile.requires_confirmation,
@@ -79,6 +83,8 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
     diff = _checkpoint_value(event, "diff")
     edit_preview = _checkpoint_value(event, "edit_preview")
     replacement_strategy = _checkpoint_value(event, "replacement_strategy")
+    source_command_id = _checkpoint_value(event, "source_command_id")
+    source_command_text = _checkpoint_value(event, "source_command_text")
     return {
         **event,
         "source": source,
@@ -90,6 +96,8 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
         "has_diff": bool(diff),
         "edit_preview": edit_preview,
         "replacement_strategy": replacement_strategy,
+        "source_command_id": source_command_id,
+        "source_command_text": source_command_text,
         "event_detail": _checkpoint_detail(source, step_index, step_label, event),
         "severity": severity_for_event(status, reason),
         "message": _event_message(event),

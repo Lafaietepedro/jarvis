@@ -28,6 +28,7 @@ O nucleo atual ja consegue:
 - aplicar propostas de edicao apenas por checkpoint confirmado;
 - auditar edicoes aplicadas no historico local com resumo e pista de reversao;
 - preparar reversao assistida de edicoes a partir da auditoria local registrada;
+- rastrear a origem historica de checkpoints de edicao diretamente na sessao e na UI;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -792,6 +793,19 @@ Entregas:
 - Sugestoes proativas agora incluem `desfazer ultima edicao` depois de uma edicao confirmada com auditoria.
 - Testes cobrem NLU, memoria, core, contrato da API, proactive e estado agregado da UI.
 
+### Fase 3BA - Origem Historica De Checkpoints
+
+Status: concluida.
+
+Entregas:
+- `MemoryStore.record_command` agora devolve o `command_id` gravado para uso imediato no fluxo da sessao.
+- `JarvisCore` liga checkpoints gerados pelo comando atual ao id e texto do comando historico correspondente.
+- Snapshot de sessao preserva `source_command_id` e `source_command_text` nos checkpoints.
+- Eventos de checkpoint confirmados herdam essa origem historica para manter a trilha auditavel completa.
+- CLI de checkpoints mostra o comando de origem de cada checkpoint quando disponivel.
+- Interface web local mostra a origem do checkpoint nos metadados exibidos ao usuario.
+- Testes cobrem sessao, core, contrato da API, formatacao CLI, estado da UI e assets frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -810,9 +824,9 @@ Prioridades atuais:
 
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
-- Associar checkpoints de edicao ao historico local para rastrear o pedido original que gerou cada mudanca.
 - Expor relacao direta entre checkpoint de edicao e comando historico de origem na UI de checkpoints.
 - Permitir reversao assistida por selecao visual no historico local, sem depender de lembrar ou digitar o id do comando.
+- Mostrar na UI um atalho direto da origem historica para acao de reversao segura, sem redigitar o comando manualmente.
 
 ## Fases Futuras Planejadas
 
@@ -923,13 +937,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-233 tests OK
+235 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 233 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 235 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app
