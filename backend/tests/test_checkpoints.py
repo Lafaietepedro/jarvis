@@ -119,6 +119,23 @@ class CheckpointsTest(unittest.TestCase):
                             "path": "README.md",
                             "diff": "--- a/README.md\n+++ b/README.md\n-foo\n+bar",
                             "occurrences": 1,
+                            "edit_preview": {
+                                "before": {
+                                    "line_start": 1,
+                                    "line_end": 2,
+                                    "focus_start": 1,
+                                    "focus_end": 1,
+                                    "text": "   1 | foo\n   2 | baz",
+                                },
+                                "after": {
+                                    "line_start": 1,
+                                    "line_end": 2,
+                                    "focus_start": 1,
+                                    "focus_end": 1,
+                                    "text": "   1 | bar\n   2 | baz",
+                                },
+                            },
+                            "replacement_strategy": "first_occurrence",
                             "risk": "high",
                             "requires_confirmation": True,
                         },
@@ -135,6 +152,8 @@ class CheckpointsTest(unittest.TestCase):
         self.assertTrue(checkpoint["has_diff"])
         self.assertIn("+bar", checkpoint["diff"])
         self.assertEqual(checkpoint["occurrences"], 1)
+        self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
+        self.assertIn("bar", checkpoint["edit_preview"]["after"]["text"])
         self.assertIn("Revisar diff", checkpoint["next_step"])
 
 

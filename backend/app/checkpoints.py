@@ -43,6 +43,8 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
     path = _checkpoint_value(checkpoint, "path")
     diff = _checkpoint_value(checkpoint, "diff")
     occurrences = _checkpoint_value(checkpoint, "occurrences")
+    edit_preview = _checkpoint_value(checkpoint, "edit_preview")
+    replacement_strategy = _checkpoint_value(checkpoint, "replacement_strategy")
     return {
         **checkpoint,
         "source": source,
@@ -53,6 +55,8 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
         "diff": diff,
         "has_diff": bool(diff),
         "occurrences": occurrences,
+        "edit_preview": edit_preview,
+        "replacement_strategy": replacement_strategy,
         "checkpoint_detail": _checkpoint_detail(source, step_index, step_label, checkpoint),
         "risk": profile.risk,
         "requires_confirmation": profile.requires_confirmation,
@@ -73,6 +77,8 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
     step_label = event.get("step_label") or event.get("label")
     path = _checkpoint_value(event, "path")
     diff = _checkpoint_value(event, "diff")
+    edit_preview = _checkpoint_value(event, "edit_preview")
+    replacement_strategy = _checkpoint_value(event, "replacement_strategy")
     return {
         **event,
         "source": source,
@@ -82,6 +88,8 @@ def _enrich_event(event: dict[str, Any]) -> dict[str, Any]:
         "path": path,
         "diff": diff,
         "has_diff": bool(diff),
+        "edit_preview": edit_preview,
+        "replacement_strategy": replacement_strategy,
         "event_detail": _checkpoint_detail(source, step_index, step_label, event),
         "severity": severity_for_event(status, reason),
         "message": _event_message(event),
@@ -104,7 +112,10 @@ def _checkpoint_next_step(checkpoint: dict[str, Any]) -> str:
         return f"Revisar comando `{command}` antes de confirmar."
     if checkpoint.get("source") == "file_edit":
         path = _checkpoint_value(checkpoint, "path")
+        occurrences = _checkpoint_value(checkpoint, "occurrences")
         if path:
+            if occurrences and occurrences > 1:
+                return f"Revisar diff e contexto de `{path}`; apenas a primeira de {occurrences} ocorrencias sera editada."
             return f"Revisar diff de `{path}` antes de confirmar."
     return f"Revisar {checkpoint.get('label', 'checkpoint')} antes de confirmar."
 

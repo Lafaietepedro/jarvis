@@ -97,6 +97,10 @@ class SessionStateTest(unittest.TestCase):
                         "path": "README.md",
                         "diff": "--- a/README.md\n+++ b/README.md",
                         "occurrences": 1,
+                        "edit_preview": {
+                            "before": {"line_start": 1, "line_end": 1, "focus_start": 1, "focus_end": 1, "text": "   1 | old"}
+                        },
+                        "replacement_strategy": "first_occurrence",
                         "risk": "high",
                         "requires_confirmation": True,
                     },
@@ -109,6 +113,8 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["path"], "README.md")
         self.assertEqual(checkpoint["diff"], "--- a/README.md\n+++ b/README.md")
         self.assertEqual(checkpoint["occurrences"], 1)
+        self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
+        self.assertIn("before", checkpoint["edit_preview"])
 
     def test_automation_checkpoint_events_are_recorded_newest_first(self):
         session = SessionState()

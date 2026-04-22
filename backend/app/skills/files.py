@@ -1,4 +1,5 @@
 import difflib
+from bisect import bisect_right
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,7 @@ from .base import BaseSkill, SkillResult
 
 MAX_TEXT_BYTES = 20_000
 MAX_PREVIEW_CHARS = 2_000
+EDIT_CONTEXT_LINES = 2
 IGNORED_DIRS = {".git", ".jarvis", "__pycache__", ".pytest_cache", ".mypy_cache", "node_modules", ".venv", "venv"}
 
 
@@ -201,11 +203,24 @@ def _propose_file_edit(
 
     updated = content.replace(old_text, new_text, 1)
     diff = _unified_diff(relative, content, updated)
-    checkpoints = _register_edit_checkpoint(options, relative, old_text, new_text, diff, occurrences)
+    edit_preview = _build_edit_preview(content, updated, old_text, new_text, occurrences)
+    replacement_strategy = "first_occurrence"
+    checkpoints = _register_edit_checkpoint(
+        options,
+        relative,
+        old_text,
+        new_text,
+        diff,
+        occurrences,
+        edit_preview,
+        replacement_strategy,
+    )
     checkpoint_ids = [checkpoint["checkpoint_id"] for checkpoint in checkpoints]
     suggestions = [f"ler arquivo {relative}"]
     suggestions.extend(f"confirmar checkpoint {checkpoint_id}" for checkpoint_id in checkpoint_ids)
     response = f"Preparei uma proposta de edicao para `{relative}`. Nada foi gravado."
+    if occurrences > 1:
+        response += f" O trecho aparece {occurrences} vez(es); a proposta vai editar apenas a primeira ocorrencia."
     if checkpoint_ids:
         response += f" Criei checkpoint {checkpoint_ids[0]} para aplicar a mudanca."
     return SkillResult(
@@ -225,6 +240,8 @@ def _propose_file_edit(
             "old_text": old_text,
             "new_text": new_text,
             "occurrences": occurrences,
+            "replacement_strategy": replacement_strategy,
+            "edit_preview": edit_preview,
             "diff": diff,
             "writes_file": False,
             "checkpoints": checkpoints,
@@ -279,11 +296,18 @@ def _apply_file_edit(
 
     updated = content.replace(old_text, new_text, 1)
     diff = _unified_diff(relative, content, updated)
+    edit_preview = _build_edit_preview(content, updated, old_text, new_text, content.count(old_text))
     path.write_text(updated, encoding="utf-8")
     return SkillResult(
         response=f"Edicao aplicada em `{relative}`.",
         action={"skill": "files", "name": "apply_file_edit", "status": "done", "path": relative},
-        data={"path": relative, "diff": diff, "writes_file": True},
+        data={
+            "path": relative,
+            "diff": diff,
+            "edit_preview": edit_preview,
+            "replacement_strategy": "first_occurrence",
+            "writes_file": True,
+        },
     )
 
 
@@ -294,6 +318,8 @@ def _register_edit_checkpoint(
     new_text: str,
     diff: str,
     occurrences: int,
+    edit_preview: dict[str, Any],
+    replacement_strategy: str,
 ) -> list[dict[str, Any]]:
     session_state = options.get("session_state")
     if session_state is None:
@@ -312,6 +338,8 @@ def _register_edit_checkpoint(
             "new_text": new_text,
             "diff": diff,
             "occurrences": occurrences,
+            "edit_preview": edit_preview,
+            "replacement_strategy": replacement_strategy,
             "risk": "high",
             "requires_confirmation": True,
         },
@@ -412,3 +440,71 @@ def _unified_diff(relative_path: str, before: str, after: str) -> str:
         lineterm="",
     )
     return "\n".join(diff)
+
+
+def _build_edit_preview(
+    before: str,
+    after: str,
+    old_text: str,
+    new_text: str,
+    occurrences: int,
+) -> dict[str, Any]:
+    match_start = before.find(old_text)
+    if match_start < 0:
+        return {}
+
+    before_focus_start, before_focus_end = _line_span_for_range(before, match_start, len(old_text))
+    after_focus_start, after_focus_end = _line_span_for_range(after, match_start, len(new_text))
+    before_block = _extract_numbered_context(before, before_focus_start, before_focus_end)
+    after_block = _extract_numbered_context(after, after_focus_start, after_focus_end)
+    return {
+        "has_multiple_matches": occurrences > 1,
+        "occurrence_count": occurrences,
+        "before": before_block,
+        "after": after_block,
+    }
+
+
+def _line_span_for_range(content: str, start_index: int, length: int) -> tuple[int, int]:
+    if start_index < 0:
+        return (1, 1)
+    line_starts = _line_starts(content)
+    end_index = start_index + max(length - 1, 0)
+    start_line = _line_number_for_index(line_starts, start_index)
+    end_line = _line_number_for_index(line_starts, end_index)
+    return (start_line, end_line)
+
+
+def _line_starts(content: str) -> list[int]:
+    lines = content.splitlines(keepends=True)
+    if not lines:
+        return [0]
+    starts = []
+    offset = 0
+    for line in lines:
+        starts.append(offset)
+        offset += len(line)
+    return starts
+
+
+def _line_number_for_index(line_starts: list[int], index: int) -> int:
+    return max(1, bisect_right(line_starts, index))
+
+
+def _extract_numbered_context(content: str, focus_start: int, focus_end: int) -> dict[str, Any]:
+    lines = content.splitlines()
+    if not lines:
+        lines = [""]
+    line_start = max(1, focus_start - EDIT_CONTEXT_LINES)
+    line_end = min(len(lines), focus_end + EDIT_CONTEXT_LINES)
+    block = "\n".join(
+        f"{line_number:>4} | {lines[line_number - 1]}"
+        for line_number in range(line_start, line_end + 1)
+    )
+    return {
+        "line_start": line_start,
+        "line_end": line_end,
+        "focus_start": focus_start,
+        "focus_end": focus_end,
+        "text": block,
+    }

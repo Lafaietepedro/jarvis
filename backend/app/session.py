@@ -59,7 +59,7 @@ class SessionState:
             "risk": step.get("risk"),
             "permission": step.get("permission"),
         }
-        for key in ("path", "diff", "occurrences"):
+        for key in ("path", "diff", "occurrences", "edit_preview", "replacement_strategy"):
             if step.get(key) is not None:
                 snapshot[key] = step[key]
         return snapshot

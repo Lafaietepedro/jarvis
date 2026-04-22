@@ -224,14 +224,37 @@ class CliFormatTest(unittest.TestCase):
                         "reason": "confirmation_required",
                         "source_label": "edicao de arquivo",
                         "path": "README.md",
+                        "occurrences": 2,
+                        "replacement_strategy": "first_occurrence",
+                        "edit_preview": {
+                            "has_multiple_matches": True,
+                            "occurrence_count": 2,
+                            "before": {
+                                "line_start": 1,
+                                "line_end": 2,
+                                "focus_start": 1,
+                                "focus_end": 1,
+                                "text": "   1 | foo\n   2 | keep",
+                            },
+                            "after": {
+                                "line_start": 1,
+                                "line_end": 2,
+                                "focus_start": 1,
+                                "focus_end": 1,
+                                "text": "   1 | bar\n   2 | keep",
+                            },
+                        },
                         "diff": "--- a/README.md\n+++ b/README.md\n-foo\n+bar",
-                        "next_step": "Revisar diff de `README.md` antes de confirmar.",
+                        "next_step": "Revisar diff e contexto de `README.md`; apenas a primeira de 2 ocorrencias sera editada.",
                     }
                 ],
                 "events": [],
             }
         )
 
+        self.assertIn("Scope: primeira ocorrencia de 2 encontrada(s)", output)
+        self.assertIn("Preview before: linhas 1-2 (alvo 1)", output)
+        self.assertIn("Preview after: linhas 1-2 (alvo 1)", output)
         self.assertIn("Diff:", output)
         self.assertIn("--- a/README.md", output)
         self.assertIn("+bar", output)

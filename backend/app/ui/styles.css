@@ -293,6 +293,19 @@ dd {
   font-size: 0.9rem;
 }
 
+.edit-preview {
+  margin: 8px 0;
+}
+
+.edit-preview-block {
+  margin: 8px 0;
+}
+
+.edit-preview-block strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
 .checkpoint-diff {
   max-height: 240px;
   overflow: auto;

@@ -53,6 +53,12 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
                 lines.append(risk_line)
             if checkpoint.get("command"):
                 lines.append(f"   Command: {checkpoint['command']}")
+            if checkpoint.get("replacement_strategy") == "first_occurrence" and checkpoint.get("occurrences", 0) > 1:
+                lines.append(
+                    f"   Scope: primeira ocorrencia de {checkpoint['occurrences']} encontrada(s)"
+                )
+            if checkpoint.get("edit_preview"):
+                lines.extend(_format_edit_preview(checkpoint["edit_preview"], "   "))
             if checkpoint.get("diff"):
                 lines.append("   Diff:")
                 lines.extend(_format_indented_block(checkpoint["diff"], "     "))
@@ -79,6 +85,8 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
                 lines.append(f"  Context: {context}")
             if event.get("command"):
                 lines.append(f"  Command: {event['command']}")
+            if event.get("edit_preview"):
+                lines.extend(_format_edit_preview(event["edit_preview"], "  ", max_lines=8))
             if event.get("diff"):
                 lines.append("  Diff:")
                 lines.extend(_format_indented_block(event["diff"], "    ", max_lines=20))
@@ -348,6 +356,37 @@ def _format_indented_block(text: str, prefix: str, max_lines: int = 40) -> list[
     if len(lines) > max_lines:
         formatted.append(f"{prefix}... diff truncado ({len(lines) - max_lines} linha(s) restantes)")
     return formatted
+
+
+def _format_edit_preview(preview: dict[str, Any], prefix: str, max_lines: int = 12) -> list[str]:
+    lines = []
+    before = preview.get("before")
+    after = preview.get("after")
+    if before:
+        lines.append(f"{prefix}Preview before: {_format_line_span(before)}")
+        lines.extend(_format_indented_block(before.get("text", ""), prefix + "  ", max_lines=max_lines))
+    if after:
+        lines.append(f"{prefix}Preview after: {_format_line_span(after)}")
+        lines.extend(_format_indented_block(after.get("text", ""), prefix + "  ", max_lines=max_lines))
+    return lines
+
+
+def _format_line_span(block: dict[str, Any]) -> str:
+    start = block.get("line_start")
+    end = block.get("line_end")
+    focus_start = block.get("focus_start")
+    focus_end = block.get("focus_end")
+    if start == end:
+        window = f"linha {start}"
+    else:
+        window = f"linhas {start}-{end}"
+    if focus_start and focus_end:
+        if focus_start == focus_end:
+            focus = f"alvo {focus_start}"
+        else:
+            focus = f"alvo {focus_start}-{focus_end}"
+        return f"{window} ({focus})"
+    return window
 
 
 def _format_next_actions(actions: list[Any]) -> str:

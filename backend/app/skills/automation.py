@@ -319,6 +319,8 @@ def _checkpoint_event(checkpoint: dict[str, Any], result: SkillResult) -> dict[s
         "path": step.get("path"),
         "diff": step.get("diff"),
         "occurrences": step.get("occurrences"),
+        "edit_preview": step.get("edit_preview"),
+        "replacement_strategy": step.get("replacement_strategy"),
         "status": delegated_action.get("status", "unknown"),
         "reason": delegated_action.get("reason"),
         "delegated_skill": delegated_action.get("skill"),

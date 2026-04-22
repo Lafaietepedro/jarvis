@@ -148,12 +148,16 @@ function renderCheckpoints(checkpoints) {
     const next = document.createElement("p");
     next.textContent = checkpoint.next_step || "Revise antes de confirmar.";
     next.className = "next-step";
+    const preview = renderEditPreview(checkpoint.edit_preview);
     const diff = renderDiff(checkpoint.diff);
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
     button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
     item.append(title, risk, detail, meta);
+    if (preview) {
+      item.append(preview);
+    }
     if (diff) {
       item.append(diff);
     }
@@ -175,6 +179,9 @@ function checkpointMeta(checkpoint) {
   if (checkpoint.path) {
     parts.push(`arquivo: ${checkpoint.path}`);
   }
+  if (checkpoint.occurrences > 1) {
+    parts.push(`ocorrencias: ${checkpoint.occurrences}`);
+  }
   return parts.join(" | ");
 }
 
@@ -186,6 +193,55 @@ function renderDiff(value) {
   diff.className = "checkpoint-diff";
   diff.textContent = value;
   return diff;
+}
+
+function renderEditPreview(preview) {
+  if (!preview || (!preview.before && !preview.after)) {
+    return null;
+  }
+  const wrapper = document.createElement("div");
+  wrapper.className = "edit-preview";
+  const title = document.createElement("p");
+  title.className = "checkpoint-meta";
+  title.textContent = preview.has_multiple_matches
+    ? `Contexto da primeira ocorrencia entre ${preview.occurrence_count} encontradas`
+    : "Contexto da edicao";
+  wrapper.append(title);
+  if (preview.before) {
+    wrapper.append(renderEditPreviewBlock("Antes", preview.before));
+  }
+  if (preview.after) {
+    wrapper.append(renderEditPreviewBlock("Depois", preview.after));
+  }
+  return wrapper;
+}
+
+function renderEditPreviewBlock(label, block) {
+  const section = document.createElement("div");
+  section.className = "edit-preview-block";
+  const heading = document.createElement("strong");
+  heading.textContent = `${label} (${lineSpanLabel(block)})`;
+  const text = document.createElement("pre");
+  text.className = "checkpoint-diff";
+  text.textContent = block.text || "";
+  section.append(heading, text);
+  return section;
+}
+
+function lineSpanLabel(block) {
+  const start = block.line_start;
+  const end = block.line_end;
+  if (!start || !end) {
+    return "sem linhas";
+  }
+  const window = start === end ? `linha ${start}` : `linhas ${start}-${end}`;
+  if (!block.focus_start || !block.focus_end) {
+    return window;
+  }
+  const focus = block.focus_start === block.focus_end
+    ? `alvo ${block.focus_start}`
+    : `alvo ${block.focus_start}-${block.focus_end}`;
+  return `${window}, ${focus}`;
 }
 
 function renderCheckpointEvents(events) {

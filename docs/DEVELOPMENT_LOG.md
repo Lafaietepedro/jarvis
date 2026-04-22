@@ -23,6 +23,7 @@ O nucleo atual ja consegue:
 - localizar arquivos por nome dentro do workspace;
 - ler e resumir arquivos de texto do workspace com limite de tamanho;
 - preparar propostas de edicao de arquivo com diff, sem gravar no disco;
+- revisar propostas de edicao com preview contextual por linha antes da confirmacao;
 - revisar diffs de edicoes pendentes no CLI e na interface web local antes de confirmar;
 - aplicar propostas de edicao apenas por checkpoint confirmado;
 - analisar capacidades de projeto com uma skill dev inicial;
@@ -752,6 +753,19 @@ Entregas:
 - Contexto de checkpoints agora inclui o arquivo afetado quando disponivel.
 - Testes cobrem snapshot de sessao, contrato de checkpoints, formatador CLI, estado da UI, assets frontend e fluxo core de edicao.
 
+### Fase 3AX - Preview Contextual De Edicoes
+
+Status: concluida.
+
+Entregas:
+- Propostas de edicao agora geram `edit_preview` estruturado com linhas antes/depois e faixa alvo da substituicao.
+- Respostas de `propose_file_edit` deixam explicito quando existem multiplas ocorrencias e que apenas a primeira sera editada.
+- Checkpoints e eventos de edicao preservam `edit_preview` e `replacement_strategy` para revisao e auditoria curta.
+- CLI mostra preview contextual antes/depois, alem do diff bruto, para checkpoints e eventos de edicao.
+- Interface web local mostra contexto da primeira ocorrencia com blocos "Antes" e "Depois".
+- Metadados de checkpoint agora exibem quantidade de ocorrencias quando a troca nao e unica.
+- Testes cobrem preview no core, sessao, checkpoints, CLI, UI state e assets frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -769,8 +783,9 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Melhorar propostas de edicao com preview contextual por trecho/linha e validacao mais explicita antes de aplicar.
 - Evoluir o historico curto de edicoes aplicadas para facilitar auditoria e futura reversao.
+- Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
+- Associar checkpoints de edicao ao historico local para rastrear o pedido original que gerou cada mudanca.
 
 ## Fases Futuras Planejadas
 
@@ -881,13 +896,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-219 tests OK
+220 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 219 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 220 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

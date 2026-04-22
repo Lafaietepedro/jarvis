@@ -134,6 +134,23 @@ class UIStateTest(unittest.TestCase):
                         "path": "README.md",
                         "diff": "--- a/README.md\n+++ b/README.md\n-old\n+new",
                         "occurrences": 1,
+                        "edit_preview": {
+                            "before": {
+                                "line_start": 1,
+                                "line_end": 1,
+                                "focus_start": 1,
+                                "focus_end": 1,
+                                "text": "   1 | old",
+                            },
+                            "after": {
+                                "line_start": 1,
+                                "line_end": 1,
+                                "focus_start": 1,
+                                "focus_end": 1,
+                                "text": "   1 | new",
+                            },
+                        },
+                        "replacement_strategy": "first_occurrence",
                         "risk": "high",
                         "requires_confirmation": True,
                     },
@@ -148,6 +165,8 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["path"], "README.md")
         self.assertTrue(checkpoint["has_diff"])
         self.assertIn("+new", checkpoint["diff"])
+        self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
+        self.assertIn("new", checkpoint["edit_preview"]["after"]["text"])
 
 
 if __name__ == "__main__":

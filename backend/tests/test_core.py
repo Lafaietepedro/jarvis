@@ -75,12 +75,28 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertFalse(result["data"]["writes_file"])
         self.assertIn("-# Test Project", result["data"]["diff"])
         self.assertIn("+# Projeto Seguro", result["data"]["diff"])
+        self.assertEqual(result["data"]["replacement_strategy"], "first_occurrence")
+        self.assertIn("# Test Project", result["data"]["edit_preview"]["before"]["text"])
+        self.assertIn("# Projeto Seguro", result["data"]["edit_preview"]["after"]["text"])
         self.assertEqual(result["data"]["checkpoints"][0]["source"], "file_edit")
         self.assertEqual(result["session"]["automation_checkpoints"][0]["plan"], "file_edit")
         self.assertEqual(result["session"]["automation_checkpoints"][0]["path"], "README.md")
         self.assertIn("+# Projeto Seguro", result["session"]["automation_checkpoints"][0]["diff"])
+        self.assertIn("# Projeto Seguro", result["session"]["automation_checkpoints"][0]["edit_preview"]["after"]["text"])
         self.assertIn("# Test Project", (self.project_path / "README.md").read_text(encoding="utf-8"))
         self.assertIn("confirmar checkpoint 1", result["suggestions"])
+
+    def test_propose_file_edit_warns_when_multiple_occurrences_exist(self):
+        (self.project_path / "README.md").write_text(
+            "# Test Project\n# Test Project\n",
+            encoding="utf-8",
+        )
+
+        result = self.core.execute("preparar edição arquivo README.md trocar Test Project por Projeto Seguro")
+
+        self.assertEqual(result["action"]["occurrences"], 2)
+        self.assertIn("apenas a primeira ocorrencia", result["response"])
+        self.assertTrue(result["data"]["edit_preview"]["has_multiple_matches"])
 
     def test_propose_file_edit_requires_existing_text(self):
         result = self.core.execute("preparar edição arquivo README.md trocar Ausente por Novo")
@@ -106,6 +122,7 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(event["intent"], "apply_file_edit")
         self.assertEqual(event["path"], "README.md")
         self.assertIn("+# Projeto Seguro", event["diff"])
+        self.assertIn("# Projeto Seguro", event["edit_preview"]["after"]["text"])
 
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")
