@@ -150,10 +150,6 @@ function renderCheckpoints(checkpoints) {
     next.className = "next-step";
     const preview = renderEditPreview(checkpoint.edit_preview);
     const diff = renderDiff(checkpoint.diff);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
-    button.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
     item.append(title, risk, detail, meta);
     if (preview) {
       item.append(preview);
@@ -161,7 +157,11 @@ function renderCheckpoints(checkpoints) {
     if (diff) {
       item.append(diff);
     }
-    item.append(next, button);
+    item.append(next);
+    const actions = renderCheckpointActions(checkpoint);
+    if (actions) {
+      item.append(actions);
+    }
     nodes.checkpointList.append(item);
   }
 }
@@ -268,6 +268,10 @@ function renderCheckpointEvents(events) {
     next.className = "next-step";
     next.textContent = event.next_step || "Nenhuma acao pendente.";
     item.append(title, detail, meta, next);
+    const actions = renderCheckpointEventActions(event);
+    if (actions) {
+      item.append(actions);
+    }
     nodes.checkpointEvents.append(item);
   }
 }
@@ -300,6 +304,9 @@ function renderHistory(commands) {
   for (const command of commands) {
     const item = document.createElement("li");
     item.className = "history-row";
+    if (command.id) {
+      item.dataset.historyCommandId = String(command.id);
+    }
     const details = document.createElement("div");
     details.className = "history-details";
     const action = command.action || {};
@@ -345,6 +352,9 @@ function renderMemoryAudit(audit) {
   for (const command of sample.slice(0, 5)) {
     const item = document.createElement("li");
     item.className = "memory-row";
+    if (command.id) {
+      item.dataset.historyCommandId = String(command.id);
+    }
     const details = document.createElement("div");
     details.className = "history-details";
     const action = command.action || {};
@@ -422,6 +432,66 @@ async function loadMemoryAudit(filters, announce = true) {
 
 async function prepareRevert(command) {
   await sendCommand(command, false);
+}
+
+function renderCheckpointActions(checkpoint) {
+  const actions = document.createElement("div");
+  actions.className = "checkpoint-actions";
+  if (checkpoint.source_command_id) {
+    const origin = document.createElement("button");
+    origin.type = "button";
+    origin.className = "secondary-button";
+    origin.textContent = `Ver origem #${checkpoint.source_command_id}`;
+    origin.addEventListener("click", () => jumpToHistoryCommand(checkpoint.source_command_id));
+    actions.append(origin);
+  }
+  const confirm = document.createElement("button");
+  confirm.type = "button";
+  confirm.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
+  confirm.addEventListener("click", () => sendCommand(`confirmar checkpoint ${checkpoint.checkpoint_id}`, true));
+  actions.append(confirm);
+  return actions;
+}
+
+function renderCheckpointEventActions(event) {
+  const actions = document.createElement("div");
+  actions.className = "checkpoint-actions";
+  if (event.source_command_id) {
+    const origin = document.createElement("button");
+    origin.type = "button";
+    origin.className = "secondary-button";
+    origin.textContent = `Ver origem #${event.source_command_id}`;
+    origin.addEventListener("click", () => jumpToHistoryCommand(event.source_command_id));
+    actions.append(origin);
+  }
+  const editAudit = resolveEventEditAudit(event);
+  if (editAudit && editAudit.revert_command) {
+    const revert = document.createElement("button");
+    revert.type = "button";
+    revert.className = "secondary-button";
+    revert.textContent = "Preparar reversao";
+    revert.addEventListener("click", () => prepareRevert(editAudit.revert_command));
+    actions.append(revert);
+  }
+  return actions.childElementCount ? actions : null;
+}
+
+function resolveEventEditAudit(event) {
+  if (event.edit_audit) {
+    return event.edit_audit;
+  }
+  return null;
+}
+
+function jumpToHistoryCommand(commandId) {
+  const target = document.querySelector(`[data-history-command-id="${commandId}"]`);
+  if (!target) {
+    nodes.lastResponse.textContent = `A origem #${commandId} nao esta visivel no historico atual.`;
+    return;
+  }
+  target.scrollIntoView({behavior: "smooth", block: "center"});
+  target.classList.add("highlighted");
+  window.setTimeout(() => target.classList.remove("highlighted"), 1800);
 }
 
 function renderNextActions(actions) {

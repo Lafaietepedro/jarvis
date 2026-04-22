@@ -30,6 +30,7 @@ O nucleo atual ja consegue:
 - preparar reversao assistida de edicoes a partir da auditoria local registrada;
 - rastrear a origem historica de checkpoints de edicao diretamente na sessao e na UI;
 - permitir reversao segura por acao visual direta no historico local e na auditoria;
+- navegar visualmente do checkpoint para a origem historica e preparar reversao do evento aplicado;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -818,6 +819,17 @@ Entregas:
 - Layout da UI foi ajustado para acomodar botoes de reversao e exclusao sem quebrar leitura dos itens.
 - Testes de assets frontend cobrem as novas funcoes e estilos da interface web.
 
+### Fase 3BC - Navegacao Entre Checkpoint E Historico
+
+Status: concluida.
+
+Entregas:
+- Checkpoints na interface web agora mostram acao `Ver origem #<id>` quando possuem comando historico associado.
+- Eventos recentes de checkpoints tambem podem navegar para a origem historica visivel e, quando ha `edit_audit`, preparar reversao direta dali.
+- Itens do historico e da amostra de memoria recebem identificacao visual para permitir foco e destaque temporario.
+- UI destaca a entrada localizada no historico para facilitar o rastreamento da trilha completa do pedido.
+- Testes de assets frontend cobrem funcoes de navegacao, botoes de origem e estilos de destaque.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -837,8 +849,7 @@ Prioridades atuais:
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
 - Expor relacao direta entre checkpoint de edicao e comando historico de origem na UI de checkpoints.
-- Mostrar na UI um atalho direto da origem historica do checkpoint para a entrada correspondente no historico local.
-- Permitir reverter uma edicao diretamente a partir do bloco de detalhes do checkpoint quando a origem ja tiver sido aplicada.
+- Quando a origem nao estiver visivel, oferecer um fluxo guiado para localizar automaticamente o comando no painel de memoria.
 
 ## Fases Futuras Planejadas
 
