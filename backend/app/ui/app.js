@@ -299,16 +299,24 @@ function renderHistory(commands) {
 
   for (const command of commands) {
     const item = document.createElement("li");
+    item.className = "history-row";
+    const details = document.createElement("div");
+    details.className = "history-details";
     const action = command.action || {};
     const title = document.createElement("div");
     title.textContent = `${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"}`;
-    item.append(title);
+    details.append(title);
     const editAudit = resolveEditAudit(command);
     if (editAudit) {
-      item.append(historyMeta(`Edit: ${editAudit.summary || editAudit.path || "arquivo local"}`));
+      details.append(historyMeta(`Edit: ${editAudit.summary || editAudit.path || "arquivo local"}`));
       if (editAudit.revert_command) {
-        item.append(historyMeta(`Reverter: ${editAudit.revert_command}`));
+        details.append(historyMeta(`Reverter: ${editAudit.revert_command}`));
       }
+    }
+    item.append(details);
+    const actions = renderHistoryActions(command, {allowDelete: false});
+    if (actions) {
+      item.append(actions);
     }
     nodes.historyList.append(item);
   }
@@ -348,16 +356,35 @@ function renderMemoryAudit(audit) {
       details.append(historyMeta(`Edit: ${editAudit.summary || editAudit.path || "arquivo local"}`));
     }
     item.append(details);
-    if (command.id) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "danger-button";
-      button.textContent = "Apagar";
-      button.addEventListener("click", () => deleteMemoryById(command.id));
-      item.append(button);
+    const actions = renderHistoryActions(command, {allowDelete: true});
+    if (actions) {
+      item.append(actions);
     }
     nodes.memoryAuditSample.append(item);
   }
+}
+
+function renderHistoryActions(command, options = {}) {
+  const actions = document.createElement("div");
+  actions.className = "history-actions";
+  const editAudit = resolveEditAudit(command);
+  if (editAudit && editAudit.revert_command) {
+    const revert = document.createElement("button");
+    revert.type = "button";
+    revert.className = "secondary-button";
+    revert.textContent = "Preparar reversao";
+    revert.addEventListener("click", () => prepareRevert(editAudit.revert_command));
+    actions.append(revert);
+  }
+  if (options.allowDelete && command.id) {
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "danger-button";
+    remove.textContent = "Apagar";
+    remove.addEventListener("click", () => deleteMemoryById(command.id));
+    actions.append(remove);
+  }
+  return actions.childElementCount ? actions : null;
 }
 
 function historyMeta(text) {
@@ -391,6 +418,10 @@ async function loadMemoryAudit(filters, announce = true) {
   if (announce) {
     nodes.lastResponse.textContent = `Auditoria filtrada: ${audit.matching_count || 0} comando(s).`;
   }
+}
+
+async function prepareRevert(command) {
+  await sendCommand(command, false);
 }
 
 function renderNextActions(actions) {

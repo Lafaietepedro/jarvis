@@ -29,6 +29,7 @@ O nucleo atual ja consegue:
 - auditar edicoes aplicadas no historico local com resumo e pista de reversao;
 - preparar reversao assistida de edicoes a partir da auditoria local registrada;
 - rastrear a origem historica de checkpoints de edicao diretamente na sessao e na UI;
+- permitir reversao segura por acao visual direta no historico local e na auditoria;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -806,6 +807,17 @@ Entregas:
 - Interface web local mostra a origem do checkpoint nos metadados exibidos ao usuario.
 - Testes cobrem sessao, core, contrato da API, formatacao CLI, estado da UI e assets frontend.
 
+### Fase 3BB - Reversao Visual No Historico
+
+Status: concluida.
+
+Entregas:
+- Historico local na interface web agora mostra botao `Preparar reversao` para entradas com `edit_audit.revert_command`.
+- Amostra da auditoria de memoria tambem permite preparar reversao segura sem precisar digitar comando ou id.
+- A acao visual reutiliza o mesmo endpoint `/command`, preparando nova proposta reversa sem gravar diretamente.
+- Layout da UI foi ajustado para acomodar botoes de reversao e exclusao sem quebrar leitura dos itens.
+- Testes de assets frontend cobrem as novas funcoes e estilos da interface web.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -825,8 +837,8 @@ Prioridades atuais:
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
 - Expor relacao direta entre checkpoint de edicao e comando historico de origem na UI de checkpoints.
-- Permitir reversao assistida por selecao visual no historico local, sem depender de lembrar ou digitar o id do comando.
-- Mostrar na UI um atalho direto da origem historica para acao de reversao segura, sem redigitar o comando manualmente.
+- Mostrar na UI um atalho direto da origem historica do checkpoint para a entrada correspondente no historico local.
+- Permitir reverter uma edicao diretamente a partir do bloco de detalhes do checkpoint quando a origem ja tiver sido aplicada.
 
 ## Fases Futuras Planejadas
 

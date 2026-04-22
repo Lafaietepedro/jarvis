@@ -352,6 +352,13 @@ dd {
   color: var(--muted);
 }
 
+.history-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: start;
+}
+
 .history-meta {
   display: block;
   margin-top: 4px;
@@ -363,11 +370,27 @@ dd {
   min-width: 0;
 }
 
+.history-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
 .memory-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
   align-items: center;
+}
+
+.secondary-button {
+  border-color: var(--cyan);
+  background: #0d2525;
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible {
+  background: #153535;
 }
 
 .danger-button {
