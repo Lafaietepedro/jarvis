@@ -224,6 +224,7 @@ class CliFormatTest(unittest.TestCase):
                         "reason": "confirmation_required",
                         "source_label": "edicao de arquivo",
                         "path": "README.md",
+                        "revert_command": "preparar edicao arquivo README.md trocar bar por foo",
                         "source_command_id": 9,
                         "source_command_text": "preparar edição arquivo README.md trocar foo por bar",
                         "occurrences": 2,
@@ -261,6 +262,7 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("Diff:", output)
         self.assertIn("--- a/README.md", output)
         self.assertIn("+bar", output)
+        self.assertIn("Revert: preparar edicao arquivo README.md trocar bar por foo", output)
         self.assertIn("Context: edicao de arquivo | README.md", output)
 
     def test_format_privacy(self):

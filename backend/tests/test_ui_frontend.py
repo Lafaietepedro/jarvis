@@ -55,6 +55,7 @@ class UIFrontendTest(unittest.TestCase):
         self.assertIn("jumpToHistoryCommand", script[0])
         self.assertIn("locateHistoryCommand", script[0])
         self.assertIn("findHistoryCommandNode", script[0])
+        self.assertIn("checkpoint.revert_command", script[0])
         self.assertIn("Ver origem #", script[0])
         self.assertIn("command_id=", script[0])
         self.assertIn("prepareRevert", script[0])

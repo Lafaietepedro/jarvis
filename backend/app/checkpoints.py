@@ -45,6 +45,7 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
     occurrences = _checkpoint_value(checkpoint, "occurrences")
     edit_preview = _checkpoint_value(checkpoint, "edit_preview")
     replacement_strategy = _checkpoint_value(checkpoint, "replacement_strategy")
+    revert_command = _checkpoint_value(checkpoint, "revert_command")
     source_command_id = _checkpoint_value(checkpoint, "source_command_id")
     source_command_text = _checkpoint_value(checkpoint, "source_command_text")
     return {
@@ -59,6 +60,7 @@ def _enrich_checkpoint(checkpoint: dict[str, Any]) -> dict[str, Any]:
         "occurrences": occurrences,
         "edit_preview": edit_preview,
         "replacement_strategy": replacement_strategy,
+        "revert_command": revert_command,
         "source_command_id": source_command_id,
         "source_command_text": source_command_text,
         "checkpoint_detail": _checkpoint_detail(source, step_index, step_label, checkpoint),
@@ -121,9 +123,12 @@ def _checkpoint_next_step(checkpoint: dict[str, Any]) -> str:
     if checkpoint.get("source") == "file_edit":
         path = _checkpoint_value(checkpoint, "path")
         occurrences = _checkpoint_value(checkpoint, "occurrences")
+        revert_command = _checkpoint_value(checkpoint, "revert_command")
         if path:
             if occurrences and occurrences > 1:
                 return f"Revisar diff e contexto de `{path}`; apenas a primeira de {occurrences} ocorrencias sera editada."
+            if revert_command:
+                return f"Revisar diff de `{path}` antes de confirmar ou preparar a reversao segura da proposta."
             return f"Revisar diff de `{path}` antes de confirmar."
     return f"Revisar {checkpoint.get('label', 'checkpoint')} antes de confirmar."
 

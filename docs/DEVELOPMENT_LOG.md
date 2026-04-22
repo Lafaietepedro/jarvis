@@ -32,6 +32,7 @@ O nucleo atual ja consegue:
 - permitir reversao segura por acao visual direta no historico local e na auditoria;
 - navegar visualmente do checkpoint para a origem historica e preparar reversao do evento aplicado;
 - localizar automaticamente a origem de um checkpoint na memoria local quando ela nao estiver visivel no historico curto;
+- preparar reversao segura direto no proprio bloco do checkpoint pendente quando a proposta suportar inversao segura;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -842,6 +843,17 @@ Entregas:
 - A UI informa explicitamente quando a origem foi encontrada ou quando ela nao existe mais na memoria local.
 - Testes cobrem o filtro por `command_id` na memoria, no contrato da API e nos assets frontend.
 
+### Fase 3BE - Reversao Direta No Checkpoint Pendente
+
+Status: concluida.
+
+Entregas:
+- Checkpoints de edicao de arquivo agora carregam `revert_command` proprio desde a proposta inicial.
+- Snapshot de sessao e estado agregado preservam essa pista de reversao para API, UI e CLI.
+- Interface web local mostra `Preparar reversao` diretamente no bloco do checkpoint pendente quando a proposta suporta inversao segura.
+- Painel CLI de checkpoints exibe o comando de reversao associado para leitura auditavel.
+- Testes cobrem contrato de checkpoints, estado da UI, formatacao CLI e assets frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -860,8 +872,8 @@ Prioridades atuais:
 
 Primeiras tarefas recomendadas:
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
-- Permitir preparar reversao segura direto do proprio bloco de checkpoint pendente, sem depender apenas do historico e dos eventos.
 - Expandir a navegacao visual entre historico curto e memoria auditavel com preservacao dos filtros ativos do usuario.
+- Ajudar o usuario a cancelar ou arquivar checkpoints antigos quando uma proposta inversa gerar uma alternativa concorrente.
 
 ## Fases Futuras Planejadas
 

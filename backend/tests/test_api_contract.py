@@ -105,6 +105,10 @@ class ApiContractTest(unittest.TestCase):
         checkpoint = checkpoints["checkpoints"][0]
         self.assertEqual(checkpoint["source_command_id"], 1)
         self.assertEqual(checkpoint["source_command_text"], "preparar edição arquivo README.md trocar API Contract Test por Projeto Seguro")
+        self.assertEqual(
+            checkpoint["revert_command"],
+            "preparar edicao arquivo README.md trocar Projeto Seguro por API Contract Test",
+        )
 
     def test_history_audit_contract(self):
         command = main.CommandRequest(text="qual o status")

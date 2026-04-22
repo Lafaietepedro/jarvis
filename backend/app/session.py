@@ -65,6 +65,7 @@ class SessionState:
             "occurrences",
             "edit_preview",
             "replacement_strategy",
+            "revert_command",
             "source_command_id",
             "source_command_text",
         ):

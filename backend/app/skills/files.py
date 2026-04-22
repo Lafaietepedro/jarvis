@@ -343,6 +343,7 @@ def _register_edit_checkpoint(
     session_state = options.get("session_state")
     if session_state is None:
         return []
+    revert_command = _build_revert_command(path, old_text, new_text)
 
     checkpoint = {
         "index": 1,
@@ -359,6 +360,7 @@ def _register_edit_checkpoint(
             "occurrences": occurrences,
             "edit_preview": edit_preview,
             "replacement_strategy": replacement_strategy,
+            "revert_command": revert_command,
             "risk": "high",
             "requires_confirmation": True,
         },

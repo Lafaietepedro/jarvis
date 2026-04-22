@@ -65,6 +65,8 @@ def format_checkpoints(payload: dict[str, Any]) -> str:
             if checkpoint.get("diff"):
                 lines.append("   Diff:")
                 lines.extend(_format_indented_block(checkpoint["diff"], "     "))
+            if checkpoint.get("revert_command"):
+                lines.append(f"   Revert: {checkpoint['revert_command']}")
             if checkpoint.get("next_step"):
                 lines.append(f"   Next: {checkpoint['next_step']}")
             lines.append(f"   Confirm: confirmar checkpoint {checkpoint_id}")

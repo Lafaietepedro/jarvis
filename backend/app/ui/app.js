@@ -445,6 +445,14 @@ function renderCheckpointActions(checkpoint) {
     origin.addEventListener("click", () => jumpToHistoryCommand(checkpoint.source_command_id));
     actions.append(origin);
   }
+  if (checkpoint.revert_command) {
+    const revert = document.createElement("button");
+    revert.type = "button";
+    revert.className = "secondary-button";
+    revert.textContent = "Preparar reversao";
+    revert.addEventListener("click", () => prepareRevert(checkpoint.revert_command));
+    actions.append(revert);
+  }
   const confirm = document.createElement("button");
   confirm.type = "button";
   confirm.textContent = `Confirmar ${checkpoint.checkpoint_id}`;
