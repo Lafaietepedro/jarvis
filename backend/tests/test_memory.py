@@ -54,6 +54,28 @@ class MemoryStoreTest(unittest.TestCase):
         self.assertEqual(exported["commands"][0]["text"], "qual o status")
         self.assertIn("stats", exported)
 
+    def test_preserves_edit_audit_inside_action_history(self):
+        self.memory.record_command(
+            text="confirmar checkpoint 1",
+            intent={"intent": "confirm_checkpoint"},
+            action={
+                "skill": "automation",
+                "name": "confirm_checkpoint",
+                "status": "done",
+                "edit_audit": {
+                    "path": "README.md",
+                    "summary": "README.md | linha 1 (alvo 1) | primeira ocorrencia",
+                    "revert_command": "preparar edicao arquivo README.md trocar Novo por Antigo",
+                },
+            },
+            response="Checkpoint 1 confirmado.",
+        )
+
+        command = self.memory.recent_commands()[0]
+
+        self.assertEqual(command["action"]["edit_audit"]["path"], "README.md")
+        self.assertIn("trocar Novo por Antigo", command["action"]["edit_audit"]["revert_command"])
+
     def test_clear_history_returns_deleted_count(self):
         self.memory.record_command(
             text="qual o status",

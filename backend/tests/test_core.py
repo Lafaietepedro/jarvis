@@ -123,6 +123,13 @@ class JarvisCoreTest(unittest.TestCase):
         self.assertEqual(event["path"], "README.md")
         self.assertIn("+# Projeto Seguro", event["diff"])
         self.assertIn("# Projeto Seguro", event["edit_preview"]["after"]["text"])
+        self.assertEqual(result["action"]["edit_audit"]["path"], "README.md")
+        self.assertIn("README.md", result["action"]["edit_audit"]["summary"])
+        self.assertIn("trocar Projeto Seguro por Test Project", result["action"]["edit_audit"]["revert_command"])
+
+        history_entry = self.memory.recent_commands()[0]
+        self.assertEqual(history_entry["text"], "confirmar checkpoint 1")
+        self.assertEqual(history_entry["action"]["edit_audit"]["path"], "README.md")
 
     def test_shell_requires_confirmation_by_default(self):
         result = self.core.execute("rode make test")

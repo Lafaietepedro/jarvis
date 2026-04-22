@@ -214,6 +214,7 @@ def confirm_checkpoint(intent: dict[str, Any], context: dict[str, Any], options:
             "status": status,
             "checkpoint_id": checkpoint["checkpoint_id"],
             "delegated_action": result.action,
+            "edit_audit": result.action.get("edit_audit"),
         },
         suggestions=result.suggestions,
         data={
@@ -321,6 +322,7 @@ def _checkpoint_event(checkpoint: dict[str, Any], result: SkillResult) -> dict[s
         "occurrences": step.get("occurrences"),
         "edit_preview": step.get("edit_preview"),
         "replacement_strategy": step.get("replacement_strategy"),
+        "edit_audit": delegated_action.get("edit_audit"),
         "status": delegated_action.get("status", "unknown"),
         "reason": delegated_action.get("reason"),
         "delegated_skill": delegated_action.get("skill"),

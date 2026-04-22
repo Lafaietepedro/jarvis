@@ -297,15 +297,34 @@ def _apply_file_edit(
     updated = content.replace(old_text, new_text, 1)
     diff = _unified_diff(relative, content, updated)
     edit_preview = _build_edit_preview(content, updated, old_text, new_text, content.count(old_text))
+    edit_audit = _build_edit_audit(
+        relative,
+        old_text,
+        new_text,
+        content.count(old_text),
+        edit_preview,
+        "first_occurrence",
+    )
     path.write_text(updated, encoding="utf-8")
+    suggestions = []
+    if edit_audit.get("revert_command"):
+        suggestions.append(edit_audit["revert_command"])
     return SkillResult(
         response=f"Edicao aplicada em `{relative}`.",
-        action={"skill": "files", "name": "apply_file_edit", "status": "done", "path": relative},
+        action={
+            "skill": "files",
+            "name": "apply_file_edit",
+            "status": "done",
+            "path": relative,
+            "edit_audit": edit_audit,
+        },
+        suggestions=suggestions,
         data={
             "path": relative,
             "diff": diff,
             "edit_preview": edit_preview,
             "replacement_strategy": "first_occurrence",
+            "edit_audit": edit_audit,
             "writes_file": True,
         },
     )
@@ -465,6 +484,31 @@ def _build_edit_preview(
     }
 
 
+def _build_edit_audit(
+    path: str,
+    old_text: str,
+    new_text: str,
+    occurrences: int,
+    edit_preview: dict[str, Any],
+    replacement_strategy: str,
+) -> dict[str, Any]:
+    before = edit_preview.get("before") or {}
+    after = edit_preview.get("after") or {}
+    revert_command = _build_revert_command(path, old_text, new_text)
+    return {
+        "kind": "file_edit",
+        "path": path,
+        "summary": _build_edit_summary(path, before, occurrences, replacement_strategy),
+        "occurrences": occurrences,
+        "replacement_strategy": replacement_strategy,
+        "old_text_preview": _inline_preview(old_text),
+        "new_text_preview": _inline_preview(new_text),
+        "before_lines": _line_block_summary(before),
+        "after_lines": _line_block_summary(after),
+        "revert_command": revert_command,
+    }
+
+
 def _line_span_for_range(content: str, start_index: int, length: int) -> tuple[int, int]:
     if start_index < 0:
         return (1, 1)
@@ -508,3 +552,52 @@ def _extract_numbered_context(content: str, focus_start: int, focus_end: int) ->
         "focus_end": focus_end,
         "text": block,
     }
+
+
+def _build_edit_summary(
+    path: str,
+    before: dict[str, Any],
+    occurrences: int,
+    replacement_strategy: str,
+) -> str:
+    parts = [path]
+    line_window = _line_block_summary(before)
+    if line_window:
+        parts.append(line_window)
+    if replacement_strategy == "first_occurrence":
+        if occurrences > 1:
+            parts.append(f"primeira de {occurrences} ocorrencias")
+        else:
+            parts.append("primeira ocorrencia")
+    return " | ".join(parts)
+
+
+def _line_block_summary(block: dict[str, Any]) -> str | None:
+    start = block.get("line_start")
+    end = block.get("line_end")
+    if not start or not end:
+        return None
+    if start == end:
+        window = f"linha {start}"
+    else:
+        window = f"linhas {start}-{end}"
+    focus_start = block.get("focus_start")
+    focus_end = block.get("focus_end")
+    if focus_start and focus_end:
+        if focus_start == focus_end:
+            return f"{window} (alvo {focus_start})"
+        return f"{window} (alvo {focus_start}-{focus_end})"
+    return window
+
+
+def _inline_preview(value: str, max_chars: int = 60) -> str:
+    compact = " ".join(value.split())
+    if len(compact) <= max_chars:
+        return compact
+    return compact[: max_chars - 3] + "..."
+
+
+def _build_revert_command(path: str, old_text: str, new_text: str) -> str | None:
+    if "\n" in old_text or "\n" in new_text:
+        return None
+    return f"preparar edicao arquivo {path} trocar {new_text} por {old_text}"

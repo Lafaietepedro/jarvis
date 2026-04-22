@@ -26,6 +26,7 @@ O nucleo atual ja consegue:
 - revisar propostas de edicao com preview contextual por linha antes da confirmacao;
 - revisar diffs de edicoes pendentes no CLI e na interface web local antes de confirmar;
 - aplicar propostas de edicao apenas por checkpoint confirmado;
+- auditar edicoes aplicadas no historico local com resumo e pista de reversao;
 - analisar capacidades de projeto com uma skill dev inicial;
 - consultar status de midia/audio e preparar controles de volume/reproducao;
 - preparar abertura de URL e pesquisa web com permissao explicita;
@@ -766,6 +767,18 @@ Entregas:
 - Metadados de checkpoint agora exibem quantidade de ocorrencias quando a troca nao e unica.
 - Testes cobrem preview no core, sessao, checkpoints, CLI, UI state e assets frontend.
 
+### Fase 3AY - Auditoria De Edicoes No Historico
+
+Status: concluida.
+
+Entregas:
+- Aplicacoes confirmadas de arquivo agora geram `edit_audit` compacto no `action` gravado na memoria local.
+- Auditoria inclui arquivo alterado, resumo de linhas/faixa alvo, estrategia de substituicao e pista de reversao quando possivel.
+- `confirmar checkpoint <id>` preserva a auditoria da edicao no resultado principal e no historico local.
+- CLI de historico e auditoria de memoria exibem resumo da edicao e comando sugerido para reversao.
+- Interface web local mostra metadados de edicao tambem na lista de historico e na amostra da auditoria.
+- Testes cobrem preservacao da auditoria em memoria, core, contrato da API, CLI, UI state e assets frontend.
+
 ## Em Desenvolvimento Ativo
 
 ### Fase 3 - Assistente Local Do Computador
@@ -783,9 +796,9 @@ Prioridades atuais:
 - Tornar a memoria local mais auditavel e editavel.
 
 Primeiras tarefas recomendadas:
-- Evoluir o historico curto de edicoes aplicadas para facilitar auditoria e futura reversao.
 - Permitir revisao e confirmacao sequencial de multiplas ocorrencias quando o usuario quiser editar mais de um ponto no mesmo arquivo.
 - Associar checkpoints de edicao ao historico local para rastrear o pedido original que gerou cada mudanca.
+- Preparar uma acao segura de reversao assistida usando a auditoria de edicao ja registrada no historico local.
 
 ## Fases Futuras Planejadas
 
@@ -896,13 +909,13 @@ make test
 Resultado esperado no estado atual:
 
 ```text
-220 tests OK
+225 tests OK
 ```
 
 Observacao:
 - Em Python sem dependencias web instaladas, os 10 testes de contrato da API e os smokes HTTP/visual sao pulados.
 - Em ambientes que bloqueiam sockets localhost, o smoke HTTP e pulado.
-- Na suite principal do projeto, a suite tem 220 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
+- Na suite principal do projeto, a suite tem 225 testes; smokes opcionais rodam quando sockets localhost e Chromium estao disponiveis.
 
 ```bash
 python -m compileall backend/app

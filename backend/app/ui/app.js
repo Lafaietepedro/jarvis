@@ -294,7 +294,16 @@ function renderHistory(commands) {
   for (const command of commands) {
     const item = document.createElement("li");
     const action = command.action || {};
-    item.textContent = `${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"}`;
+    const title = document.createElement("div");
+    title.textContent = `${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"}`;
+    item.append(title);
+    const editAudit = resolveEditAudit(command);
+    if (editAudit) {
+      item.append(historyMeta(`Edit: ${editAudit.summary || editAudit.path || "arquivo local"}`));
+      if (editAudit.revert_command) {
+        item.append(historyMeta(`Reverter: ${editAudit.revert_command}`));
+      }
+    }
     nodes.historyList.append(item);
   }
 }
@@ -322,10 +331,17 @@ function renderMemoryAudit(audit) {
   for (const command of sample.slice(0, 5)) {
     const item = document.createElement("li");
     item.className = "memory-row";
+    const details = document.createElement("div");
+    details.className = "history-details";
     const action = command.action || {};
     const detail = document.createElement("span");
     detail.textContent = `#${command.id || "?"} ${command.text || ""} -> ${action.skill || "core"}.${action.name || "acao"} (${action.status || "unknown"})`;
-    item.append(detail);
+    details.append(detail);
+    const editAudit = resolveEditAudit(command);
+    if (editAudit) {
+      details.append(historyMeta(`Edit: ${editAudit.summary || editAudit.path || "arquivo local"}`));
+    }
+    item.append(details);
     if (command.id) {
       const button = document.createElement("button");
       button.type = "button";
@@ -336,6 +352,24 @@ function renderMemoryAudit(audit) {
     }
     nodes.memoryAuditSample.append(item);
   }
+}
+
+function historyMeta(text) {
+  const meta = document.createElement("span");
+  meta.className = "history-meta";
+  meta.textContent = text;
+  return meta;
+}
+
+function resolveEditAudit(command) {
+  const action = command.action || {};
+  if (action.edit_audit) {
+    return action.edit_audit;
+  }
+  if (action.delegated_action && action.delegated_action.edit_audit) {
+    return action.delegated_action.edit_audit;
+  }
+  return null;
 }
 
 async function loadMemoryAudit(filters, announce = true) {

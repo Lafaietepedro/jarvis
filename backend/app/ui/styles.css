@@ -352,6 +352,17 @@ dd {
   color: var(--muted);
 }
 
+.history-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.history-details {
+  min-width: 0;
+}
+
 .memory-row {
   display: grid;
   grid-template-columns: 1fr auto;

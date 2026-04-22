@@ -168,6 +168,29 @@ class UIStateTest(unittest.TestCase):
         self.assertEqual(checkpoint["replacement_strategy"], "first_occurrence")
         self.assertIn("new", checkpoint["edit_preview"]["after"]["text"])
 
+    def test_build_ui_state_preserves_edit_audit_in_history(self):
+        self.memory.record_command(
+            text="confirmar checkpoint 1",
+            intent={"intent": "confirm_checkpoint"},
+            action={
+                "skill": "automation",
+                "name": "confirm_checkpoint",
+                "status": "done",
+                "edit_audit": {
+                    "path": "README.md",
+                    "summary": "README.md | linha 1 (alvo 1) | primeira ocorrencia",
+                    "revert_command": "preparar edicao arquivo README.md trocar Projeto Seguro por Test Project",
+                },
+            },
+            response="Checkpoint 1 confirmado.",
+        )
+
+        state = build_ui_state(self.context, session=SessionState().snapshot(), memory_store=self.memory)
+
+        command = state["history"]["commands"][0]
+        self.assertEqual(command["action"]["edit_audit"]["path"], "README.md")
+        self.assertIn("trocar Projeto Seguro por Test Project", command["action"]["edit_audit"]["revert_command"])
+
 
 if __name__ == "__main__":
     unittest.main()

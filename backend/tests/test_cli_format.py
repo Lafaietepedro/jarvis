@@ -274,6 +274,31 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("[HISTORY]", output)
         self.assertIn("qual o status", output)
 
+    def test_format_history_shows_edit_audit_and_revert_hint(self):
+        output = format_history(
+            {
+                "commands": [
+                    {
+                        "id": 2,
+                        "text": "confirmar checkpoint 1",
+                        "action": {
+                            "skill": "automation",
+                            "name": "confirm_checkpoint",
+                            "status": "done",
+                            "edit_audit": {
+                                "path": "README.md",
+                                "summary": "README.md | linha 1 (alvo 1) | primeira ocorrencia",
+                                "revert_command": "preparar edicao arquivo README.md trocar Projeto Seguro por Test Project",
+                            },
+                        },
+                    }
+                ]
+            }
+        )
+
+        self.assertIn("Edit: README.md | linha 1 (alvo 1) | primeira ocorrencia", output)
+        self.assertIn("Revert: preparar edicao arquivo README.md trocar Projeto Seguro por Test Project", output)
+
     def test_format_history_export(self):
         output = format_history_export(
             {
@@ -313,6 +338,34 @@ class CliFormatTest(unittest.TestCase):
         self.assertIn("By intent: status=1", output)
         self.assertIn("#1", output)
         self.assertIn("qual o status", output)
+
+    def test_format_memory_audit_sample_shows_edit_audit(self):
+        output = format_memory_audit(
+            {
+                "generated_at": "2026-04-15T00:00:00+00:00",
+                "filters": {"limit": 5},
+                "matching_count": 1,
+                "first_command_at": "2026-04-15T00:00:00+00:00",
+                "latest_command_at": "2026-04-15T00:00:00+00:00",
+                "sample": [
+                    {
+                        "id": 7,
+                        "text": "confirmar checkpoint 1",
+                        "action": {
+                            "skill": "automation",
+                            "name": "confirm_checkpoint",
+                            "status": "done",
+                            "edit_audit": {
+                                "path": "README.md",
+                                "summary": "README.md | linha 1 (alvo 1) | primeira ocorrencia",
+                            },
+                        },
+                    }
+                ],
+            }
+        )
+
+        self.assertIn("Edit: README.md | linha 1 (alvo 1) | primeira ocorrencia", output)
 
     def test_format_history_delete(self):
         output = format_history_delete(

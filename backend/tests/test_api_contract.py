@@ -75,6 +75,17 @@ class ApiContractTest(unittest.TestCase):
         self.assertEqual(history_entry["action"]["status"], "done")
         self.assertIn("response", history_entry)
 
+    def test_history_contract_preserves_edit_audit(self):
+        asyncio.run(main.command(main.CommandRequest(text="preparar edição arquivo README.md trocar API Contract Test por Projeto Seguro")))
+        asyncio.run(main.command(main.CommandRequest(text="confirmar checkpoint 1", confirm_actions=True)))
+
+        payload = asyncio.run(main.history(limit=5))
+
+        history_entry = payload["commands"][0]
+        self.assertEqual(history_entry["text"], "confirmar checkpoint 1")
+        self.assertEqual(history_entry["action"]["edit_audit"]["path"], "README.md")
+        self.assertIn("trocar Projeto Seguro por API Contract Test", history_entry["action"]["edit_audit"]["revert_command"])
+
     def test_history_audit_contract(self):
         command = main.CommandRequest(text="qual o status")
         asyncio.run(main.command(command))

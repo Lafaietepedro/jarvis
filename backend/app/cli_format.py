@@ -133,6 +133,12 @@ def format_history(payload: dict[str, Any]) -> str:
             f"{action.get('skill', 'unknown')}.{action.get('name', 'unknown')} "
             f"({action.get('status', 'unknown')})"
         )
+        history_edit = _history_edit_audit(command)
+        if history_edit:
+            lines.append(f"   Edit: {history_edit}")
+            revert = _history_revert_hint(command)
+            if revert:
+                lines.append(f"   Revert: {revert}")
     return "\n".join(lines)
 
 
@@ -186,6 +192,9 @@ def format_memory_audit(payload: dict[str, Any]) -> str:
                 f"{action.get('skill', 'unknown')}.{action.get('name', 'unknown')} "
                 f"({action.get('status', 'unknown')})"
             )
+            history_edit = _history_edit_audit(command)
+            if history_edit:
+                lines.append(f"  Edit: {history_edit}")
     return "\n".join(lines)
 
 
@@ -387,6 +396,36 @@ def _format_line_span(block: dict[str, Any]) -> str:
             focus = f"alvo {focus_start}-{focus_end}"
         return f"{window} ({focus})"
     return window
+
+
+def _history_edit_audit(command: dict[str, Any]) -> str | None:
+    audit = _edit_audit_from_command(command)
+    if not audit:
+        return None
+    summary = audit.get("summary")
+    if summary:
+        return summary
+    return audit.get("path")
+
+
+def _history_revert_hint(command: dict[str, Any]) -> str | None:
+    audit = _edit_audit_from_command(command)
+    if not audit:
+        return None
+    return audit.get("revert_command")
+
+
+def _edit_audit_from_command(command: dict[str, Any]) -> dict[str, Any] | None:
+    action = command.get("action", {})
+    edit_audit = action.get("edit_audit")
+    if isinstance(edit_audit, dict):
+        return edit_audit
+    delegated = action.get("delegated_action")
+    if isinstance(delegated, dict):
+        delegated_audit = delegated.get("edit_audit")
+        if isinstance(delegated_audit, dict):
+            return delegated_audit
+    return None
 
 
 def _format_next_actions(actions: list[Any]) -> str:
